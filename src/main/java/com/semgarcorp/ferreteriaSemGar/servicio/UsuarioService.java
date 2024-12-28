@@ -28,7 +28,7 @@ public class UsuarioService {
         return usuario.orElse(null); // Retorna null si no encuentra el usuario
     }
 
-    // Guardar un nuevo usuario o actualizar uno existente
+    // Guardar un nuevo usuario o actualiza uno existente
     public Usuario guardar(Usuario usuario) {
         return usuarioRepository.save(usuario);
     }
@@ -38,11 +38,15 @@ public class UsuarioService {
         usuarioRepository.deleteById(id);
     }
 
+    public Usuario actualizar(Usuario usuario) {
+        return usuarioRepository.save(usuario);
+    }
+
     // Métodos adicionales, si son necesarios, como buscar por nombre o correo
     // Obtener usuario por correo electrónico
     /*
     public Usuario obtenerPorCorreo(String correo) {
-        return usuarioRepository.findByCorreo(correo); // Asumiendo que existe este método en el repositorio
+        return usuarioRepository.findByCorreo(correo); // Asumiendo que existe este metodo en el repositorio
     }
     */
 }

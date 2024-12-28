@@ -59,37 +59,7 @@ public class NominaController {
         Nomina nominaExistente = nominaService.obtenerPorId(id);
         if (nominaExistente != null) {
             nomina.setIdNomina(id); // Aseguramos que el ID se mantenga para la actualización
-            return new ResponseEntity<>(nominaService.guardar(nomina), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-    }
-
-    // Actualizar parcialmente una nómina existente (PATCH)
-    @PatchMapping("/{id}")
-    public ResponseEntity<Nomina> actualizarParcial(@PathVariable Long id, @RequestBody Nomina nomina) {
-        Nomina nominaExistente = nominaService.obtenerPorId(id);
-        if (nominaExistente != null) {
-            // Actualizar los atributos necesarios
-            if (nomina.getSalarioBase() != null) {
-                nominaExistente.setSalarioBase(nomina.getSalarioBase());
-            }
-            if (nomina.getBonificacion() != null) {
-                nominaExistente.setBonificacion(nomina.getBonificacion());
-            }
-            if (nomina.getConceptoBonificacion() != null) {
-                nominaExistente.setConceptoBonificacion(nomina.getConceptoBonificacion());
-            }
-            if (nomina.getDescuentoNomina() != null) {
-                nominaExistente.setDescuentoNomina(nomina.getDescuentoNomina());
-            }
-            if (nomina.getConceptoDescuento() != null) {
-                nominaExistente.setConceptoDescuento(nomina.getConceptoDescuento());
-            }
-            if (nomina.getEstadoPago() != null) {
-                nominaExistente.setEstadoPago(nomina.getEstadoPago());
-            }
-            return new ResponseEntity<>(nominaService.guardar(nominaExistente), HttpStatus.OK);
+            return new ResponseEntity<>(nominaService.actualizar(nomina), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }

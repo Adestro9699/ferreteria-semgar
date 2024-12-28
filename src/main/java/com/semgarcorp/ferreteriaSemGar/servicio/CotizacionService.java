@@ -28,7 +28,7 @@ public class CotizacionService {
         return cotizacion.orElse(null);  // Retorna null si no se encuentra la cotización
     }
 
-    // Guardar una nueva cotización o actualizar una existente
+    // Guardar una nueva cotización o actualiza una existente
     public Cotizacion guardar(Cotizacion cotizacion) {
         return cotizacionRepository.save(cotizacion);
     }
@@ -36,6 +36,10 @@ public class CotizacionService {
     // Eliminar una cotización por su ID
     public void eliminar(Long id) {
         cotizacionRepository.deleteById(id);
+    }
+
+    public Cotizacion actualizar(Cotizacion cotizacion) {
+        return cotizacionRepository.save(cotizacion);
     }
 
     // Otras consultas personalizadas pueden ser agregadas aquí si es necesario

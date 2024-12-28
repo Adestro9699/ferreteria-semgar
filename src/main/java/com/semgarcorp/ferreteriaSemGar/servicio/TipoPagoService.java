@@ -28,7 +28,7 @@ public class TipoPagoService {
         return tipoPago.orElse(null);  // Retorna null si no se encuentra el tipo de pago
     }
 
-    // Guardar un nuevo tipo de pago o actualizar uno existente
+    // Guardar un nuevo tipo de pago o actualiza uno existente
     public TipoPago guardar(TipoPago tipoPago) {
         return tipoPagoRepositorio.save(tipoPago);
     }
@@ -36,5 +36,9 @@ public class TipoPagoService {
     // Eliminar un tipo de pago por su ID
     public void eliminar(Long id) {
         tipoPagoRepositorio.deleteById(id);
+    }
+
+    public TipoPago actualizar(TipoPago tipoPago) {
+        return tipoPagoRepositorio.save(tipoPago);
     }
 }

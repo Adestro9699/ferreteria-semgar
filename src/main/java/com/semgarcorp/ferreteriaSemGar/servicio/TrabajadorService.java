@@ -30,4 +30,8 @@ public class TrabajadorService {
     public void eliminar(Long id) {
         trabajadorRepositorio.deleteById(id);
     }
+
+    public Trabajador actualizar(Trabajador trabajador) {
+        return trabajadorRepositorio.save(trabajador);
+    }
 }

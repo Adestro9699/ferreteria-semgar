@@ -30,4 +30,10 @@ public class ClienteService {
     public void eliminar(Long id) {
         clienteRepositorio.deleteById(id);
     }
+
+    public Cliente actualizar(Cliente cliente) {
+        return clienteRepositorio.save(cliente);  // Esto persiste los cambios del cliente existente
+    }
+
+
 }

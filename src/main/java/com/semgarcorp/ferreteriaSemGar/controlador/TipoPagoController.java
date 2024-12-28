@@ -54,44 +54,13 @@ public class TipoPagoController {
         return ResponseEntity.created(location).body(nuevoTipoPago);
     }
 
-
     // Actualizar un tipo de pago existente (PUT)
     @PutMapping("/{id}")
     public ResponseEntity<TipoPago> actualizar(@PathVariable Long id, @RequestBody TipoPago tipoPago) {
         TipoPago tipoPagoExistente = tipoPagoService.obtenerPorId(id);
         if (tipoPagoExistente != null) {
             tipoPago.setIdTipoPago(id); // Aseguramos que el ID se mantenga para la actualización
-            return new ResponseEntity<>(tipoPagoService.guardar(tipoPago), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-    }
-
-    // Actualizar parcialmente un tipo de pago existente (PATCH)
-    @PatchMapping("/{id}")
-    public ResponseEntity<TipoPago> actualizarParcial(@PathVariable Long id, @RequestBody TipoPago tipoPago) {
-        TipoPago tipoPagoExistente = tipoPagoService.obtenerPorId(id);
-        if (tipoPagoExistente != null) {
-            // Actualización parcial de los atributos si son no nulos
-            if (tipoPago.getNombreTipoPago() != null) {
-                tipoPagoExistente.setNombreTipoPago(tipoPago.getNombreTipoPago());
-            }
-            if (tipoPago.getDescripcionTipoPago() != null) {
-                tipoPagoExistente.setDescripcionTipoPago(tipoPago.getDescripcionTipoPago());
-            }
-            if (tipoPago.getEstadoTipoPago() != null) {
-                tipoPagoExistente.setEstadoTipoPago(tipoPago.getEstadoTipoPago());
-            }
-            if (tipoPago.getComision() != null) {
-                tipoPagoExistente.setComision(tipoPago.getComision());
-            }
-            if (tipoPago.getFechaModificacion() != null) {
-                tipoPagoExistente.setFechaModificacion(tipoPago.getFechaModificacion());
-            }
-            if (tipoPago.getCodigoTipoPago() != null) {
-                tipoPagoExistente.setCodigoTipoPago(tipoPago.getCodigoTipoPago());
-            }
-            return new ResponseEntity<>(tipoPagoService.guardar(tipoPagoExistente), HttpStatus.OK);
+            return new ResponseEntity<>(tipoPagoService.actualizar(tipoPago), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }

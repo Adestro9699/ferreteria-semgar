@@ -52,35 +52,13 @@ public class TrabajadorController {
         return ResponseEntity.created(location).body(nuevoTrabajador);
     }
 
-
     // Actualizar un trabajador existente (PUT)
     @PutMapping("/{id}")
     public ResponseEntity<Trabajador> actualizar(@PathVariable Long id, @RequestBody Trabajador trabajador) {
         Trabajador trabajadorExistente = trabajadorService.obtenerPorId(id);
         if (trabajadorExistente != null) {
             trabajador.setIdTrabajador(id); // Aseguramos que el ID se mantenga para la actualización
-            return new ResponseEntity<>(trabajadorService.guardar(trabajador), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-    }
-
-    // Actualizar parcialmente un trabajador existente (PATCH)
-    @PatchMapping("/{id}")
-    public ResponseEntity<Trabajador> actualizarParcial(@PathVariable Long id, @RequestBody Trabajador trabajador) {
-        Trabajador trabajadorExistente = trabajadorService.obtenerPorId(id);
-        if (trabajadorExistente != null) {
-            if (trabajador.getNombreTrabajador() != null) {
-                trabajadorExistente.setNombreTrabajador(trabajador.getNombreTrabajador());
-            }
-            if (trabajador.getCorreoTrabajador() != null) {
-                trabajadorExistente.setCorreoTrabajador(trabajador.getCorreoTrabajador());
-            }
-            if (trabajador.getDireccionTrabajador() != null) {
-                trabajadorExistente.setDireccionTrabajador(trabajador.getDireccionTrabajador());
-            }
-            // Agregar más campos según sea necesario
-            return new ResponseEntity<>(trabajadorService.guardar(trabajadorExistente), HttpStatus.OK);
+            return new ResponseEntity<>(trabajadorService.actualizar(trabajador), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }

@@ -13,7 +13,6 @@ public class Cliente {
         JURIDICA //1
     }
 
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long idCliente;

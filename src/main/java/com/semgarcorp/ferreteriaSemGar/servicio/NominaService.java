@@ -28,7 +28,7 @@ public class NominaService {
         return nomina.orElse(null); // Retorna null si no encuentra el registro
     }
 
-    // Guardar un nuevo registro o actualizar uno existente
+    // Guardar un nuevo registro o actualiza uno existente
     public Nomina guardar(Nomina nomina) {
         return nominaRepository.save(nomina);
     }
@@ -38,10 +38,15 @@ public class NominaService {
         nominaRepository.deleteById(id);
     }
 
+    public Nomina actualizar(Nomina nomina) {
+        return nominaRepository.save(nomina);
+    }
+
+
     // También puedes añadir otros métodos específicos, como:
     // - Obtener nómina por trabajador
     // - Consultar nóminas de un periodo específico
-    // - Actualizar salario, etc.
+    // - Actualiza salario, etc.
 
     // Obtener nóminas por trabajador   x
     /*public List<Nomina> obtenerPorTrabajador(Long idTrabajador) {

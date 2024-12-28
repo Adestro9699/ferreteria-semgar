@@ -6,5 +6,4 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface NominaRepository extends JpaRepository<Nomina, Long> {
-
 }

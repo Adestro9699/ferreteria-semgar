@@ -53,32 +53,20 @@ public class ClienteController {
         return ResponseEntity.created(location).body(nuevoCliente);
     }
 
-
     // Actualizar un cliente existente (PUT)
     @PutMapping("/{id}")
     public ResponseEntity<Cliente> actualizar(@PathVariable Long id, @RequestBody Cliente cliente) {
+        // Obtener el cliente existente
         Cliente clienteExistente = clienteService.obtenerPorId(id);
-        if (clienteExistente != null) {
-            cliente.setIdCliente(id);  // Asegúrate de que el ID se mantenga para la actualización
-            return new ResponseEntity<>(clienteService.guardar(cliente), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-    }
 
-    // Actualizar parcialmente un cliente existente (PATCH)
-    @PatchMapping("/{id}")
-    public ResponseEntity<Cliente> actualizarParcial(@PathVariable Long id, @RequestBody Cliente cliente) {
-        Cliente clienteExistente = clienteService.obtenerPorId(id);
         if (clienteExistente != null) {
-            if (cliente.getNombreCompletoCliente() != null) {
-                clienteExistente.setNombreCompletoCliente(cliente.getNombreCompletoCliente());
-            }
-            if (cliente.getCorreoCliente() != null) {
-                clienteExistente.setCorreoCliente(cliente.getCorreoCliente());
-            }
-            // Agregar más campos según sea necesario
-            return new ResponseEntity<>(clienteService.guardar(clienteExistente), HttpStatus.OK);
+            // Asegurarse de que el ID se mantenga y reemplazar el cliente
+            cliente.setIdCliente(id);
+
+            // Aquí reemplazas completamente el cliente con la información que viene en el cuerpo
+            Cliente clienteActualizado = clienteService.actualizar(cliente);
+
+            return new ResponseEntity<>(clienteActualizado, HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }

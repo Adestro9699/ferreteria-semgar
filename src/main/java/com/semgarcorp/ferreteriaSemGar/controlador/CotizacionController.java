@@ -60,36 +60,7 @@ public class CotizacionController {
         Cotizacion cotizacionExistente = cotizacionService.obtenerPorId(id);
         if (cotizacionExistente != null) {
             cotizacion.setIdCotizacion(id); // Aseguramos que el ID se mantenga para la actualización
-            return new ResponseEntity<>(cotizacionService.guardar(cotizacion), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-    }
-
-    // Actualizar parcialmente una cotización existente (PATCH)
-    @PatchMapping("/{id}")
-    public ResponseEntity<Cotizacion> actualizarParcial(@PathVariable Long id, @RequestBody Cotizacion cotizacion) {
-        Cotizacion cotizacionExistente = cotizacionService.obtenerPorId(id);
-        if (cotizacionExistente != null) {
-            // Actualizar los atributos necesarios
-            if (cotizacion.getCliente() != null) {
-                cotizacionExistente.setCliente(cotizacion.getCliente());
-            }
-            if (cotizacion.getTipoPago() != null) {
-                cotizacionExistente.setTipoPago(cotizacion.getTipoPago());
-            }
-            if (cotizacion.getFechaModificacion() != null) {
-                cotizacionExistente.setFechaModificacion(cotizacion.getFechaModificacion());
-            }
-            if (cotizacion.getEstadoCotizacion() != null) {
-                cotizacionExistente.setEstadoCotizacion(cotizacion.getEstadoCotizacion());
-            }
-            if (cotizacion.getObservaciones() != null) {
-                cotizacionExistente.setObservaciones(cotizacion.getObservaciones());
-            }
-            // Otros campos también pueden ser actualizados si es necesario
-
-            return new ResponseEntity<>(cotizacionService.guardar(cotizacionExistente), HttpStatus.OK);
+            return new ResponseEntity<>(cotizacionService.actualizar(cotizacion), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
