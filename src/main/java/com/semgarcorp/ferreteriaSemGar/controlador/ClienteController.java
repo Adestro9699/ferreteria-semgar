@@ -31,10 +31,9 @@ public class ClienteController {
     public ResponseEntity<Cliente> obtenerPorId(@PathVariable Long id) {
         Cliente cliente = clienteService.obtenerPorId(id);
         if (cliente != null) {
-            return new ResponseEntity<>(cliente, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return ResponseEntity.ok(cliente); // Respuesta simplificada con 200 OK
         }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Respuesta con 404 Not Found
     }
 
     // Crear un nuevo cliente
@@ -66,9 +65,9 @@ public class ClienteController {
             // Aquí reemplazas completamente el cliente con la información que viene en el cuerpo
             Cliente clienteActualizado = clienteService.actualizar(cliente);
 
-            return new ResponseEntity<>(clienteActualizado, HttpStatus.OK);
+            return ResponseEntity.ok(clienteActualizado); // Usamos el metodo estático "ok" para la respuesta exitosa
         } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Usamos "status" para construir la respuesta 404
         }
     }
 
@@ -78,9 +77,8 @@ public class ClienteController {
         Cliente clienteExistente = clienteService.obtenerPorId(id);
         if (clienteExistente != null) {
             clienteService.eliminar(id);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return ResponseEntity.noContent().build(); // Respuesta sin contenido
         }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Si no se encuentra, 404
     }
 }

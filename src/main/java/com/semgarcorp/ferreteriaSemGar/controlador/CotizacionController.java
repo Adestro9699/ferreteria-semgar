@@ -31,10 +31,9 @@ public class CotizacionController {
     public ResponseEntity<Cotizacion> obtenerPorId(@PathVariable Long id) {
         Cotizacion cotizacion = cotizacionService.obtenerPorId(id);
         if (cotizacion != null) {
-            return new ResponseEntity<>(cotizacion, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return ResponseEntity.ok(cotizacion); // Uso de ResponseEntity.ok() para simplificar la respuesta con 200 OK
         }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Devuelve 404 Not Found si no se encuentra el recurso
     }
 
     // Crear una nueva cotización
@@ -53,17 +52,16 @@ public class CotizacionController {
         return ResponseEntity.created(location).body(nuevaCotizacion);
     }
 
-
     // Actualizar una cotización existente (PUT)
     @PutMapping("/{id}")
     public ResponseEntity<Cotizacion> actualizar(@PathVariable Long id, @RequestBody Cotizacion cotizacion) {
         Cotizacion cotizacionExistente = cotizacionService.obtenerPorId(id);
         if (cotizacionExistente != null) {
             cotizacion.setIdCotizacion(id); // Aseguramos que el ID se mantenga para la actualización
-            return new ResponseEntity<>(cotizacionService.actualizar(cotizacion), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            Cotizacion cotizacionActualizada = cotizacionService.actualizar(cotizacion);
+            return ResponseEntity.ok(cotizacionActualizada); // Usamos el metodo estático "ok" para la respuesta exitosa
         }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Usamos "status" para construir la respuesta 404
     }
 
     // Eliminar una cotización por su ID
@@ -72,9 +70,8 @@ public class CotizacionController {
         Cotizacion cotizacionExistente = cotizacionService.obtenerPorId(id);
         if (cotizacionExistente != null) {
             cotizacionService.eliminar(id);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return ResponseEntity.noContent().build(); // Respuesta sin contenido
         }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Si no se encuentra, 404
     }
 }

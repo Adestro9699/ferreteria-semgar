@@ -31,10 +31,9 @@ public class NominaController {
     public ResponseEntity<Nomina> obtenerPorId(@PathVariable Long id) {
         Nomina nomina = nominaService.obtenerPorId(id);
         if (nomina != null) {
-            return new ResponseEntity<>(nomina, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return ResponseEntity.ok(nomina); // Uso de ResponseEntity.ok() para una respuesta más limpia
         }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Respuesta clara con 404
     }
 
     // Crear una nueva nómina
@@ -59,10 +58,10 @@ public class NominaController {
         Nomina nominaExistente = nominaService.obtenerPorId(id);
         if (nominaExistente != null) {
             nomina.setIdNomina(id); // Aseguramos que el ID se mantenga para la actualización
-            return new ResponseEntity<>(nominaService.actualizar(nomina), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            Nomina nominaActualizada = nominaService.actualizar(nomina);
+            return ResponseEntity.ok(nominaActualizada); // Usamos el metodo estático "ok" para la respuesta exitosa
         }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Usamos "status" para construir la respuesta 404
     }
 
     // Eliminar una nómina por su ID
@@ -71,9 +70,8 @@ public class NominaController {
         Nomina nominaExistente = nominaService.obtenerPorId(id);
         if (nominaExistente != null) {
             nominaService.eliminar(id);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return ResponseEntity.noContent().build(); // Usamos el metodo estático "noContent"
         }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Usamos "status" para devolver un 404
     }
 }

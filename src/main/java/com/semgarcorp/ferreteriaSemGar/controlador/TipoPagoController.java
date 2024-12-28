@@ -32,10 +32,9 @@ public class TipoPagoController {
     public ResponseEntity<TipoPago> obtenerPorId(@PathVariable Long id) {
         TipoPago tipoPago = tipoPagoService.obtenerPorId(id);
         if (tipoPago != null) {
-            return new ResponseEntity<>(tipoPago, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return ResponseEntity.ok(tipoPago); // Uso de ResponseEntity.ok() para un retorno más limpio
         }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Respuesta clara con 404
     }
 
     // Crear un nuevo tipo de pago
@@ -60,10 +59,10 @@ public class TipoPagoController {
         TipoPago tipoPagoExistente = tipoPagoService.obtenerPorId(id);
         if (tipoPagoExistente != null) {
             tipoPago.setIdTipoPago(id); // Aseguramos que el ID se mantenga para la actualización
-            return new ResponseEntity<>(tipoPagoService.actualizar(tipoPago), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            TipoPago tipoPagoActualizado = tipoPagoService.actualizar(tipoPago);
+            return ResponseEntity.ok(tipoPagoActualizado); // Usamos el metodo estático "ok" para la respuesta exitosa
         }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Usamos "status" para construir la respuesta 404
     }
 
     // Eliminar un tipo de pago por su ID
@@ -72,9 +71,8 @@ public class TipoPagoController {
         TipoPago tipoPagoExistente = tipoPagoService.obtenerPorId(id);
         if (tipoPagoExistente != null) {
             tipoPagoService.eliminar(id);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return ResponseEntity.noContent().build(); // Usamos el metodo estático "noContent"
         }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Usamos "status" para devolver un 404
     }
 }

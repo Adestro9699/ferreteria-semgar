@@ -31,10 +31,9 @@ public class TrabajadorController {
     public ResponseEntity<Trabajador> obtenerPorId(@PathVariable Long id) {
         Trabajador trabajador = trabajadorService.obtenerPorId(id);
         if (trabajador != null) {
-            return new ResponseEntity<>(trabajador, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return ResponseEntity.ok(trabajador); // Simplificado con "ok()"
         }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Respuesta más clara y consistente
     }
 
     // Crear un nuevo trabajador
@@ -58,10 +57,10 @@ public class TrabajadorController {
         Trabajador trabajadorExistente = trabajadorService.obtenerPorId(id);
         if (trabajadorExistente != null) {
             trabajador.setIdTrabajador(id); // Aseguramos que el ID se mantenga para la actualización
-            return new ResponseEntity<>(trabajadorService.actualizar(trabajador), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            Trabajador trabajadorActualizado = trabajadorService.actualizar(trabajador);
+            return ResponseEntity.ok(trabajadorActualizado); // Usamos el metodo estático "ok"
         }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Usamos el builder
     }
 
     // Eliminar un trabajador por su ID
@@ -70,9 +69,8 @@ public class TrabajadorController {
         Trabajador trabajadorExistente = trabajadorService.obtenerPorId(id);
         if (trabajadorExistente != null) {
             trabajadorService.eliminar(id);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return ResponseEntity.noContent().build(); // Usamos el metodo estático "noContent" para devolver un 204
         }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Usamos "status" para devolver un 404
     }
 }
