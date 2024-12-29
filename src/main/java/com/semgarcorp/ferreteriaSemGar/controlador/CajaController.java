@@ -30,7 +30,7 @@ public class CajaController {
 
     // Endpoint GET por ID para obtener un registro de caja específico
     @GetMapping("/{id}")
-    public ResponseEntity<Caja> obtenerPorId(@PathVariable Long id) {
+    public ResponseEntity<Caja> obtenerPorId(@PathVariable Integer id) {
         Caja caja = cajaService.obtenerPorId(id);
         if (caja != null) {
             return ResponseEntity.ok(caja);
@@ -53,7 +53,7 @@ public class CajaController {
 
     // Endpoint PUT para actualizar un registro completo de caja
     @PutMapping("/{id}")
-    public ResponseEntity<Caja> actualizar(@PathVariable Long id, @RequestBody Caja caja) {
+    public ResponseEntity<Caja> actualizar(@PathVariable Integer id, @RequestBody Caja caja) {
         if (cajaService.obtenerPorId(id) == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
@@ -64,7 +64,7 @@ public class CajaController {
 
     // Endpoint DELETE para eliminar un registro de caja por ID
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+    public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
         if (cajaService.obtenerPorId(id) == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }

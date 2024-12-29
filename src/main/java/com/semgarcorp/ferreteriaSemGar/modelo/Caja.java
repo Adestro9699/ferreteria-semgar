@@ -1,7 +1,6 @@
 package com.semgarcorp.ferreteriaSemGar.modelo;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -9,9 +8,19 @@ import java.time.LocalDateTime;
 @Entity
 public class Caja {
 
+    public enum EstadoCaja {
+        ABIERTA,
+        CERRADA,
+        BLOQUEADA,
+        EN_PROCESO,
+        DESACTIVADA,
+        SOBRECARGADA,
+        SIN_FONDOS
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long idCaja;
+    private Integer idCaja;
 
     @NotNull(message = "La fecha no puede estar vacía")
     private LocalDateTime fecha;
@@ -28,22 +37,23 @@ public class Caja {
     @NotNull(message = "El saldo final no puede estar vacío")
     private BigDecimal saldoFinal;
 
+    @Column(length = 255)  // Especifica que la longitud máxima de la columna es 255 caracteres
     private String descripcion;
 
-    @NotBlank(message = "El estado no puede estar vacío")
-    private String estado;
+    @NotNull(message = "El estado no puede estar vacío")
+    @Enumerated(EnumType.STRING)
+    private EstadoCaja estado;
 
     @ManyToOne
     @JoinColumn(name = "idUsuario", nullable = false)
     private Usuario usuario;
 
-    // Constructor vacío requerido por JPA
     public Caja() {
     }
 
-    // Constructor con todos los campos menos el ID
-    public Caja(LocalDateTime fecha, BigDecimal saldoInicial, BigDecimal entradas, BigDecimal salidas,
-                BigDecimal saldoFinal, String descripcion, String estado, Usuario usuario) {
+    public Caja(Integer idCaja, LocalDateTime fecha, BigDecimal saldoInicial, BigDecimal entradas, BigDecimal salidas,
+                BigDecimal saldoFinal, String descripcion, EstadoCaja estado, Usuario usuario) {
+        this.idCaja = idCaja;
         this.fecha = fecha;
         this.saldoInicial = saldoInicial;
         this.entradas = entradas;
@@ -54,12 +64,11 @@ public class Caja {
         this.usuario = usuario;
     }
 
-    // Getters y Setters
-    public Long getIdCaja() {
+    public Integer getIdCaja() {
         return idCaja;
     }
 
-    public void setIdCaja(Long idCaja) {
+    public void setIdCaja(Integer idCaja) {
         this.idCaja = idCaja;
     }
 
@@ -111,11 +120,11 @@ public class Caja {
         this.descripcion = descripcion;
     }
 
-    public String getEstado() {
+    public EstadoCaja getEstado() {
         return estado;
     }
 
-    public void setEstado(String estado) {
+    public void setEstado(EstadoCaja estado) {
         this.estado = estado;
     }
 

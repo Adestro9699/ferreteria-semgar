@@ -1,35 +1,45 @@
 package com.semgarcorp.ferreteriaSemGar.modelo;
 
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
 public class TipoPago {
 
+    public enum EstadoTipoPago {
+        ACTIVO,
+        INACTIVO
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long idTipoPago;
+    private Integer idTipoPago;
 
+    @Column(length = 100)
     private String nombreTipoPago;
 
+    @Column(length = 300)
     private String descripcionTipoPago;
 
-    private Boolean estadoTipoPago;
+    @Enumerated(EnumType.STRING)
+    private EstadoTipoPago estadoTipoPago;
 
-    private Double comision;
+    @Column(precision = 10, scale = 2)
+    private BigDecimal comision;
 
     private LocalDate fechaCreacion;
 
     private LocalDate fechaModificacion;
 
-    @Column(unique = true)
+    @Column(unique = true, length = 20)
     private String codigoTipoPago;
 
     public TipoPago() {
     }
 
-    public TipoPago(Long idTipoPago, String nombreTipoPago, String descripcionTipoPago, Boolean estadoTipoPago,
-                    Double comision, LocalDate fechaCreacion, LocalDate fechaModificacion, String codigoTipoPago) {
+    public TipoPago(Integer idTipoPago, String nombreTipoPago, String descripcionTipoPago, EstadoTipoPago estadoTipoPago,
+                    BigDecimal comision, LocalDate fechaCreacion, LocalDate fechaModificacion, String codigoTipoPago) {
         this.idTipoPago = idTipoPago;
         this.nombreTipoPago = nombreTipoPago;
         this.descripcionTipoPago = descripcionTipoPago;
@@ -40,11 +50,11 @@ public class TipoPago {
         this.codigoTipoPago = codigoTipoPago;
     }
 
-    public Long getIdTipoPago() {
+    public Integer getIdTipoPago() {
         return idTipoPago;
     }
 
-    public void setIdTipoPago(Long idTipoPago) {
+    public void setIdTipoPago(Integer idTipoPago) {
         this.idTipoPago = idTipoPago;
     }
 
@@ -64,19 +74,19 @@ public class TipoPago {
         this.descripcionTipoPago = descripcionTipoPago;
     }
 
-    public Boolean getEstadoTipoPago() {
+    public EstadoTipoPago getEstadoTipoPago() {
         return estadoTipoPago;
     }
 
-    public void setEstadoTipoPago(Boolean estadoTipoPago) {
+    public void setEstadoTipoPago(EstadoTipoPago estadoTipoPago) {
         this.estadoTipoPago = estadoTipoPago;
     }
 
-    public Double getComision() {
+    public BigDecimal getComision() {
         return comision;
     }
 
-    public void setComision(Double comision) {
+    public void setComision(BigDecimal comision) {
         this.comision = comision;
     }
 

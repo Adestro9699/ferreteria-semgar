@@ -2,46 +2,48 @@ package com.semgarcorp.ferreteriaSemGar.modelo;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-
 
 @Entity
 public class Cliente {
 
-    public enum TipoCliente { //en POSTMAN usar una String
-        NATURAL, //0
-        JURIDICA //1
+    public enum TipoCliente {
+        NATURAL,
+        JURIDICA
     }
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long idCliente;
+    private Integer idCliente;
 
+    @Enumerated(EnumType.STRING)
     private TipoCliente tipoCliente;
 
+    @Column(length = 255)
     private String nombreCompletoCliente;
 
+    @Column(length = 255)
     private String razonSocial;
 
-    @Column(unique = true)
+    @Column(unique = true, length = 11)
     private String ruc;
 
-    //@NotBlank(message = "El dni no puede estar vacío")
-    @Column(unique = true)
+    @Column(unique = true, length = 8)
     private String dniCliente;
 
+    @Column(length = 200)
     private String direccionCliente;
 
+    @Column(length = 50)
     private String telefonoCliente;
 
-    @Column(unique = true)
+    @Column(unique = true, length = 100)
     @Email(message = "El correo debe tener un formato válido")
     private String correoCliente;
 
     public Cliente() {
     }
 
-    public Cliente(Long idCliente, TipoCliente tipoCliente, String nombreCompletoCliente, String razonSocial,
+    public Cliente(Integer idCliente, TipoCliente tipoCliente, String nombreCompletoCliente, String razonSocial,
                    String ruc, String dniCliente, String direccionCliente, String telefonoCliente,
                    String correoCliente) {
         this.idCliente = idCliente;
@@ -55,11 +57,11 @@ public class Cliente {
         this.correoCliente = correoCliente;
     }
 
-    public Long getIdCliente() {
+    public Integer getIdCliente() {
         return idCliente;
     }
 
-    public void setIdCliente(Long idCliente) {
+    public void setIdCliente(Integer idCliente) {
         this.idCliente = idCliente;
     }
 

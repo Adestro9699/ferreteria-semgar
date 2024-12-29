@@ -23,7 +23,7 @@ public class CajaService {
     }
 
     // Obtener un registro de caja por ID
-    public Caja obtenerPorId(Long id) {
+    public Caja obtenerPorId(Integer id) {
         Optional<Caja> caja = cajaRepository.findById(id);
         return caja.orElse(null); // Retorna null si no encuentra el registro
     }
@@ -34,7 +34,7 @@ public class CajaService {
     }
 
     // Eliminar un registro de caja por ID
-    public void eliminar(Long id) {
+    public void eliminar(Integer id) {
         cajaRepository.deleteById(id);
     }
 

@@ -23,7 +23,7 @@ public class UsuarioService {
     }
 
     // Obtener un usuario por ID
-    public Usuario obtenerPorId(Long id) {
+    public Usuario obtenerPorId(Integer id) {
         Optional<Usuario> usuario = usuarioRepository.findById(id);
         return usuario.orElse(null); // Retorna null si no encuentra el usuario
     }
@@ -34,7 +34,7 @@ public class UsuarioService {
     }
 
     // Eliminar un usuario por ID
-    public void eliminar(Long id) {
+    public void eliminar(Integer id) {
         usuarioRepository.deleteById(id);
     }
 

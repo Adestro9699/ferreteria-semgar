@@ -28,7 +28,7 @@ public class NominaController {
 
     // Obtener una nómina por su ID
     @GetMapping("/{id}")
-    public ResponseEntity<Nomina> obtenerPorId(@PathVariable Long id) {
+    public ResponseEntity<Nomina> obtenerPorId(@PathVariable Integer id) {
         Nomina nomina = nominaService.obtenerPorId(id);
         if (nomina != null) {
             return ResponseEntity.ok(nomina); // Uso de ResponseEntity.ok() para una respuesta más limpia
@@ -54,7 +54,7 @@ public class NominaController {
 
     // Actualizar una nómina existente (PUT)
     @PutMapping("/{id}")
-    public ResponseEntity<Nomina> actualizar(@PathVariable Long id, @RequestBody Nomina nomina) {
+    public ResponseEntity<Nomina> actualizar(@PathVariable Integer id, @RequestBody Nomina nomina) {
         Nomina nominaExistente = nominaService.obtenerPorId(id);
         if (nominaExistente != null) {
             nomina.setIdNomina(id); // Aseguramos que el ID se mantenga para la actualización
@@ -66,7 +66,7 @@ public class NominaController {
 
     // Eliminar una nómina por su ID
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+    public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
         Nomina nominaExistente = nominaService.obtenerPorId(id);
         if (nominaExistente != null) {
             nominaService.eliminar(id);

@@ -9,31 +9,42 @@ import java.time.LocalDate;
 @Entity
 public class Trabajador {
 
+    public enum EstadoTrabajador {
+        ACTIVO,
+        INACTIVO
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long idTrabajador;
+    private Integer idTrabajador;
 
     @NotBlank(message = "El nombre no puede estar vacío")
+    @Column(length = 100) // Definido como varchar(100)
     private String nombreTrabajador;
 
     @NotBlank(message = "El apellido no puede estar vacío")
+    @Column(length = 100) // Definido como varchar(100)
     private String apellidoTrabajador;
 
-    @Column(unique = true)
+    @Column(unique = true, length = 8)
     @NotBlank(message = "El DNI no puede estar vacío")
     private String dniTrabajador;
 
+    @Column(length = 15) // Definido como varchar(15)
     private String telefonoTrabajador;
 
-    @Column(unique = true)
+    @Column(unique = true, length = 100)
     @Email(message = "El correo debe tener un formato válido")
     private String correoTrabajador;
 
+    @Column(length = 200) // Definido como varchar(200)
     private String direccionTrabajador;
 
+    @Column(length = 50) // Definido como varchar(50)
     private String cargoTrabajador;
 
-    private Boolean estadoTrabajador;
+    @Enumerated(EnumType.STRING) // Relaciona el enum con esta columna
+    private EstadoTrabajador estadoTrabajador;
 
     @PastOrPresent(message = "La fecha de ingreso no puede ser futura")
     private LocalDate fechaIngresoTrabajador;
@@ -43,9 +54,9 @@ public class Trabajador {
     public Trabajador() {
     }
 
-    public Trabajador(Long idTrabajador, String nombreTrabajador, String apellidoTrabajador, String dniTrabajador,
+    public Trabajador(Integer idTrabajador, String nombreTrabajador, String apellidoTrabajador, String dniTrabajador,
                       String telefonoTrabajador, String correoTrabajador, String direccionTrabajador,
-                      String cargoTrabajador, Boolean estadoTrabajador, LocalDate fechaIngresoTrabajador,
+                      String cargoTrabajador, EstadoTrabajador estadoTrabajador, LocalDate fechaIngresoTrabajador,
                       LocalDate fechaSalidaTrabajador) {
         this.idTrabajador = idTrabajador;
         this.nombreTrabajador = nombreTrabajador;
@@ -60,11 +71,11 @@ public class Trabajador {
         this.fechaSalidaTrabajador = fechaSalidaTrabajador;
     }
 
-    public Long getIdTrabajador() {
+    public Integer getIdTrabajador() {
         return idTrabajador;
     }
 
-    public void setIdTrabajador(Long idTrabajador) {
+    public void setIdTrabajador(Integer idTrabajador) {
         this.idTrabajador = idTrabajador;
     }
 
@@ -124,11 +135,11 @@ public class Trabajador {
         this.cargoTrabajador = cargoTrabajador;
     }
 
-    public Boolean getEstadoTrabajador() {
+    public EstadoTrabajador getEstadoTrabajador() {
         return estadoTrabajador;
     }
 
-    public void setEstadoTrabajador(Boolean estadoTrabajador) {
+    public void setEstadoTrabajador(EstadoTrabajador estadoTrabajador) {
         this.estadoTrabajador = estadoTrabajador;
     }
 

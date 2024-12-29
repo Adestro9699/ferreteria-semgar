@@ -30,7 +30,7 @@ public class UsuarioController {
 
     // Obtener un usuario por ID
     @GetMapping("/{id}")
-    public ResponseEntity<Usuario> obtenerPorId(@PathVariable Long id) {
+    public ResponseEntity<Usuario> obtenerPorId(@PathVariable Integer id) {
         Usuario usuario = usuarioService.obtenerPorId(id);
         if (usuario != null) {
             return ResponseEntity.ok(usuario);
@@ -51,7 +51,7 @@ public class UsuarioController {
 
     // Actualizar un usuario existente
     @PutMapping("/{id}")
-    public ResponseEntity<Usuario> actualizar(@PathVariable Long id, @Valid @RequestBody Usuario usuario) {
+    public ResponseEntity<Usuario> actualizar(@PathVariable Integer id, @Valid @RequestBody Usuario usuario) {
         Usuario usuarioExistente = usuarioService.obtenerPorId(id);
         if (usuarioExistente != null) {
             usuario.setIdUsuario(id);
@@ -63,7 +63,7 @@ public class UsuarioController {
 
     // Eliminar un usuario por ID
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+    public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
         Usuario usuarioExistente = usuarioService.obtenerPorId(id);
         if (usuarioExistente != null) {
             usuarioService.eliminar(id);

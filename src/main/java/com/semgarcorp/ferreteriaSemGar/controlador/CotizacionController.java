@@ -28,7 +28,7 @@ public class CotizacionController {
 
     // Obtener una cotización por su ID
     @GetMapping("/{id}")
-    public ResponseEntity<Cotizacion> obtenerPorId(@PathVariable Long id) {
+    public ResponseEntity<Cotizacion> obtenerPorId(@PathVariable Integer id) {
         Cotizacion cotizacion = cotizacionService.obtenerPorId(id);
         if (cotizacion != null) {
             return ResponseEntity.ok(cotizacion); // Uso de ResponseEntity.ok() para simplificar la respuesta con 200 OK
@@ -54,7 +54,7 @@ public class CotizacionController {
 
     // Actualizar una cotización existente (PUT)
     @PutMapping("/{id}")
-    public ResponseEntity<Cotizacion> actualizar(@PathVariable Long id, @RequestBody Cotizacion cotizacion) {
+    public ResponseEntity<Cotizacion> actualizar(@PathVariable Integer id, @RequestBody Cotizacion cotizacion) {
         Cotizacion cotizacionExistente = cotizacionService.obtenerPorId(id);
         if (cotizacionExistente != null) {
             cotizacion.setIdCotizacion(id); // Aseguramos que el ID se mantenga para la actualización
@@ -66,7 +66,7 @@ public class CotizacionController {
 
     // Eliminar una cotización por su ID
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+    public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
         Cotizacion cotizacionExistente = cotizacionService.obtenerPorId(id);
         if (cotizacionExistente != null) {
             cotizacionService.eliminar(id);

@@ -23,7 +23,7 @@ public class TipoPagoService {
     }
 
     // Obtener un tipo de pago por su ID
-    public TipoPago obtenerPorId(Long id) {
+    public TipoPago obtenerPorId(Integer id) {
         Optional<TipoPago> tipoPago = tipoPagoRepositorio.findById(id);
         return tipoPago.orElse(null);  // Retorna null si no se encuentra el tipo de pago
     }
@@ -34,7 +34,7 @@ public class TipoPagoService {
     }
 
     // Eliminar un tipo de pago por su ID
-    public void eliminar(Long id) {
+    public void eliminar(Integer id) {
         tipoPagoRepositorio.deleteById(id);
     }
 

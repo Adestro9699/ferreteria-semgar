@@ -19,7 +19,7 @@ public class ClienteService {
         return clienteRepositorio.findAll();
     }
 
-    public Cliente obtenerPorId(Long id) {
+    public Cliente obtenerPorId(Integer id) {
         return clienteRepositorio.findById(id).orElse(null);
     }
 
@@ -27,7 +27,7 @@ public class ClienteService {
         return clienteRepositorio.save(cliente);
     }
 
-    public void eliminar(Long id) {
+    public void eliminar(Integer id) {
         clienteRepositorio.deleteById(id);
     }
 

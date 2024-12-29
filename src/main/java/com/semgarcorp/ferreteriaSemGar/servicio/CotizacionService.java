@@ -23,7 +23,7 @@ public class CotizacionService {
     }
 
     // Obtener una cotización por su ID
-    public Cotizacion obtenerPorId(Long id) {
+    public Cotizacion obtenerPorId(Integer id) {
         Optional<Cotizacion> cotizacion = cotizacionRepository.findById(id);
         return cotizacion.orElse(null);  // Retorna null si no se encuentra la cotización
     }
@@ -34,7 +34,7 @@ public class CotizacionService {
     }
 
     // Eliminar una cotización por su ID
-    public void eliminar(Long id) {
+    public void eliminar(Integer id) {
         cotizacionRepository.deleteById(id);
     }
 

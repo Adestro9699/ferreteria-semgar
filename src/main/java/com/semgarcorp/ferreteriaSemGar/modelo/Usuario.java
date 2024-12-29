@@ -9,24 +9,33 @@ import java.time.LocalDate;
 @Entity
 public class Usuario {
 
+    public enum EstadoUsuario {
+        ACTIVO,
+        INACTIVO
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long idUsuario;
+    private Integer idUsuario;
 
     @NotNull(message = "El nombre de usuario no puede ser nulo")
-    @Size(min = 3, max = 50, message = "El nombre de usuario debe tener entre 3 y 50 caracteres")
+    @Size(min = 3, max = 100, message = "El nombre de usuario debe tener entre 3 y 100 caracteres")
+    @Column(length = 100)
     private String nombreUsuario;
 
     @Email(message = "El correo debe ser válido")
     @NotNull(message = "El correo no puede ser nulo")
-    @Column(name = "correo_usuario", unique = true)
+    @Column(name = "correo_usuario", unique = true, length = 100) // Conservado en snake_case
     private String correoUsuario;
 
     @NotNull(message = "La contraseña no puede ser nula")
     @Size(min = 8, message = "La contraseña debe tener al menos 8 caracteres")
+    @Column(length = 255)
     private String contrasena;
 
-    private Boolean estadoUsuario;
+    @Enumerated(EnumType.STRING) // Relaciona el enum con esta columna
+    @Column(length = 10)
+    private EstadoUsuario estadoUsuario;
 
     @NotNull(message = "La fecha de creación no puede ser nula")
     private LocalDate fechaCreacion;
@@ -38,7 +47,7 @@ public class Usuario {
     public Usuario() {
     }
 
-    public Usuario(Long idUsuario, String nombreUsuario, String correoUsuario, String contrasena, Boolean estadoUsuario,
+    public Usuario(Integer idUsuario, String nombreUsuario, String correoUsuario, String contrasena, EstadoUsuario estadoUsuario,
                    LocalDate fechaCreacion, Trabajador trabajador) {
         this.idUsuario = idUsuario;
         this.nombreUsuario = nombreUsuario;
@@ -49,11 +58,11 @@ public class Usuario {
         this.trabajador = trabajador;
     }
 
-    public Long getIdUsuario() {
+    public Integer getIdUsuario() {
         return idUsuario;
     }
 
-    public void setIdUsuario(Long idUsuario) {
+    public void setIdUsuario(Integer idUsuario) {
         this.idUsuario = idUsuario;
     }
 
@@ -81,11 +90,11 @@ public class Usuario {
         this.contrasena = contrasena;
     }
 
-    public Boolean getEstadoUsuario() {
+    public EstadoUsuario getEstadoUsuario() {
         return estadoUsuario;
     }
 
-    public void setEstadoUsuario(Boolean estadoUsuario) {
+    public void setEstadoUsuario(EstadoUsuario estadoUsuario) {
         this.estadoUsuario = estadoUsuario;
     }
 
@@ -105,4 +114,3 @@ public class Usuario {
         this.trabajador = trabajador;
     }
 }
-

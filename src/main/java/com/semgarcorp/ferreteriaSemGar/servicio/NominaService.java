@@ -23,7 +23,7 @@ public class NominaService {
     }
 
     // Obtener un registro de nómina por ID
-    public Nomina obtenerPorId(Long id) {
+    public Nomina obtenerPorId(Integer id) {
         Optional<Nomina> nomina = nominaRepository.findById(id);
         return nomina.orElse(null); // Retorna null si no encuentra el registro
     }
@@ -34,7 +34,7 @@ public class NominaService {
     }
 
     // Eliminar un registro de nómina por ID
-    public void eliminar(Long id) {
+    public void eliminar(Integer id) {
         nominaRepository.deleteById(id);
     }
 

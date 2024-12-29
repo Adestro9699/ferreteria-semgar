@@ -3,52 +3,69 @@ package com.semgarcorp.ferreteriaSemGar.modelo;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Min;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
 public class Nomina {
 
+    public enum EstadoPagoNomina {
+        PENDIENTE,
+        PAGADO,
+        CANCELADO,
+        EN_PROCESO,
+        FALLIDO
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long idNomina;
+    private Integer idNomina;
 
     @NotNull(message = "El salario base no puede ser nulo")
     @Min(value = 0, message = "El salario base no puede ser menor a cero")
-    private Double salarioBase;
+    @Column(precision = 10, scale = 2) // Para decimal(10,2) en la base de datos
+    private BigDecimal salarioBase;
 
     @Min(value = 0, message = "Las bonificaciones no pueden ser menores a cero")
-    private Double bonificacion;
+    @Column(precision = 10, scale = 2) // Para decimal(10,2) en la base de datos
+    private BigDecimal bonificacion;
 
+    @Column(length = 255) // varchar(255)
     private String conceptoBonificacion;
 
     @Min(value = 0, message = "El descuento no puede ser menor a cero")
-    private Double descuentoNomina;
+    @Column(precision = 10, scale = 2) // Para decimal(10,2) en la base de datos
+    private BigDecimal descuentoNomina;
 
+    @Column(length = 255) // varchar(255)
     private String conceptoDescuento;
 
     @NotNull(message = "El salario neto no puede ser nulo")
     @Min(value = 0, message = "El salario neto no puede ser menor a cero")
-    private Double salarioNeto;
+    @Column(precision = 10, scale = 2) // Para decimal(10,2) en la base de datos
+    private BigDecimal salarioNeto;
 
     @NotNull(message = "La fecha de pago no puede ser nula")
     private LocalDate fechaPago;
 
     @NotNull(message = "El periodo de pago no puede ser nulo")
+    @Column(length = 20) // varchar(20)
     private String periodoPago;
 
     @NotNull(message = "El estado de pago no puede ser nulo")
-    private String estadoPago;
+    @Enumerated(EnumType.STRING) // Guarda el nombre del enum como texto
+    private EstadoPagoNomina estadoPago;
 
     @ManyToOne
-    @JoinColumn(name = "idTrabajador", nullable = false)
+    @JoinColumn(name = "idTrabajador", nullable = false) //que nullable sea falso significa que el campo idTrabajador no puede ser null
     private Trabajador trabajador;
 
     public Nomina() {
     }
 
-    public Nomina(Long idNomina, Double salarioBase, Double bonificacion, String conceptoBonificacion,
-                  Double descuentoNomina, String conceptoDescuento, Double salarioNeto, LocalDate fechaPago,
-                  String periodoPago, String estadoPago, Trabajador trabajador) {
+    public Nomina(Integer idNomina, BigDecimal salarioBase, BigDecimal bonificacion, String conceptoBonificacion,
+                  BigDecimal descuentoNomina, String conceptoDescuento, BigDecimal salarioNeto, LocalDate fechaPago,
+                  String periodoPago, EstadoPagoNomina estadoPago, Trabajador trabajador) {
         this.idNomina = idNomina;
         this.salarioBase = salarioBase;
         this.bonificacion = bonificacion;
@@ -62,27 +79,27 @@ public class Nomina {
         this.trabajador = trabajador;
     }
 
-    public Long getIdNomina() {
+    public Integer getIdNomina() {
         return idNomina;
     }
 
-    public void setIdNomina(Long idNomina) {
+    public void setIdNomina(Integer idNomina) {
         this.idNomina = idNomina;
     }
 
-    public Double getSalarioBase() {
+    public BigDecimal getSalarioBase() {
         return salarioBase;
     }
 
-    public void setSalarioBase(Double salarioBase) {
+    public void setSalarioBase(BigDecimal salarioBase) {
         this.salarioBase = salarioBase;
     }
 
-    public Double getBonificacion() {
+    public BigDecimal getBonificacion() {
         return bonificacion;
     }
 
-    public void setBonificacion(Double bonificacion) {
+    public void setBonificacion(BigDecimal bonificacion) {
         this.bonificacion = bonificacion;
     }
 
@@ -94,11 +111,11 @@ public class Nomina {
         this.conceptoBonificacion = conceptoBonificacion;
     }
 
-    public Double getDescuentoNomina() {
+    public BigDecimal getDescuentoNomina() {
         return descuentoNomina;
     }
 
-    public void setDescuentoNomina(Double descuentoNomina) {
+    public void setDescuentoNomina(BigDecimal descuentoNomina) {
         this.descuentoNomina = descuentoNomina;
     }
 
@@ -110,11 +127,11 @@ public class Nomina {
         this.conceptoDescuento = conceptoDescuento;
     }
 
-    public Double getSalarioNeto() {
+    public BigDecimal getSalarioNeto() {
         return salarioNeto;
     }
 
-    public void setSalarioNeto(Double salarioNeto) {
+    public void setSalarioNeto(BigDecimal salarioNeto) {
         this.salarioNeto = salarioNeto;
     }
 
@@ -134,11 +151,11 @@ public class Nomina {
         this.periodoPago = periodoPago;
     }
 
-    public String getEstadoPago() {
+    public EstadoPagoNomina getEstadoPago() {
         return estadoPago;
     }
 
-    public void setEstadoPago(String estadoPago) {
+    public void setEstadoPago(EstadoPagoNomina estadoPago) {
         this.estadoPago = estadoPago;
     }
 

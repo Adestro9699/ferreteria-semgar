@@ -28,7 +28,7 @@ public class TrabajadorController {
 
     // Obtener un trabajador por su ID
     @GetMapping("/{id}")
-    public ResponseEntity<Trabajador> obtenerPorId(@PathVariable Long id) {
+    public ResponseEntity<Trabajador> obtenerPorId(@PathVariable Integer id) {
         Trabajador trabajador = trabajadorService.obtenerPorId(id);
         if (trabajador != null) {
             return ResponseEntity.ok(trabajador); // Simplificado con "ok()"
@@ -53,7 +53,7 @@ public class TrabajadorController {
 
     // Actualizar un trabajador existente (PUT)
     @PutMapping("/{id}")
-    public ResponseEntity<Trabajador> actualizar(@PathVariable Long id, @RequestBody Trabajador trabajador) {
+    public ResponseEntity<Trabajador> actualizar(@PathVariable Integer id, @RequestBody Trabajador trabajador) {
         Trabajador trabajadorExistente = trabajadorService.obtenerPorId(id);
         if (trabajadorExistente != null) {
             trabajador.setIdTrabajador(id); // Aseguramos que el ID se mantenga para la actualización
@@ -65,7 +65,7 @@ public class TrabajadorController {
 
     // Eliminar un trabajador por su ID
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+    public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
         Trabajador trabajadorExistente = trabajadorService.obtenerPorId(id);
         if (trabajadorExistente != null) {
             trabajadorService.eliminar(id);

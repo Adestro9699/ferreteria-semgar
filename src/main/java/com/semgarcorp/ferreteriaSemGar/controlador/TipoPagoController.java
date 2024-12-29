@@ -29,7 +29,7 @@ public class TipoPagoController {
 
     // Obtener un tipo de pago por su ID
     @GetMapping("/{id}")
-    public ResponseEntity<TipoPago> obtenerPorId(@PathVariable Long id) {
+    public ResponseEntity<TipoPago> obtenerPorId(@PathVariable Integer id) {
         TipoPago tipoPago = tipoPagoService.obtenerPorId(id);
         if (tipoPago != null) {
             return ResponseEntity.ok(tipoPago); // Uso de ResponseEntity.ok() para un retorno más limpio
@@ -55,7 +55,7 @@ public class TipoPagoController {
 
     // Actualizar un tipo de pago existente (PUT)
     @PutMapping("/{id}")
-    public ResponseEntity<TipoPago> actualizar(@PathVariable Long id, @RequestBody TipoPago tipoPago) {
+    public ResponseEntity<TipoPago> actualizar(@PathVariable Integer id, @RequestBody TipoPago tipoPago) {
         TipoPago tipoPagoExistente = tipoPagoService.obtenerPorId(id);
         if (tipoPagoExistente != null) {
             tipoPago.setIdTipoPago(id); // Aseguramos que el ID se mantenga para la actualización
@@ -67,7 +67,7 @@ public class TipoPagoController {
 
     // Eliminar un tipo de pago por su ID
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+    public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
         TipoPago tipoPagoExistente = tipoPagoService.obtenerPorId(id);
         if (tipoPagoExistente != null) {
             tipoPagoService.eliminar(id);

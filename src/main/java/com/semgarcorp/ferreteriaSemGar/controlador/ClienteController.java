@@ -28,7 +28,7 @@ public class ClienteController {
 
     // Obtener un cliente por su ID
     @GetMapping("/{id}")
-    public ResponseEntity<Cliente> obtenerPorId(@PathVariable Long id) {
+    public ResponseEntity<Cliente> obtenerPorId(@PathVariable Integer id) {
         Cliente cliente = clienteService.obtenerPorId(id);
         if (cliente != null) {
             return ResponseEntity.ok(cliente); // Respuesta simplificada con 200 OK
@@ -54,7 +54,7 @@ public class ClienteController {
 
     // Actualizar un cliente existente (PUT)
     @PutMapping("/{id}")
-    public ResponseEntity<Cliente> actualizar(@PathVariable Long id, @RequestBody Cliente cliente) {
+    public ResponseEntity<Cliente> actualizar(@PathVariable Integer id, @RequestBody Cliente cliente) {
         // Obtener el cliente existente
         Cliente clienteExistente = clienteService.obtenerPorId(id);
 
@@ -73,7 +73,7 @@ public class ClienteController {
 
     // Eliminar un cliente por su ID
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+    public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
         Cliente clienteExistente = clienteService.obtenerPorId(id);
         if (clienteExistente != null) {
             clienteService.eliminar(id);
