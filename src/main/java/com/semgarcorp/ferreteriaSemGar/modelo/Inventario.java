@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 
+@Entity
 public class Inventario {
 
     public enum EstadoInventario { //en POSTMAN usar una String
