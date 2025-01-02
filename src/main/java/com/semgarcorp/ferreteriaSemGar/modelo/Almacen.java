@@ -1,60 +1,64 @@
 package com.semgarcorp.ferreteriaSemGar.modelo;
 
 import jakarta.persistence.*;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import jakarta.validation.constraints.NotNull;
+import java.time.LocalDate;
 
 @Entity
 public class Almacen {
 
-    public enum EstadoAlmacen { //en POSTMAN usar una String
-        ACTIVO, //0
-        INACTIVO //1
+    public enum EstadoAlmacen {
+        ACTIVO,
+        INACTIVO
     }
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer idAlmacen;
 
-    @Column(length = 100, nullable = false)
-    private String nombre;
+    @NotNull
+    @Column(length = 100)
+    private String nombre; // VARCHAR(100)
 
-    @Column(columnDefinition = "text")
-    private String ubicacion;
+    @NotNull
+    @Column(length = 200)
+    private String ubicacion; // VARCHAR(200)
 
-    @Column(length = 15)
-    private String telefono;
+    @Column(length = 20)
+    private String telefono; // VARCHAR(20)
 
+    @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private EstadoAlmacen estadoAlmacen;
+    @Column(length = 10)
+    private EstadoAlmacen estadoAlmacen; // Enum definido dentro de la clase
 
-    @Column(precision = 10, scale = 2)
-    private BigDecimal capacidadMaxima;
+    @NotNull
+    @Column(length = 100)
+    private String capacidadMaxima; // VARCHAR(100)
 
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime fechaCreacion;
+    @NotNull
+    @Column
+    private LocalDate fechaCreacion;
 
     @Column
-    private LocalDateTime fechaModificacion;
+    private LocalDate fechaModificacion;
 
-    //Llave foránea a Inventario
+    // Relación ManyToOne con Inventario
     @ManyToOne
-    @JoinColumn(name = "idInventario", nullable = false)
+    @JoinColumn(name = "idInventario", referencedColumnName = "idInventario")
     private Inventario inventario;
 
-    //Llave foránea a Usuario
+    // Relación ManyToOne con Usuario
     @ManyToOne
-    @JoinColumn(name = "idUsuario", nullable = false)
+    @JoinColumn(name = "idUsuario", referencedColumnName = "idUsuario")
     private Usuario usuario;
 
-    public Almacen(Integer idAlmacen) {
-        this.idAlmacen = idAlmacen;
-    }
+    // Constructor vacío
+    public Almacen() {}
 
+    // Constructor completo
     public Almacen(Integer idAlmacen, String nombre, String ubicacion, String telefono, EstadoAlmacen estadoAlmacen,
-                   BigDecimal capacidadMaxima, LocalDateTime fechaModificacion, LocalDateTime fechaCreacion,
+                   String capacidadMaxima, LocalDate fechaCreacion, LocalDate fechaModificacion,
                    Inventario inventario, Usuario usuario) {
         this.idAlmacen = idAlmacen;
         this.nombre = nombre;
@@ -62,12 +66,13 @@ public class Almacen {
         this.telefono = telefono;
         this.estadoAlmacen = estadoAlmacen;
         this.capacidadMaxima = capacidadMaxima;
-        this.fechaModificacion = fechaModificacion;
         this.fechaCreacion = fechaCreacion;
+        this.fechaModificacion = fechaModificacion;
         this.inventario = inventario;
         this.usuario = usuario;
     }
 
+    // Getters y setters
     public Integer getIdAlmacen() {
         return idAlmacen;
     }
@@ -108,27 +113,27 @@ public class Almacen {
         this.estadoAlmacen = estadoAlmacen;
     }
 
-    public BigDecimal getCapacidadMaxima() {
+    public String getCapacidadMaxima() {
         return capacidadMaxima;
     }
 
-    public void setCapacidadMaxima(BigDecimal capacidadMaxima) {
+    public void setCapacidadMaxima(String capacidadMaxima) {
         this.capacidadMaxima = capacidadMaxima;
     }
 
-    public LocalDateTime getFechaCreacion() {
+    public LocalDate getFechaCreacion() {
         return fechaCreacion;
     }
 
-    public void setFechaCreacion(LocalDateTime fechaCreacion) {
+    public void setFechaCreacion(LocalDate fechaCreacion) {
         this.fechaCreacion = fechaCreacion;
     }
 
-    public LocalDateTime getFechaModificacion() {
+    public LocalDate getFechaModificacion() {
         return fechaModificacion;
     }
 
-    public void setFechaModificacion(LocalDateTime fechaModificacion) {
+    public void setFechaModificacion(LocalDate fechaModificacion) {
         this.fechaModificacion = fechaModificacion;
     }
 

@@ -3,7 +3,7 @@ package com.semgarcorp.ferreteriaSemGar.modelo;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Entity
 public class Caja {
@@ -22,22 +22,27 @@ public class Caja {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer idCaja;
 
-    @NotNull(message = "La fecha no puede estar vacía")
-    private LocalDateTime fecha;
+    @NotNull(message = "La fecha de apertura no puede estar vacía")
+    private LocalDate fechaApertura;
+
+    private LocalDate fechaClausura;
 
     @NotNull(message = "El saldo inicial no puede estar vacío")
+    @Column(precision = 10, scale = 2)
     private BigDecimal saldoInicial;
 
     @NotNull(message = "Las entradas no pueden estar vacías")
+    @Column(precision = 10, scale = 2)
     private BigDecimal entradas;
 
     @NotNull(message = "Las salidas no pueden estar vacías")
+    @Column(precision = 10, scale = 2)
     private BigDecimal salidas;
 
-    @NotNull(message = "El saldo final no puede estar vacío")
-    private BigDecimal saldoFinal;
+    @Column(precision = 10, scale = 2)
+    private BigDecimal saldoFinal; // Este ya no se calculará automáticamente
 
-    @Column(length = 255)  // Especifica que la longitud máxima de la columna es 255 caracteres
+    @Column(length = 255)
     private String descripcion;
 
     @NotNull(message = "El estado no puede estar vacío")
@@ -45,23 +50,24 @@ public class Caja {
     private EstadoCaja estado;
 
     @ManyToOne
-    @JoinColumn(name = "idUsuario", nullable = false)
+    @JoinColumn(name = "idUsuario")
     private Usuario usuario;
 
     public Caja() {
     }
 
-    public Caja(Integer idCaja, LocalDateTime fecha, BigDecimal saldoInicial, BigDecimal entradas, BigDecimal salidas,
-                BigDecimal saldoFinal, String descripcion, EstadoCaja estado, Usuario usuario) {
+    public Caja(Integer idCaja, LocalDate fechaApertura, LocalDate fechaClausura, BigDecimal saldoInicial,
+                BigDecimal entradas, BigDecimal salidas, String descripcion, EstadoCaja estado, Usuario usuario) {
         this.idCaja = idCaja;
-        this.fecha = fecha;
+        this.fechaApertura = fechaApertura;
+        this.fechaClausura = fechaClausura;
         this.saldoInicial = saldoInicial;
         this.entradas = entradas;
         this.salidas = salidas;
-        this.saldoFinal = saldoFinal;
         this.descripcion = descripcion;
         this.estado = estado;
         this.usuario = usuario;
+        // Se elimina el cálculo automático del saldoFinal
     }
 
     public Integer getIdCaja() {
@@ -72,12 +78,20 @@ public class Caja {
         this.idCaja = idCaja;
     }
 
-    public LocalDateTime getFecha() {
-        return fecha;
+    public LocalDate getFechaApertura() {
+        return fechaApertura;
     }
 
-    public void setFecha(LocalDateTime fecha) {
-        this.fecha = fecha;
+    public void setFechaApertura(LocalDate fechaApertura) {
+        this.fechaApertura = fechaApertura;
+    }
+
+    public LocalDate getFechaClausura() {
+        return fechaClausura;
+    }
+
+    public void setFechaClausura(LocalDate fechaClausura) {
+        this.fechaClausura = fechaClausura;
     }
 
     public BigDecimal getSaldoInicial() {
@@ -86,6 +100,7 @@ public class Caja {
 
     public void setSaldoInicial(BigDecimal saldoInicial) {
         this.saldoInicial = saldoInicial;
+        // Ya no recalcula el saldoFinal
     }
 
     public BigDecimal getEntradas() {
@@ -94,6 +109,7 @@ public class Caja {
 
     public void setEntradas(BigDecimal entradas) {
         this.entradas = entradas;
+        // Ya no recalcula el saldoFinal
     }
 
     public BigDecimal getSalidas() {
@@ -102,6 +118,7 @@ public class Caja {
 
     public void setSalidas(BigDecimal salidas) {
         this.salidas = salidas;
+        // Ya no recalcula el saldoFinal
     }
 
     public BigDecimal getSaldoFinal() {

@@ -24,8 +24,7 @@ public class TipoPagoService {
 
     // Obtener un tipo de pago por su ID
     public TipoPago obtenerPorId(Integer id) {
-        Optional<TipoPago> tipoPago = tipoPagoRepositorio.findById(id);
-        return tipoPago.orElse(null);  // Retorna null si no se encuentra el tipo de pago
+        return tipoPagoRepositorio.findById(id).orElse(null);
     }
 
     // Guardar un nuevo tipo de pago o actualiza uno existente
@@ -33,12 +32,12 @@ public class TipoPagoService {
         return tipoPagoRepositorio.save(tipoPago);
     }
 
+    public TipoPago actualizar(TipoPago tipoPago) {
+        return tipoPagoRepositorio.save(tipoPago);
+    }
+
     // Eliminar un tipo de pago por su ID
     public void eliminar(Integer id) {
         tipoPagoRepositorio.deleteById(id);
-    }
-
-    public TipoPago actualizar(TipoPago tipoPago) {
-        return tipoPagoRepositorio.save(tipoPago);
     }
 }

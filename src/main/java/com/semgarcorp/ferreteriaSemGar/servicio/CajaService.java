@@ -5,48 +5,38 @@ import com.semgarcorp.ferreteriaSemGar.repositorio.CajaRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class CajaService {
 
-    private final CajaRepository cajaRepository;
+    private final CajaRepository cajaRepositorio;
 
     // Constructor con inyección del repositorio
-    public CajaService(CajaRepository cajaRepository) {
-        this.cajaRepository = cajaRepository;
+    public CajaService(CajaRepository cajaRepositorio) {
+        this.cajaRepositorio = cajaRepositorio;
     }
 
     // Listar todos los registros de caja
     public List<Caja> listar() {
-        return cajaRepository.findAll();
+        return cajaRepositorio.findAll();
     }
 
     // Obtener un registro de caja por ID
     public Caja obtenerPorId(Integer id) {
-        Optional<Caja> caja = cajaRepository.findById(id);
-        return caja.orElse(null); // Retorna null si no encuentra el registro
+        return cajaRepositorio.findById(id).orElse(null);
     }
 
     // Guardar un nuevo registro de caja o actualiza uno existente
     public Caja guardar(Caja caja) {
-        return cajaRepository.save(caja);
+        return cajaRepositorio.save(caja);
+    }
+
+    public Caja actualizar(Caja caja) {
+        return cajaRepositorio.save(caja);
     }
 
     // Eliminar un registro de caja por ID
     public void eliminar(Integer id) {
-        cajaRepository.deleteById(id);
+        cajaRepositorio.deleteById(id);
     }
-
-    public Caja actualizar(Caja caja) {
-        return cajaRepository.save(caja);
-    }
-
-    // Métodos adicionales, si son necesarios
-    // Por ejemplo, buscar por estado o algún campo específico
-    /*
-    public List<Caja> obtenerPorEstado(String estado) {
-        return cajaRepository.findByEstado(estado); // Asumiendo que existe este metodo en el repositorio
-    }
-    */
 }

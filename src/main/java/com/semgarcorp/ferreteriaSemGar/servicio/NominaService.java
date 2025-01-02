@@ -10,51 +10,34 @@ import java.util.Optional;
 @Service
 public class NominaService {
 
-    private final NominaRepository nominaRepository;
+    private final NominaRepository nominaRepositorio;
 
     // Constructor de la clase, inyectando el repositorio
-    public NominaService(NominaRepository nominaRepository) {
-        this.nominaRepository = nominaRepository;
+    public NominaService(NominaRepository nominaRepositorio) {
+        this.nominaRepositorio = nominaRepositorio;
     }
 
     // Listar todos los registros de nómina
     public List<Nomina> listar() {
-        return nominaRepository.findAll();
+        return nominaRepositorio.findAll();
     }
 
     // Obtener un registro de nómina por ID
     public Nomina obtenerPorId(Integer id) {
-        Optional<Nomina> nomina = nominaRepository.findById(id);
-        return nomina.orElse(null); // Retorna null si no encuentra el registro
+        return nominaRepositorio.findById(id).orElse(null);
     }
 
     // Guardar un nuevo registro o actualiza uno existente
     public Nomina guardar(Nomina nomina) {
-        return nominaRepository.save(nomina);
+        return nominaRepositorio.save(nomina);
+    }
+
+    public Nomina actualizar(Nomina nomina) {
+        return nominaRepositorio.save(nomina);
     }
 
     // Eliminar un registro de nómina por ID
     public void eliminar(Integer id) {
-        nominaRepository.deleteById(id);
+        nominaRepositorio.deleteById(id);
     }
-
-    public Nomina actualizar(Nomina nomina) {
-        return nominaRepository.save(nomina);
-    }
-
-
-    // También puedes añadir otros métodos específicos, como:
-    // - Obtener nómina por trabajador
-    // - Consultar nóminas de un periodo específico
-    // - Actualiza salario, etc.
-
-    // Obtener nóminas por trabajador   x
-    /*public List<Nomina> obtenerPorTrabajador(Long idTrabajador) {
-        return nominaRepository.findByTrabajadorId(idTrabajador); // Asumiendo que existe este metodo en el repositorio
-    }
-
-    // Consultar nóminas por periodo de pago
-    public List<Nomina> obtenerPorPeriodoPago(String periodoPago) {
-        return nominaRepository.findByPeriodoPago(periodoPago); // Asumiendo que existe este metodo en el repositorio
-    }*/
 }

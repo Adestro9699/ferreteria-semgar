@@ -27,11 +27,11 @@ public class TrabajadorService {
         return trabajadorRepositorio.save(trabajador);
     }
 
-    public void eliminar(Integer id) {
-        trabajadorRepositorio.deleteById(id);
-    }
-
     public Trabajador actualizar(Trabajador trabajador) {
         return trabajadorRepositorio.save(trabajador);
+    }
+
+    public void eliminar(Integer id) {
+        trabajadorRepositorio.deleteById(id);
     }
 }

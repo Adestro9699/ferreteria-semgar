@@ -58,7 +58,7 @@ public class CajaController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
         caja.setIdCaja(id);
-        Caja cajaActualizada = cajaService.guardar(caja);
+        Caja cajaActualizada = cajaService.actualizar(caja);
         return ResponseEntity.ok(cajaActualizada);
     }
 

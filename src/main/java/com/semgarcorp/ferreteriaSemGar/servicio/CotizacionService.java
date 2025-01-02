@@ -10,37 +10,34 @@ import java.util.Optional;
 @Service
 public class CotizacionService {
 
-    private final CotizacionRepository cotizacionRepository;
+    private final CotizacionRepository cotizacionRepositorio;
 
     // Constructor para inyectar el repositorio
-    public CotizacionService(CotizacionRepository cotizacionRepository) {
-        this.cotizacionRepository = cotizacionRepository;
+    public CotizacionService(CotizacionRepository cotizacionRepositorio) {
+        this.cotizacionRepositorio = cotizacionRepositorio;
     }
 
     // Listar todas las cotizaciones
     public List<Cotizacion> listar() {
-        return cotizacionRepository.findAll();
+        return cotizacionRepositorio.findAll();
     }
 
     // Obtener una cotización por su ID
     public Cotizacion obtenerPorId(Integer id) {
-        Optional<Cotizacion> cotizacion = cotizacionRepository.findById(id);
-        return cotizacion.orElse(null);  // Retorna null si no se encuentra la cotización
+        return cotizacionRepositorio.findById(id).orElse(null);
     }
 
     // Guardar una nueva cotización o actualiza una existente
     public Cotizacion guardar(Cotizacion cotizacion) {
-        return cotizacionRepository.save(cotizacion);
+        return cotizacionRepositorio.save(cotizacion);
+    }
+
+    public Cotizacion actualizar(Cotizacion cotizacion) {
+        return cotizacionRepositorio.save(cotizacion);
     }
 
     // Eliminar una cotización por su ID
     public void eliminar(Integer id) {
-        cotizacionRepository.deleteById(id);
+        cotizacionRepositorio.deleteById(id);
     }
-
-    public Cotizacion actualizar(Cotizacion cotizacion) {
-        return cotizacionRepository.save(cotizacion);
-    }
-
-    // Otras consultas personalizadas pueden ser agregadas aquí si es necesario
 }

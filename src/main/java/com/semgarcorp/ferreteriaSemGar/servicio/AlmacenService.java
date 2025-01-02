@@ -33,5 +33,4 @@ public class AlmacenService {
     public void eliminar(Integer id) {
         almacenRepositorio.deleteById(id);
     }
-
 }

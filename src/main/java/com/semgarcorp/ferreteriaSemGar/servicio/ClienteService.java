@@ -27,13 +27,11 @@ public class ClienteService {
         return clienteRepositorio.save(cliente);
     }
 
-    public void eliminar(Integer id) {
-        clienteRepositorio.deleteById(id);
-    }
-
     public Cliente actualizar(Cliente cliente) {
         return clienteRepositorio.save(cliente);  // Esto persiste los cambios del cliente existente
     }
 
-
+    public void eliminar(Integer id) {
+        clienteRepositorio.deleteById(id);
+    }
 }

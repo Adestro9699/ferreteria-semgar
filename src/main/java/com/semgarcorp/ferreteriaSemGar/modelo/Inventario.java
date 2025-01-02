@@ -1,42 +1,50 @@
 package com.semgarcorp.ferreteriaSemGar.modelo;
 
 import jakarta.persistence.*;
-
-import java.time.LocalDateTime;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import java.time.LocalDate;
 
 @Entity
 public class Inventario {
 
-    public enum EstadoInventario { //en POSTMAN usar una String
-        ACTIVO, //0
-        INACTIVO //1
+    // Enum para los estados de inventario
+    public enum EstadoInventario {
+        ACTIVO,
+        INACTIVO
     }
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer idInventario;
 
-    @Column(length = 255, nullable = false)
-    private String nombreInventario;
+    @NotNull(message = "El nombre del inventario no puede ser nulo")
+    @Size(min = 3, max = 255, message = "El nombre del inventario debe tener entre 3 y 255 caracteres")
+    @Column(length = 255)
+    private String nombreInventario;  // VARCHAR(255)
 
-    @Column(length = 255, nullable = false)
-    private String ubicacion;
+    @NotNull(message = "La ubicación no puede ser nula")
+    @Size(min = 3, max = 255, message = "La ubicación debe tener entre 3 y 255 caracteres")
+    @Column(length = 255)
+    private String ubicacion;  // VARCHAR(255)
 
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime fechaCreacion;
+    @NotNull(message = "La fecha de creación no puede ser nula")
+    private LocalDate fechaCreacion;  // LocalDate
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private EstadoInventario estadoInventario;
+    @NotNull(message = "El estado del inventario no puede ser nulo")
+    @Column(length = 10)
+    private EstadoInventario estadoInventario;  // Enum de estado
 
-    @Column(columnDefinition = "text")
-    private String observaciones;
+    @Column(columnDefinition = "TEXT")
+    private String observaciones;  // Campo TEXT para observaciones
 
-    public Inventario(Integer idInventario) {
-        this.idInventario = idInventario;
+    // Constructor vacío
+    public Inventario() {
     }
 
-    public Inventario(Integer idInventario, String nombreInventario, String ubicacion, LocalDateTime fechaCreacion,
+    // Constructor completo
+    public Inventario(Integer idInventario, String nombreInventario, String ubicacion, LocalDate fechaCreacion,
                       EstadoInventario estadoInventario, String observaciones) {
         this.idInventario = idInventario;
         this.nombreInventario = nombreInventario;
@@ -46,6 +54,7 @@ public class Inventario {
         this.observaciones = observaciones;
     }
 
+    // Getters y setters
     public Integer getIdInventario() {
         return idInventario;
     }
@@ -70,11 +79,11 @@ public class Inventario {
         this.ubicacion = ubicacion;
     }
 
-    public LocalDateTime getFechaCreacion() {
+    public LocalDate getFechaCreacion() {
         return fechaCreacion;
     }
 
-    public void setFechaCreacion(LocalDateTime fechaCreacion) {
+    public void setFechaCreacion(LocalDate fechaCreacion) {
         this.fechaCreacion = fechaCreacion;
     }
 

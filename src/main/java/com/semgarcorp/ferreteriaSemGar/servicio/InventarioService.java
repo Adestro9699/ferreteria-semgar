@@ -11,6 +11,7 @@ public class InventarioService {
 
     private final InventarioRepository inventarioRepositorio;
 
+    //Constructor
     public InventarioService(InventarioRepository inventarioRepositorio) {
         this.inventarioRepositorio = inventarioRepositorio;
     }
