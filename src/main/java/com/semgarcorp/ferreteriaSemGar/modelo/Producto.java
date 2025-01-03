@@ -47,10 +47,12 @@ public class Producto {
     @Column(length = 50)
     private String codigoBarra;
 
-    @JoinColumn(name = idProveedor)
+    @ManyToOne
+    @JoinColumn(name = "idProveedor")
     private Proveedor proveedor;
 
-    @JoinColumn(name = idCategoria)
+    @ManyToOne
+    @JoinColumn(name = "idCategoria")
     private Categoria categoria;
 
     public Producto() {
