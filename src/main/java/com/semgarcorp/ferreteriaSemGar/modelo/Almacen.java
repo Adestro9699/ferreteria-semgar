@@ -3,6 +3,8 @@ package com.semgarcorp.ferreteriaSemGar.modelo;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 public class Almacen {
@@ -52,6 +54,15 @@ public class Almacen {
     @ManyToOne
     @JoinColumn(name = "idUsuario", referencedColumnName = "idUsuario")
     private Usuario usuario;
+
+    // Relación ManyToMany con Tienda
+    @ManyToMany
+    @JoinTable(
+            name = "Almacen_Tienda", // Nombre de la tabla intermedia
+            joinColumns = @JoinColumn(name = "id_almacen"), // FK hacia Almacen
+            inverseJoinColumns = @JoinColumn(name = "id_tienda") // FK hacia Tienda
+    )
+    private List<Tienda> tiendas = new ArrayList<>();
 
     // Constructor vacío
     public Almacen() {}
