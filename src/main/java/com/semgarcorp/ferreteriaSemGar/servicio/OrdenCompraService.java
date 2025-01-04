@@ -2,9 +2,11 @@ package com.semgarcorp.ferreteriaSemGar.servicio;
 
 import com.semgarcorp.ferreteriaSemGar.modelo.OrdenCompra;
 import com.semgarcorp.ferreteriaSemGar.repositorio.OrdenCompraRepository;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public class OrdenCompraService {
 
     private final OrdenCompraRepository ordenCompraRepositorio;

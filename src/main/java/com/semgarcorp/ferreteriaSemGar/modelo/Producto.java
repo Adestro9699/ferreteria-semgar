@@ -6,6 +6,8 @@ import org.hibernate.annotations.JoinColumnOrFormula;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 public class Producto {
@@ -60,26 +62,31 @@ public class Producto {
     @JoinColumn(name = "idCategoria")
     private Categoria categoria;
 
+    @OneToMany(mappedBy = "producto")
+    private List<InventarioProducto> inventarioProductos = new ArrayList<>();
+
     public Producto() {
     }
 
-    public Producto(Integer idProducto, String nombreProducto, String descripcion, BigDecimal precio, Integer stock,
-                    LocalDate fechaModificacion, String imagenURL, EstadoProducto estadoProducto, String codigoSKU,
-                    String marca, String material, String codigoBarra, Proveedor proveedor, Categoria categoria) {
+    public Producto(Integer idProducto, String nombreProducto, BigDecimal precio, String descripcion, Integer stock,
+                    String imagenURL, LocalDate fechaModificacion, EstadoProducto estadoProducto, String codigoBarra,
+                    Proveedor proveedor, String material, String marca, String codigoSKU, Categoria categoria,
+                    List<InventarioProducto> inventarioProductos) {
         this.idProducto = idProducto;
         this.nombreProducto = nombreProducto;
-        this.descripcion = descripcion;
         this.precio = precio;
+        this.descripcion = descripcion;
         this.stock = stock;
-        this.fechaModificacion = fechaModificacion;
         this.imagenURL = imagenURL;
+        this.fechaModificacion = fechaModificacion;
         this.estadoProducto = estadoProducto;
-        this.codigoSKU = codigoSKU;
-        this.marca = marca;
-        this.material = material;
         this.codigoBarra = codigoBarra;
         this.proveedor = proveedor;
+        this.material = material;
+        this.marca = marca;
+        this.codigoSKU = codigoSKU;
         this.categoria = categoria;
+        this.inventarioProductos = inventarioProductos;
     }
 
     public Integer getIdProducto() {
@@ -106,14 +113,6 @@ public class Producto {
         this.descripcion = descripcion;
     }
 
-    public Integer getStock() {
-        return stock;
-    }
-
-    public void setStock(Integer stock) {
-        this.stock = stock;
-    }
-
     public BigDecimal getPrecio() {
         return precio;
     }
@@ -130,20 +129,20 @@ public class Producto {
         this.fechaModificacion = fechaModificacion;
     }
 
-    public String getImagenURL() {
-        return imagenURL;
+    public String getCodigoSKU() {
+        return codigoSKU;
     }
 
-    public void setImagenURL(String imagenURL) {
-        this.imagenURL = imagenURL;
+    public void setCodigoSKU(String codigoSKU) {
+        this.codigoSKU = codigoSKU;
     }
 
-    public EstadoProducto getEstadoProducto() {
-        return estadoProducto;
+    public Categoria getCategoria() {
+        return categoria;
     }
 
-    public void setEstadoProducto(EstadoProducto estadoProducto) {
-        this.estadoProducto = estadoProducto;
+    public void setCategoria(Categoria categoria) {
+        this.categoria = categoria;
     }
 
     public String getMarca() {
@@ -154,12 +153,28 @@ public class Producto {
         this.marca = marca;
     }
 
-    public String getCodigoSKU() {
-        return codigoSKU;
+    public EstadoProducto getEstadoProducto() {
+        return estadoProducto;
     }
 
-    public void setCodigoSKU(String codigoSKU) {
-        this.codigoSKU = codigoSKU;
+    public void setEstadoProducto(EstadoProducto estadoProducto) {
+        this.estadoProducto = estadoProducto;
+    }
+
+    public String getImagenURL() {
+        return imagenURL;
+    }
+
+    public void setImagenURL(String imagenURL) {
+        this.imagenURL = imagenURL;
+    }
+
+    public Integer getStock() {
+        return stock;
+    }
+
+    public void setStock(Integer stock) {
+        this.stock = stock;
     }
 
     public String getMaterial() {
@@ -186,11 +201,11 @@ public class Producto {
         this.proveedor = proveedor;
     }
 
-    public Categoria getCategoria() {
-        return categoria;
+    public List<InventarioProducto> getInventarioProductos() {
+        return inventarioProductos;
     }
 
-    public void setCategoria(Categoria categoria) {
-        this.categoria = categoria;
+    public void setInventarioProductos(List<InventarioProducto> inventarioProductos) {
+        this.inventarioProductos = inventarioProductos;
     }
 }

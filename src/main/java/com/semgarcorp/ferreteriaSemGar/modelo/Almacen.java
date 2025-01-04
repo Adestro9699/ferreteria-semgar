@@ -64,26 +64,25 @@ public class Almacen {
     )
     private List<Tienda> tiendas = new ArrayList<>();
 
-    // Constructor vacío
-    public Almacen() {}
+    public Almacen() {
+    }
 
-    // Constructor completo
-    public Almacen(Integer idAlmacen, String nombre, String ubicacion, String telefono, EstadoAlmacen estadoAlmacen,
-                   String capacidadMaxima, LocalDate fechaCreacion, LocalDate fechaModificacion,
-                   Inventario inventario, Usuario usuario) {
+    public Almacen(Integer idAlmacen, String nombre, String ubicacion, EstadoAlmacen estadoAlmacen,
+                   LocalDate fechaCreacion, Inventario inventario, Usuario usuario, List<Tienda> tiendas,
+                   LocalDate fechaModificacion, String capacidadMaxima, String telefono) {
         this.idAlmacen = idAlmacen;
         this.nombre = nombre;
         this.ubicacion = ubicacion;
-        this.telefono = telefono;
         this.estadoAlmacen = estadoAlmacen;
-        this.capacidadMaxima = capacidadMaxima;
         this.fechaCreacion = fechaCreacion;
-        this.fechaModificacion = fechaModificacion;
         this.inventario = inventario;
         this.usuario = usuario;
+        this.tiendas = tiendas;
+        this.fechaModificacion = fechaModificacion;
+        this.capacidadMaxima = capacidadMaxima;
+        this.telefono = telefono;
     }
 
-    // Getters y setters
     public Integer getIdAlmacen() {
         return idAlmacen;
     }
@@ -98,38 +97,6 @@ public class Almacen {
 
     public void setNombre(String nombre) {
         this.nombre = nombre;
-    }
-
-    public String getUbicacion() {
-        return ubicacion;
-    }
-
-    public void setUbicacion(String ubicacion) {
-        this.ubicacion = ubicacion;
-    }
-
-    public String getTelefono() {
-        return telefono;
-    }
-
-    public void setTelefono(String telefono) {
-        this.telefono = telefono;
-    }
-
-    public EstadoAlmacen getEstadoAlmacen() {
-        return estadoAlmacen;
-    }
-
-    public void setEstadoAlmacen(EstadoAlmacen estadoAlmacen) {
-        this.estadoAlmacen = estadoAlmacen;
-    }
-
-    public String getCapacidadMaxima() {
-        return capacidadMaxima;
-    }
-
-    public void setCapacidadMaxima(String capacidadMaxima) {
-        this.capacidadMaxima = capacidadMaxima;
     }
 
     public LocalDate getFechaCreacion() {
@@ -148,6 +115,22 @@ public class Almacen {
         this.fechaModificacion = fechaModificacion;
     }
 
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
+    }
+
+    public List<Tienda> getTiendas() {
+        return tiendas;
+    }
+
+    public void setTiendas(List<Tienda> tiendas) {
+        this.tiendas = tiendas;
+    }
+
     public Inventario getInventario() {
         return inventario;
     }
@@ -156,11 +139,35 @@ public class Almacen {
         this.inventario = inventario;
     }
 
-    public Usuario getUsuario() {
-        return usuario;
+    public String getCapacidadMaxima() {
+        return capacidadMaxima;
     }
 
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
+    public void setCapacidadMaxima(String capacidadMaxima) {
+        this.capacidadMaxima = capacidadMaxima;
+    }
+
+    public EstadoAlmacen getEstadoAlmacen() {
+        return estadoAlmacen;
+    }
+
+    public void setEstadoAlmacen(EstadoAlmacen estadoAlmacen) {
+        this.estadoAlmacen = estadoAlmacen;
+    }
+
+    public String getTelefono() {
+        return telefono;
+    }
+
+    public void setTelefono(String telefono) {
+        this.telefono = telefono;
+    }
+
+    public String getUbicacion() {
+        return ubicacion;
+    }
+
+    public void setUbicacion(String ubicacion) {
+        this.ubicacion = ubicacion;
     }
 }

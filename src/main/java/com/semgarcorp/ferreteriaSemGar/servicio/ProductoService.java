@@ -2,9 +2,11 @@ package com.semgarcorp.ferreteriaSemGar.servicio;
 
 import com.semgarcorp.ferreteriaSemGar.modelo.Producto;
 import com.semgarcorp.ferreteriaSemGar.repositorio.ProductoRepository;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public class ProductoService {
 
     private final ProductoRepository productoRepositorio;

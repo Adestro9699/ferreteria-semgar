@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 public class Inventario {
@@ -39,22 +41,24 @@ public class Inventario {
     @Column(columnDefinition = "TEXT")
     private String observaciones;  // Campo TEXT para observaciones
 
+    @OneToMany(mappedBy = "inventario")
+    private List<InventarioProducto> inventarioProductos = new ArrayList<>();
+
     // Constructor vacío
     public Inventario() {
     }
 
-    // Constructor completo
     public Inventario(Integer idInventario, String nombreInventario, String ubicacion, LocalDate fechaCreacion,
-                      EstadoInventario estadoInventario, String observaciones) {
+                      EstadoInventario estadoInventario, String observaciones, List<InventarioProducto> inventarioProductos) {
         this.idInventario = idInventario;
         this.nombreInventario = nombreInventario;
         this.ubicacion = ubicacion;
         this.fechaCreacion = fechaCreacion;
         this.estadoInventario = estadoInventario;
         this.observaciones = observaciones;
+        this.inventarioProductos = inventarioProductos;
     }
 
-    // Getters y setters
     public Integer getIdInventario() {
         return idInventario;
     }
@@ -101,5 +105,13 @@ public class Inventario {
 
     public void setObservaciones(String observaciones) {
         this.observaciones = observaciones;
+    }
+
+    public List<InventarioProducto> getInventarioProductos() {
+        return inventarioProductos;
+    }
+
+    public void setInventarioProductos(List<InventarioProducto> inventarioProductos) {
+        this.inventarioProductos = inventarioProductos;
     }
 }

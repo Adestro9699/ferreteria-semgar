@@ -22,7 +22,7 @@ public class OrdenCompra {
     @Column(precision = 10, scale = 2)
     private BigDecimal totalCompra;
 
-    @Column(columnDefinition = "TETX")
+    @Column(columnDefinition = "TEXT")
     private String observaciones;
 
     @ManyToOne
