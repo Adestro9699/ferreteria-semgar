@@ -10,6 +10,10 @@ import java.time.LocalDate;
 @Entity
 public class Producto {
 
+    public enum EstadoProducto {
+        ACTIVO,
+        INACTIVO,
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -32,8 +36,9 @@ public class Producto {
     @Column(length = 255)
     private String imagenURL;
 
-    @Column(columnDefinition = "TINYINT")
-    private Integer activo;
+    @Enumerated(EnumType.STRING)
+    @Column(length = 10)
+    private EstadoProducto estadoProducto;
 
     @Column(length = 50)
     private String codigoSKU;
@@ -59,8 +64,8 @@ public class Producto {
     }
 
     public Producto(Integer idProducto, String nombreProducto, String descripcion, BigDecimal precio, Integer stock,
-                    LocalDate fechaModificacion, String imagenURL, Integer activo, String codigoSKU, String marca,
-                    String material, String codigoBarra, Proveedor proveedor, Categoria categoria) {
+                    LocalDate fechaModificacion, String imagenURL, EstadoProducto estadoProducto, String codigoSKU,
+                    String marca, String material, String codigoBarra, Proveedor proveedor, Categoria categoria) {
         this.idProducto = idProducto;
         this.nombreProducto = nombreProducto;
         this.descripcion = descripcion;
@@ -68,7 +73,7 @@ public class Producto {
         this.stock = stock;
         this.fechaModificacion = fechaModificacion;
         this.imagenURL = imagenURL;
-        this.activo = activo;
+        this.estadoProducto = estadoProducto;
         this.codigoSKU = codigoSKU;
         this.marca = marca;
         this.material = material;
@@ -101,20 +106,20 @@ public class Producto {
         this.descripcion = descripcion;
     }
 
-    public BigDecimal getPrecio() {
-        return precio;
-    }
-
-    public void setPrecio(BigDecimal precio) {
-        this.precio = precio;
-    }
-
     public Integer getStock() {
         return stock;
     }
 
     public void setStock(Integer stock) {
         this.stock = stock;
+    }
+
+    public BigDecimal getPrecio() {
+        return precio;
+    }
+
+    public void setPrecio(BigDecimal precio) {
+        this.precio = precio;
     }
 
     public LocalDate getFechaModificacion() {
@@ -133,12 +138,20 @@ public class Producto {
         this.imagenURL = imagenURL;
     }
 
-    public Integer getActivo() {
-        return activo;
+    public EstadoProducto getEstadoProducto() {
+        return estadoProducto;
     }
 
-    public void setActivo(Integer activo) {
-        this.activo = activo;
+    public void setEstadoProducto(EstadoProducto estadoProducto) {
+        this.estadoProducto = estadoProducto;
+    }
+
+    public String getMarca() {
+        return marca;
+    }
+
+    public void setMarca(String marca) {
+        this.marca = marca;
     }
 
     public String getCodigoSKU() {
@@ -155,14 +168,6 @@ public class Producto {
 
     public void setMaterial(String material) {
         this.material = material;
-    }
-
-    public String getMarca() {
-        return marca;
-    }
-
-    public void setMarca(String marca) {
-        this.marca = marca;
     }
 
     public String getCodigoBarra() {
