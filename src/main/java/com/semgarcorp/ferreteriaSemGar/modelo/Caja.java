@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 public class Caja {
@@ -40,7 +41,7 @@ public class Caja {
     private BigDecimal salidas;
 
     @Column(precision = 10, scale = 2)
-    private BigDecimal saldoFinal; // Este ya no se calculará automáticamente
+    private BigDecimal saldoFinal;
 
     @Column(length = 255)
     private String descripcion;
@@ -52,6 +53,10 @@ public class Caja {
     @ManyToOne
     @JoinColumn(name = "idUsuario")
     private Usuario usuario;
+
+    // Relación con Venta (One-to-Many)
+    @OneToMany(mappedBy = "caja")
+    private List<Venta> ventas;
 
     public Caja() {
     }
@@ -67,9 +72,9 @@ public class Caja {
         this.descripcion = descripcion;
         this.estado = estado;
         this.usuario = usuario;
-        // Se elimina el cálculo automático del saldoFinal
     }
 
+    // Getters y setters
     public Integer getIdCaja() {
         return idCaja;
     }
@@ -100,7 +105,6 @@ public class Caja {
 
     public void setSaldoInicial(BigDecimal saldoInicial) {
         this.saldoInicial = saldoInicial;
-        // Ya no recalcula el saldoFinal
     }
 
     public BigDecimal getEntradas() {
@@ -109,7 +113,6 @@ public class Caja {
 
     public void setEntradas(BigDecimal entradas) {
         this.entradas = entradas;
-        // Ya no recalcula el saldoFinal
     }
 
     public BigDecimal getSalidas() {
@@ -118,7 +121,6 @@ public class Caja {
 
     public void setSalidas(BigDecimal salidas) {
         this.salidas = salidas;
-        // Ya no recalcula el saldoFinal
     }
 
     public BigDecimal getSaldoFinal() {
@@ -151,5 +153,13 @@ public class Caja {
 
     public void setUsuario(Usuario usuario) {
         this.usuario = usuario;
+    }
+
+    public List<Venta> getVentas() {
+        return ventas;
+    }
+
+    public void setVentas(List<Venta> ventas) {
+        this.ventas = ventas;
     }
 }

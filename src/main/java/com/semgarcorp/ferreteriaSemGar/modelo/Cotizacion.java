@@ -2,8 +2,9 @@ package com.semgarcorp.ferreteriaSemGar.modelo;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import java.math.BigDecimal;
+//import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Set;
 
 @Entity
 public class Cotizacion {
@@ -23,9 +24,9 @@ public class Cotizacion {
     @NotNull(message = "La fecha de cotización no puede ser nula")
     private LocalDate fechaCotizacion;
 
-    @NotNull(message = "El total de la cotización no puede ser nulo")
+    /*@NotNull(message = "El total de la cotización no puede ser nulo")
     @Column(precision = 10, scale = 2)
-    private BigDecimal totalCotizacion;  // Cambio a BigDecimal para decimal(10,2)
+    private BigDecimal totalCotizacion; //refleja la suma de todos los productos dentro de la cotizacion*/
 
     @Enumerated(EnumType.STRING)
     @NotNull(message = "El estado de la cotización no puede ser nulo")
@@ -47,25 +48,28 @@ public class Cotizacion {
     private Cliente cliente;
 
     // Relación con Tipo_Pago
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "idTipoPago", referencedColumnName = "idTipoPago")
     private TipoPago tipoPago;
+
+    // Relación con la tabla puente VentaImpuestoCotizacion
+    @OneToMany(mappedBy = "cotizacion", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<VentaImpuestoCotizacion> ventaImpuestoCotizaciones;
 
     public Cotizacion() {
     }
 
-    public Cotizacion(Integer idCotizacion, LocalDate fechaCotizacion, BigDecimal totalCotizacion,
-                      EstadoCotizacion estadoCotizacion, String observaciones, LocalDate fechaModificacion,
-                      Trabajador trabajador, Cliente cliente, TipoPago tipoPago) {
+    public Cotizacion(Integer idCotizacion, LocalDate fechaCotizacion, EstadoCotizacion estadoCotizacion, String observaciones,
+                      LocalDate fechaModificacion, Trabajador trabajador, Cliente cliente, TipoPago tipoPago, Set<VentaImpuestoCotizacion> ventaImpuestoCotizaciones) {
         this.idCotizacion = idCotizacion;
         this.fechaCotizacion = fechaCotizacion;
-        this.totalCotizacion = totalCotizacion;
         this.estadoCotizacion = estadoCotizacion;
         this.observaciones = observaciones;
         this.fechaModificacion = fechaModificacion;
         this.trabajador = trabajador;
         this.cliente = cliente;
         this.tipoPago = tipoPago;
+        this.ventaImpuestoCotizaciones = ventaImpuestoCotizaciones;
     }
 
     public Integer getIdCotizacion() {
@@ -82,14 +86,6 @@ public class Cotizacion {
 
     public void setFechaCotizacion(LocalDate fechaCotizacion) {
         this.fechaCotizacion = fechaCotizacion;
-    }
-
-    public BigDecimal getTotalCotizacion() {
-        return totalCotizacion;
-    }
-
-    public void setTotalCotizacion(BigDecimal totalCotizacion) {
-        this.totalCotizacion = totalCotizacion;
     }
 
     public EstadoCotizacion getEstadoCotizacion() {
@@ -138,5 +134,13 @@ public class Cotizacion {
 
     public void setTipoPago(TipoPago tipoPago) {
         this.tipoPago = tipoPago;
+    }
+
+    public Set<VentaImpuestoCotizacion> getVentaImpuestoCotizaciones() {
+        return ventaImpuestoCotizaciones;
+    }
+
+    public void setVentaImpuestoCotizaciones(Set<VentaImpuestoCotizacion> ventaImpuestoCotizaciones) {
+        this.ventaImpuestoCotizaciones = ventaImpuestoCotizaciones;
     }
 }
