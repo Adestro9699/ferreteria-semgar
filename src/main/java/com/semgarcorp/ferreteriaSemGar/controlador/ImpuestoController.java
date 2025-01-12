@@ -25,7 +25,7 @@ public class ImpuestoController {
         return impuestoService.listar();
     }
 
-    // Obtener una impuesto por su ID
+    // Obtener un impuesto por su ID
     @GetMapping("/{id}")
     public ResponseEntity<Impuesto> obtenerPorId(@PathVariable Integer id) {
         Impuesto impuesto = impuestoService.obtenerPorId(id);
@@ -35,7 +35,7 @@ public class ImpuestoController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Respuesta con 404 Not Found
     }
 
-    // Crear una nueva impuesto
+    // Crear un nuevo impuesto
     @PostMapping
     public ResponseEntity<Impuesto> guardar(@RequestBody Impuesto impuesto) {
         Impuesto nuevoImpuesto = impuestoService.guardar(impuesto);
@@ -48,17 +48,17 @@ public class ImpuestoController {
         return ResponseEntity.created(location).body(nuevoImpuesto);
     }
 
-    // Actualizar una impuesto existente (PUT)
+    // Actualizar un impuesto existente (PUT)
     @PutMapping("/{id}")
     public ResponseEntity<Impuesto> actualizar(@PathVariable Integer id, @RequestBody Impuesto impuesto) {
-        // Obtener la impuesto existente
+        // Obtener el impuesto existente
         Impuesto impuestoExistente = impuestoService.obtenerPorId(id);
 
         if (impuestoExistente != null) {
             // Asegurarse de que el ID se mantenga y reemplazar impuesto
             impuesto.setIdImpuesto(id);
 
-            // Aquí reemplazas completamente la impuesto con la información que viene en el cuerpo
+            // Aquí reemplazas completamente el impuesto con la información que viene en el cuerpo
             Impuesto impuestoActualizada = impuestoService.actualizar(impuesto);
 
             return ResponseEntity.ok(impuestoActualizada); // Usamos el metodo estático "ok" para la respuesta exitosa
@@ -67,7 +67,7 @@ public class ImpuestoController {
         }
     }
 
-    // Eliminar una impuesto por su ID
+    // Eliminar un impuesto por su ID
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
         Impuesto impuestoExistente = impuestoService.obtenerPorId(id);
@@ -76,5 +76,26 @@ public class ImpuestoController {
             return ResponseEntity.noContent().build(); // Respuesta sin contenido
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Si no se encuentra, 404
+    }
+
+    //endpoint para activar Impuesto
+    @PutMapping("/{id}/activar")
+    public ResponseEntity<Impuesto> activarImpuesto(@PathVariable Integer id) {
+        Impuesto impuestoActivado = impuestoService.activarImpuesto(id);
+        return ResponseEntity.ok(impuestoActivado);
+    }
+
+    //endpoint para desactivar Impuesto
+    @PutMapping("/{id}/desactivar")
+    public ResponseEntity<Impuesto> desactivarImpuesto(@PathVariable Integer id) {
+        Impuesto impuestoDesactivado = impuestoService.desactivarImpuesto(id);
+        return ResponseEntity.ok(impuestoDesactivado);
+    }
+
+    // endpoint para listar impuestos activos
+    @GetMapping("/impuestos/activos")
+    public ResponseEntity<List<Impuesto>> listarImpuestosActivos() {
+        List<Impuesto> impuestosActivos = impuestoService.listarActivos();
+        return ResponseEntity.ok(impuestosActivos);
     }
 }

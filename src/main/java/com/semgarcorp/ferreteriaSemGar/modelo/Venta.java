@@ -61,12 +61,18 @@ public class Venta {
     @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<VentaImpuestoCotizacion> ventaImpuestoCotizaciones;
 
+    // Relación con TipoComprobantePago (Many-to-One)
+    @ManyToOne
+    @JoinColumn(name = "idTipoComprobantePago", nullable = false)  // Referencia a TipoComprobantePago
+    private TipoComprobantePago tipoComprobantePago;
+
     public Venta() {
     }
 
     public Venta(Integer idVenta, LocalDate fechaVenta, EstadoVenta estadoVenta, BigDecimal totalVenta,
                  BigDecimal cantidadVenta, BigDecimal descuento, LocalDate fechaModificacion, String codigoTransaccion,
-                 String observaciones, CotizacionProductoInventario cotizacionProductoInventario, Caja caja, Set<VentaImpuestoCotizacion> ventaImpuestoCotizaciones) {
+                 String observaciones, CotizacionProductoInventario cotizacionProductoInventario, Caja caja,
+                 Set<VentaImpuestoCotizacion> ventaImpuestoCotizaciones, TipoComprobantePago tipoComprobantePago) {
         this.idVenta = idVenta;
         this.fechaVenta = fechaVenta;
         this.estadoVenta = estadoVenta;
@@ -79,8 +85,10 @@ public class Venta {
         this.cotizacionProductoInventario = cotizacionProductoInventario;
         this.caja = caja;
         this.ventaImpuestoCotizaciones = ventaImpuestoCotizaciones;
+        this.tipoComprobantePago = tipoComprobantePago;  // Inicialización del tipo de comprobante de pago
     }
 
+    // Getters y setters
     public Integer getIdVenta() {
         return idVenta;
     }
@@ -175,5 +183,13 @@ public class Venta {
 
     public void setVentaImpuestoCotizaciones(Set<VentaImpuestoCotizacion> ventaImpuestoCotizaciones) {
         this.ventaImpuestoCotizaciones = ventaImpuestoCotizaciones;
+    }
+
+    public TipoComprobantePago getTipoComprobantePago() {
+        return tipoComprobantePago;
+    }
+
+    public void setTipoComprobantePago(TipoComprobantePago tipoComprobantePago) {
+        this.tipoComprobantePago = tipoComprobantePago;
     }
 }

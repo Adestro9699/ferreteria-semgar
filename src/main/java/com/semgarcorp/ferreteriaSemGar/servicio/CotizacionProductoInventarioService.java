@@ -1,6 +1,9 @@
 package com.semgarcorp.ferreteriaSemGar.servicio;
 
+import com.semgarcorp.ferreteriaSemGar.modelo.Cotizacion;
 import com.semgarcorp.ferreteriaSemGar.modelo.CotizacionProductoInventario;
+import com.semgarcorp.ferreteriaSemGar.modelo.Impuesto;
+import com.semgarcorp.ferreteriaSemGar.modelo.VentaImpuestoCotizacion;
 import com.semgarcorp.ferreteriaSemGar.repositorio.CotizacionProductoInventarioRepository;
 import org.springframework.stereotype.Service;
 
@@ -29,12 +32,8 @@ public class CotizacionProductoInventarioService {
         // Aquí podrías realizar alguna validación adicional si es necesario, por ejemplo:
         // Verificar que los productos tengan todos los campos necesarios, o realizar cálculos previos.
 
-        // Guardar todos los productos a la vez usando el repositorio
-        List<CotizacionProductoInventario> nuevosProductos = cotizacionProductoInventarioRepositorio.saveAll(productos);
-
-        // Aquí puedes realizar operaciones adicionales si es necesario (por ejemplo, actualizaciones de estado, cálculos, etc.)
-
-        return nuevosProductos; // Retornar la lista de productos recién guardados
+        // Guardar todos los productos a la vez usando el repositorio y retornar el resultado directamente
+        return cotizacionProductoInventarioRepositorio.saveAll(productos);
     }
 
     public List<CotizacionProductoInventario> actualizar(List<CotizacionProductoInventario> productos) {
@@ -48,7 +47,6 @@ public class CotizacionProductoInventarioService {
         // Actualizar todos los productos
         return cotizacionProductoInventarioRepositorio.saveAll(productos);  // Actualizar todos los productos
     }
-
 
     public void eliminar(Integer id) {
         cotizacionProductoInventarioRepositorio.deleteById(id);
@@ -111,5 +109,49 @@ public class CotizacionProductoInventarioService {
         }
 
         return total.setScale(2, RoundingMode.HALF_UP); // Redondear a 2 decimales
+    }
+
+    public BigDecimal obtenerPorcentajeIGV(Cotizacion cotizacion) {
+        // Buscar el impuesto "IGV" activo en la cotización
+        for (VentaImpuestoCotizacion ventaImpuestoCotizacion : cotizacion.getVentaImpuestoCotizaciones()) {
+            Impuesto impuesto = ventaImpuestoCotizacion.getImpuesto();
+
+            // Verificar que el estado del impuesto sea ACTIVO y que el nombre del impuesto sea "IGV"
+            if (impuesto.getEstado() == Impuesto.EstadoActivo.ACTIVO && "IGV".equalsIgnoreCase(impuesto.getNombreImpuesto())) {
+                // Retornar el porcentaje del impuesto IGV
+                return impuesto.getPorcentaje();
+            }
+        }
+
+        // Si no se encuentra el impuesto IGV activo, lanzar una excepción o devolver un valor predeterminado
+        throw new RuntimeException("No se encontró el impuesto 'IGV' activo para la cotización");
+    }
+
+    public BigDecimal calcularPrecioSinIGV(List<CotizacionProductoInventario> productos, Cotizacion cotizacion) {
+        // Obtener el total con IGV
+        BigDecimal totalConIGV = calcularTotal(productos);
+
+        // Obtener el porcentaje de IGV (por ejemplo, 18)
+        BigDecimal porcentajeIGV = obtenerPorcentajeIGV(cotizacion);
+
+        // Calcular el factor 1 + (porcentajeIGV / 100)
+        BigDecimal factorIGV = BigDecimal.ONE.add(porcentajeIGV.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));
+
+        // Calcular el precio sin IGV
+        return totalConIGV.divide(factorIGV, 2, RoundingMode.HALF_UP);
+    }
+
+    // Metodo para calcular el IGV aplicado
+    public BigDecimal calcularIGVAplicado(List<CotizacionProductoInventario> productos, Cotizacion cotizacion) {
+        BigDecimal precioSinIGV = calcularPrecioSinIGV(productos, cotizacion);
+        BigDecimal porcentajeIGV = obtenerPorcentajeIGV(cotizacion);
+        return precioSinIGV.multiply(porcentajeIGV).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+    }
+
+    // Metodo para calcular el precio total (sin IGV + IGV aplicado)
+    public BigDecimal calcularPrecioTotal(List<CotizacionProductoInventario> productos, Cotizacion cotizacion) {
+        BigDecimal precioSinIGV = calcularPrecioSinIGV(productos, cotizacion);
+        BigDecimal igvAplicado = calcularIGVAplicado(productos, cotizacion);
+        return precioSinIGV.add(igvAplicado).setScale(2, RoundingMode.HALF_UP);
     }
 }
