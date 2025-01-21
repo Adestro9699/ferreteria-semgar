@@ -12,19 +12,16 @@ public class InventarioProducto {
     private Integer idInventarioProducto;
 
     @Column(name = "stock", nullable = false)
-    private Integer stock;
+    private Integer stock; //stock específico del producto en un inventario particular
 
     @Column(name = "fecha_entrada", nullable = false)
-    private LocalDate fechaEntrada;
+    private LocalDate fechaEntrada; //fecha en la que el producto fue ingresado al inventario
 
     @Column(name = "fecha_salida")
-    private LocalDate fechaSalida;
-
-    @Column(name = "precio_venta", nullable = false)
-    private Double precioVenta;
+    private LocalDate fechaSalida; //fecha en la que un producto fue retirado del inventario
 
     @Column(name = "precio_compra", nullable = false)
-    private Double precioCompra;
+    private Double precioCompra; //precio al que la empresa adquirió el producto
 
     //Relación con Producto
     @ManyToOne
@@ -45,17 +42,16 @@ public class InventarioProducto {
     }
 
     public InventarioProducto(Integer idInventarioProducto, Integer stock, LocalDate fechaEntrada, LocalDate fechaSalida,
-                              Double precioVenta, Producto producto, List<InventarioTransferencia> inventarioTransferencias,
-                              Inventario inventario, Double precioCompra) {
+                              Double precioCompra, Producto producto, Inventario inventario,
+                              List<InventarioTransferencia> inventarioTransferencias) {
         this.idInventarioProducto = idInventarioProducto;
         this.stock = stock;
         this.fechaEntrada = fechaEntrada;
         this.fechaSalida = fechaSalida;
-        this.precioVenta = precioVenta;
-        this.producto = producto;
-        this.inventarioTransferencias = inventarioTransferencias;
-        this.inventario = inventario;
         this.precioCompra = precioCompra;
+        this.producto = producto;
+        this.inventario = inventario;
+        this.inventarioTransferencias = inventarioTransferencias;
     }
 
     public Integer getIdInventarioProducto() {
@@ -90,12 +86,12 @@ public class InventarioProducto {
         this.fechaSalida = fechaSalida;
     }
 
-    public Double getPrecioVenta() {
-        return precioVenta;
+    public Double getPrecioCompra() {
+        return precioCompra;
     }
 
-    public void setPrecioVenta(Double precioVenta) {
-        this.precioVenta = precioVenta;
+    public void setPrecioCompra(Double precioCompra) {
+        this.precioCompra = precioCompra;
     }
 
     public Producto getProducto() {
@@ -120,13 +116,5 @@ public class InventarioProducto {
 
     public void setInventarioTransferencias(List<InventarioTransferencia> inventarioTransferencias) {
         this.inventarioTransferencias = inventarioTransferencias;
-    }
-
-    public Double getPrecioCompra() {
-        return precioCompra;
-    }
-
-    public void setPrecioCompra(Double precioCompra) {
-        this.precioCompra = precioCompra;
     }
 }

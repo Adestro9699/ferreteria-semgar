@@ -1,7 +1,6 @@
 package com.semgarcorp.ferreteriaSemGar.modelo;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
@@ -23,17 +22,12 @@ public class Usuario {
     @Column(length = 100)
     private String nombreUsuario;
 
-    @Email(message = "El correo debe ser válido")
-    @NotNull(message = "El correo no puede ser nulo")
-    @Column(name = "correo_usuario", unique = true, length = 100) // Conservado en snake_case
-    private String correoUsuario;
-
     @NotNull(message = "La contraseña no puede ser nula")
     @Size(min = 8, message = "La contraseña debe tener al menos 8 caracteres")
     @Column(length = 255)
     private String contrasena;
 
-    @Enumerated(EnumType.STRING) // Relaciona el enum con esta columna
+    @Enumerated(EnumType.STRING)
     @Column(length = 10)
     private EstadoUsuario estadoUsuario;
 
@@ -41,17 +35,16 @@ public class Usuario {
     private LocalDate fechaCreacion;
 
     @ManyToOne
-    @JoinColumn(name = "idTrabajador")
+    @JoinColumn(name = "id_trabajador", nullable= false)
     private Trabajador trabajador;
 
     public Usuario() {
     }
 
-    public Usuario(Integer idUsuario, String nombreUsuario, String correoUsuario, String contrasena, EstadoUsuario estadoUsuario,
+    public Usuario(Integer idUsuario, String nombreUsuario, String contrasena, EstadoUsuario estadoUsuario,
                    LocalDate fechaCreacion, Trabajador trabajador) {
         this.idUsuario = idUsuario;
         this.nombreUsuario = nombreUsuario;
-        this.correoUsuario = correoUsuario;
         this.contrasena = contrasena;
         this.estadoUsuario = estadoUsuario;
         this.fechaCreacion = fechaCreacion;
@@ -72,14 +65,6 @@ public class Usuario {
 
     public void setNombreUsuario(String nombreUsuario) {
         this.nombreUsuario = nombreUsuario;
-    }
-
-    public String getCorreoUsuario() {
-        return correoUsuario;
-    }
-
-    public void setCorreoUsuario(String correoUsuario) {
-        this.correoUsuario = correoUsuario;
     }
 
     public String getContrasena() {

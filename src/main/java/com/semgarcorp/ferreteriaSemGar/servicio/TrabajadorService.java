@@ -5,6 +5,7 @@ import com.semgarcorp.ferreteriaSemGar.repositorio.TrabajadorRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TrabajadorService {
@@ -33,5 +34,9 @@ public class TrabajadorService {
 
     public void eliminar(Integer id) {
         trabajadorRepositorio.deleteById(id);
+    }
+
+    public Optional<Trabajador> buscarPorId(Integer id) {
+        return trabajadorRepositorio.findById(id);
     }
 }

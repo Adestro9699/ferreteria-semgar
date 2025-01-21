@@ -20,45 +20,45 @@ public class Producto {
     private Integer idProducto;
 
     @Column(length = 255)
-    private String nombreProducto;
+    private String nombreProducto; //nombre del producto
 
     @Column(columnDefinition = "TEXT")
     private String descripcion;
 
     @Column(precision = 10, scale = 2)
-    private BigDecimal precio;
+    private BigDecimal precio; //precio de venta al cliente
 
     @Column(length = 11)
-    private Integer stock;
+    private Integer stock; //stock global del producto en todos los inventarios
 
     private LocalDate fechaModificacion;
 
     @Column(length = 255)
-    private String imagenURL;
+    private String imagenURL; //imagen del producto
 
     @Enumerated(EnumType.STRING)
     @Column(length = 10)
-    private EstadoProducto estadoProducto;
+    private EstadoProducto estadoProducto; //estado ACTIVO o INACTIVO del producto
 
     @Column(length = 50)
     private String codigoSKU;
 
     @Column(length = 100)
-    private String marca;
+    private String marca; //marca del producto
 
     @Column(length = 100)
-    private String material;
+    private String material; //material predominante o de mayor relevancia del producto
 
     @Column(length = 50)
-    private String codigoBarra;
+    private String codigoBarra; //código de barra del producto
 
     @ManyToOne
     @JoinColumn(name = "idProveedor")
-    private Proveedor proveedor;
+    private Proveedor proveedor; //quien provee el producto
 
     @ManyToOne
     @JoinColumn(name = "idCategoria")
-    private Categoria categoria;
+    private Categoria categoria; //a qué categoría pertenece el producto
 
     @OneToMany(mappedBy = "producto")
     private List<InventarioProducto> inventarioProductos = new ArrayList<>();

@@ -23,23 +23,23 @@ public class Inventario {
     @NotNull(message = "El nombre del inventario no puede ser nulo")
     @Size(min = 3, max = 255, message = "El nombre del inventario debe tener entre 3 y 255 caracteres")
     @Column(length = 255)
-    private String nombreInventario;  // VARCHAR(255)
+    private String nombreInventario; //nombre del Inventario
 
     @NotNull(message = "La ubicación no puede ser nula")
     @Size(min = 3, max = 255, message = "La ubicación debe tener entre 3 y 255 caracteres")
     @Column(length = 255)
-    private String ubicacion;  // VARCHAR(255)
+    private String ubicacion; //ubicacion del inventario
 
     @NotNull(message = "La fecha de creación no puede ser nula")
-    private LocalDate fechaCreacion;  // LocalDate
+    private LocalDate fechaCreacion; //fecha en la que se creó el inventario
 
     @Enumerated(EnumType.STRING)
     @NotNull(message = "El estado del inventario no puede ser nulo")
     @Column(length = 10)
-    private EstadoInventario estadoInventario;  // Enum de estado
+    private EstadoInventario estadoInventario; //estado ACTIVO o INACTIVO del inventario
 
     @Column(columnDefinition = "TEXT")
-    private String observaciones;  // Campo TEXT para observaciones
+    private String observaciones; //campo TEXT para observaciones
 
     @OneToMany(mappedBy = "inventario")
     private List<InventarioProducto> inventarioProductos = new ArrayList<>();

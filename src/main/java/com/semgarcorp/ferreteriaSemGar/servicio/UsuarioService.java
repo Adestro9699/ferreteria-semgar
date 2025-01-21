@@ -11,7 +11,6 @@ public class UsuarioService {
 
     private final UsuarioRepository usuarioRepositorio;
 
-    // Constructor con inyección del repositorio
     public UsuarioService(UsuarioRepository usuarioRepositorio) {
         this.usuarioRepositorio = usuarioRepositorio;
     }
@@ -26,7 +25,6 @@ public class UsuarioService {
         return usuarioRepositorio.findById(id).orElse(null);
     }
 
-    // Guardar un nuevo usuario o actualiza uno existente
     public Usuario guardar(Usuario usuario) {
         return usuarioRepositorio.save(usuario);
     }
@@ -38,5 +36,10 @@ public class UsuarioService {
     // Eliminar un usuario por ID
     public void eliminar(Integer id) {
         usuarioRepositorio.deleteById(id);
+    }
+
+    // Obtener usuario por nombre de usuario
+    public Usuario obtenerPorNombreUsuario(String nombreUsuario) {
+        return usuarioRepositorio.findByNombreUsuario(nombreUsuario);
     }
 }

@@ -42,10 +42,12 @@ public class UsuarioController {
     @PostMapping
     public ResponseEntity<Usuario> guardar(@Valid @RequestBody Usuario usuario) {
         Usuario nuevoUsuario = usuarioService.guardar(usuario);
+
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
                 .buildAndExpand(nuevoUsuario.getIdUsuario())
                 .toUri();
+
         return ResponseEntity.created(location).body(nuevoUsuario);
     }
 
@@ -70,6 +72,17 @@ public class UsuarioController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody Usuario usuario) {
+        Usuario usuarioExistente = usuarioService.obtenerPorNombreUsuario(usuario.getNombreUsuario());
+
+        if (usuarioExistente != null && usuarioExistente.getContrasena().equals(usuario.getContrasena())) {
+            return ResponseEntity.ok("Autenticación exitosa");
+        }
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales inválidas");
     }
 }
 

@@ -38,17 +38,23 @@ public class TrabajadorController {
 
     // Crear un nuevo trabajador
     @PostMapping
-    public ResponseEntity<Trabajador> guardar(@RequestBody Trabajador trabajador) {
+    public ResponseEntity<?> guardar(@RequestBody Trabajador trabajador) {
         // Guardar el trabajador usando el servicio
-        Trabajador nuevoTrabajador = trabajadorService.guardar(trabajador);
+        try {
+            Trabajador nuevoTrabajador = trabajadorService.guardar(trabajador);
 
-        // Crear la URI del recurso recién creado
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(nuevoTrabajador.getIdTrabajador()).toUri();
+            // Crear la URI del recurso recién creado
+            URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                    .path("/{id}")
+                    .buildAndExpand(nuevoTrabajador.getIdTrabajador()).toUri();
 
-        // Devolver la respuesta con la URI en la cabecera Location y el objeto creado en el cuerpo
-        return ResponseEntity.created(location).body(nuevoTrabajador);
+            // Devolver la respuesta con la URI en la cabecera Location y el objeto creado en el cuerpo
+            return ResponseEntity.created(location).body(nuevoTrabajador);
+
+        }catch(Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al guardar el trabajador: " + e.getMessage());
+        }
     }
 
     // Actualizar un trabajador existente (PUT)

@@ -80,4 +80,28 @@ public class ProductoController {
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Si no se encuentra, 404
     }
+
+    //endpoint para filtrar productos por nombre
+    //productos/buscarPorNombre?nombre=nombreDelProducto
+    //http://localhost:8080/productos/buscarPorNombre?nombre=Taladro
+    @GetMapping("/buscarPorNombre")
+    public List<Producto> buscarProductos(@RequestParam String nombre) {
+        return productoService.buscarProductosPorNombre(nombre);
+    }
+
+    //endpoint para filtrar productos por marca
+    //productos/buscarPorMarca?marca=nombreDeLaMarca
+    //http://localhost:8080/productos/buscarPorMarca?marca=Truper
+    @GetMapping("/buscarPorMarca")
+    public List<Producto> buscarProductosPorMarca(@RequestParam String marca) {
+        return productoService.buscarProductosPorMarca(marca);
+    }
+
+    //endpoint para filtrar productos por categoría
+    //productos/buscarPorCategoria?categoria=nombreDeLaCategoria
+    //http://localhost:8080/productos/buscarPorCategoria?categoria=Herramientas
+    @GetMapping("/buscarPorCategoria")
+    public List<Producto> buscarProductosPorCategoria(@RequestParam String categoria) {
+        return productoService.buscarProductosPorCategoria(categoria);
+    }
 }

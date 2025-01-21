@@ -33,7 +33,7 @@ public class Trabajador {
     @Column(length = 15) // Definido como varchar(15)
     private String telefonoTrabajador;
 
-    @Column(unique = true, length = 100)
+    @Column(length = 100)
     @Email(message = "El correo debe tener un formato válido")
     private String correoTrabajador;
 

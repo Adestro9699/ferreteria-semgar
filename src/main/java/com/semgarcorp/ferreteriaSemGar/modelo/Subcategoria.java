@@ -5,44 +5,49 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 @Entity
-public class Categoria {
+public class Subcategoria {
 
     public enum Estado {
-        ACTIVO,    // Categoría en uso
-        INACTIVO   // Categoría en desuso
+        ACTIVO,    // Subcategoría en uso
+        INACTIVO   // Subcategoría en desuso
     }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer idCategoria;
+    private Integer idSubcategoria;
 
     @NotNull(message = "El nombre no puede estar vacío")
     @Size(max = 100, message = "El nombre no puede tener más de 100 caracteres")
-    private String nombre; //nombre de la categoría
+    private String nombre; //nombre de la subcategoría
 
     @Size(max = 300, message = "La descripción no puede tener más de 300 caracteres")
-    private String descripcion; //descripcion opcional de la categoría
+    private String descripcion; //descripción opcional de la subcategoría
 
     @NotNull(message = "El estado no puede estar vacío")
     @Enumerated(EnumType.STRING)
-    private Estado estado; //estado ACTIVO o INACTIVO de la categoría
+    private Estado estado; //estado ACTIVO o INACTIVO de la subcategoría
 
-    public Categoria() {
+    @ManyToOne
+    @JoinColumn(name = "id_categoria", nullable = false)
+    private Categoria categoria; //Relación con la tabla Categoria
+
+    public Subcategoria() {
     }
 
-    public Categoria(Integer idCategoria, String nombre, String descripcion, Estado estado) {
-        this.idCategoria = idCategoria;
+    public Subcategoria(Integer idSubcategoria, String nombre, String descripcion, Estado estado, Categoria categoria) {
+        this.idSubcategoria = idSubcategoria;
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.estado = estado;
+        this.categoria = categoria;
     }
 
-    public Integer getIdCategoria() {
-        return idCategoria;
+    public Integer getIdSubcategoria() {
+        return idSubcategoria;
     }
 
-    public void setIdCategoria(Integer idCategoria) {
-        this.idCategoria = idCategoria;
+    public void setIdSubcategoria(Integer idSubcategoria) {
+        this.idSubcategoria = idSubcategoria;
     }
 
     public String getNombre() {
@@ -67,5 +72,13 @@ public class Categoria {
 
     public void setEstado(Estado estado) {
         this.estado = estado;
+    }
+
+    public Categoria getCategoria() {
+        return categoria;
+    }
+
+    public void setCategoria(Categoria categoria) {
+        this.categoria = categoria;
     }
 }
