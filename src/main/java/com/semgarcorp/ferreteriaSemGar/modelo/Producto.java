@@ -60,6 +60,10 @@ public class Producto {
     @JoinColumn(name = "idCategoria")
     private Categoria categoria; //a qué categoría pertenece el producto
 
+    @ManyToOne
+    @JoinColumn(name = "idSubcategoria")
+    private Subcategoria subcategoria;
+
     @OneToMany(mappedBy = "producto")
     private List<InventarioProducto> inventarioProductos = new ArrayList<>();
 
