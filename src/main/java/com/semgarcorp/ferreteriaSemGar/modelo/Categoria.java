@@ -13,7 +13,7 @@ public class Categoria {
     }
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer idCategoria;
 
     @NotNull(message = "El nombre no puede estar vacío")

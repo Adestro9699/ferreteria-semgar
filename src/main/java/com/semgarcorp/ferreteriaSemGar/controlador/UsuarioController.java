@@ -76,9 +76,10 @@ public class UsuarioController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Usuario usuario) {
-        Usuario usuarioExistente = usuarioService.obtenerPorNombreUsuario(usuario.getNombreUsuario());
+        // Verificar las credenciales usando el metodo autenticarUsuario
+        boolean autenticado = usuarioService.autenticarUsuario(usuario.getNombreUsuario(), usuario.getContrasena());
 
-        if (usuarioExistente != null && usuarioExistente.getContrasena().equals(usuario.getContrasena())) {
+        if (autenticado) {
             return ResponseEntity.ok("Autenticación exitosa");
         }
 

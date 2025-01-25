@@ -13,7 +13,7 @@ public class Subcategoria {
     }
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer idSubcategoria;
 
     @NotNull(message = "El nombre no puede estar vacío")
@@ -28,6 +28,13 @@ public class Subcategoria {
     private Estado estado; //estado ACTIVO o INACTIVO de la subcategoría
 
     public Subcategoria() {
+    }
+
+    public Subcategoria(Integer idSubcategoria, String nombre, String descripcion, Estado estado) {
+        this.idSubcategoria = idSubcategoria;
+        this.nombre = nombre;
+        this.descripcion = descripcion;
+        this.estado = estado;
     }
 
     public Integer getIdSubcategoria() {

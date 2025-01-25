@@ -2,6 +2,7 @@ package com.semgarcorp.ferreteriaSemGar.servicio;
 
 import com.semgarcorp.ferreteriaSemGar.modelo.Usuario;
 import com.semgarcorp.ferreteriaSemGar.repositorio.UsuarioRepository;
+import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,10 +27,20 @@ public class UsuarioService {
     }
 
     public Usuario guardar(Usuario usuario) {
+        // Hashear la contraseña antes de guardarla
+        String hashedPassword = BCrypt.hashpw(usuario.getContrasena(), BCrypt.gensalt());
+        usuario.setContrasena(hashedPassword);
+
+        // Guardar el usuario en la base de datos
         return usuarioRepositorio.save(usuario);
     }
 
     public Usuario actualizar(Usuario usuario) {
+        // Hashear la contraseña antes de guardarla
+        String hashedPassword = BCrypt.hashpw(usuario.getContrasena(), BCrypt.gensalt());
+        usuario.setContrasena(hashedPassword);
+
+        // Guardar el usuario actualizado
         return usuarioRepositorio.save(usuario);
     }
 
@@ -41,5 +52,17 @@ public class UsuarioService {
     // Obtener usuario por nombre de usuario
     public Usuario obtenerPorNombreUsuario(String nombreUsuario) {
         return usuarioRepositorio.findByNombreUsuario(nombreUsuario);
+    }
+
+    public boolean autenticarUsuario(String nombreUsuario, String password) {
+        // Buscar al usuario por su nombre de usuario
+        Usuario usuario = usuarioRepositorio.findByNombreUsuario(nombreUsuario);
+
+        if (usuario != null) {
+            // Verificar si la contraseña coincide con el hash almacenado
+            return BCrypt.checkpw(password, usuario.getContrasena());
+        }
+
+        return false; // Usuario no encontrado
     }
 }

@@ -70,24 +70,25 @@ public class Producto {
     public Producto() {
     }
 
-    public Producto(Integer idProducto, String nombreProducto, BigDecimal precio, String descripcion, Integer stock,
-                    String imagenURL, LocalDate fechaModificacion, EstadoProducto estadoProducto, String codigoBarra,
-                    Proveedor proveedor, String material, String marca, String codigoSKU, Categoria categoria,
-                    List<InventarioProducto> inventarioProductos) {
+    public Producto(Integer idProducto, String nombreProducto, String descripcion, BigDecimal precio, Integer stock,
+                    LocalDate fechaModificacion, String imagenURL, EstadoProducto estadoProducto, String codigoSKU,
+                    String marca, String material, String codigoBarra, Proveedor proveedor, Categoria categoria,
+                    Subcategoria subcategoria, List<InventarioProducto> inventarioProductos) {
         this.idProducto = idProducto;
         this.nombreProducto = nombreProducto;
-        this.precio = precio;
         this.descripcion = descripcion;
+        this.precio = precio;
         this.stock = stock;
-        this.imagenURL = imagenURL;
         this.fechaModificacion = fechaModificacion;
+        this.imagenURL = imagenURL;
         this.estadoProducto = estadoProducto;
+        this.codigoSKU = codigoSKU;
+        this.marca = marca;
+        this.material = material;
         this.codigoBarra = codigoBarra;
         this.proveedor = proveedor;
-        this.material = material;
-        this.marca = marca;
-        this.codigoSKU = codigoSKU;
         this.categoria = categoria;
+        this.subcategoria = subcategoria;
         this.inventarioProductos = inventarioProductos;
     }
 
@@ -123,44 +124,20 @@ public class Producto {
         this.precio = precio;
     }
 
+    public Integer getStock() {
+        return stock;
+    }
+
+    public void setStock(Integer stock) {
+        this.stock = stock;
+    }
+
     public LocalDate getFechaModificacion() {
         return fechaModificacion;
     }
 
     public void setFechaModificacion(LocalDate fechaModificacion) {
         this.fechaModificacion = fechaModificacion;
-    }
-
-    public String getCodigoSKU() {
-        return codigoSKU;
-    }
-
-    public void setCodigoSKU(String codigoSKU) {
-        this.codigoSKU = codigoSKU;
-    }
-
-    public Categoria getCategoria() {
-        return categoria;
-    }
-
-    public void setCategoria(Categoria categoria) {
-        this.categoria = categoria;
-    }
-
-    public String getMarca() {
-        return marca;
-    }
-
-    public void setMarca(String marca) {
-        this.marca = marca;
-    }
-
-    public EstadoProducto getEstadoProducto() {
-        return estadoProducto;
-    }
-
-    public void setEstadoProducto(EstadoProducto estadoProducto) {
-        this.estadoProducto = estadoProducto;
     }
 
     public String getImagenURL() {
@@ -171,12 +148,28 @@ public class Producto {
         this.imagenURL = imagenURL;
     }
 
-    public Integer getStock() {
-        return stock;
+    public EstadoProducto getEstadoProducto() {
+        return estadoProducto;
     }
 
-    public void setStock(Integer stock) {
-        this.stock = stock;
+    public void setEstadoProducto(EstadoProducto estadoProducto) {
+        this.estadoProducto = estadoProducto;
+    }
+
+    public String getCodigoSKU() {
+        return codigoSKU;
+    }
+
+    public void setCodigoSKU(String codigoSKU) {
+        this.codigoSKU = codigoSKU;
+    }
+
+    public String getMarca() {
+        return marca;
+    }
+
+    public void setMarca(String marca) {
+        this.marca = marca;
     }
 
     public String getMaterial() {
@@ -201,6 +194,22 @@ public class Producto {
 
     public void setProveedor(Proveedor proveedor) {
         this.proveedor = proveedor;
+    }
+
+    public Categoria getCategoria() {
+        return categoria;
+    }
+
+    public void setCategoria(Categoria categoria) {
+        this.categoria = categoria;
+    }
+
+    public Subcategoria getSubcategoria() {
+        return subcategoria;
+    }
+
+    public void setSubcategoria(Subcategoria subcategoria) {
+        this.subcategoria = subcategoria;
     }
 
     public List<InventarioProducto> getInventarioProductos() {
