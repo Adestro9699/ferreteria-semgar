@@ -81,27 +81,240 @@ public class ProductoController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Si no se encuentra, 404
     }
 
-    //endpoint para filtrar productos por nombre
+    // Eliminar múltiples productos por su ID
+    @DeleteMapping("/eliminar-multiples")
+    public ResponseEntity<Void> eliminarProductos(@RequestBody List<Integer> ids) {
+        try {
+            System.out.println("IDs recibidos: " + ids); // Log para depuración
+            productoService.eliminarProductosPorIds(ids);
+            return ResponseEntity.noContent().build(); // Respuesta 204 No Content
+        } catch (Exception e) {
+            System.err.println("Error al eliminar productos: " + e.getMessage()); // Log para depuración
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // Respuesta 500 Internal Server Error
+        }
+    }
+
+    //endpoint para buscar productos por nombre
     //productos/buscarPorNombre?nombre=nombreDelProducto
     //http://localhost:8080/productos/buscarPorNombre?nombre=Taladro
     @GetMapping("/buscarPorNombre")
-    public List<Producto> buscarProductos(@RequestParam String nombre) {
-        return productoService.buscarProductosPorNombre(nombre);
+    public ResponseEntity<List<Producto>> buscarProductos(@RequestParam String nombre) {
+        // Verificar si el nombre es nulo o está vacío
+        if (nombre == null || nombre.trim().isEmpty()) {
+            // Devolver una respuesta 400 Bad Request sin body
+            return ResponseEntity.badRequest().build();
+        }
+
+        try {
+            // Buscar productos por nombre
+            List<Producto> productos = productoService.buscarProductosPorNombre(nombre);
+
+            // Verificar si se encontraron productos
+            if (productos.isEmpty()) {
+                // Devolver una respuesta 404 Not Found sin body
+                return ResponseEntity.notFound().build();
+            }
+
+            // Devolver la lista de productos con un código 200 OK
+            return ResponseEntity.ok(productos);
+        } catch (Exception e) {
+            // Manejar otros errores y devolver una respuesta 500 Internal Server Error sin body
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
-    //endpoint para filtrar productos por marca
+    //endpoint para buscar productos por marca
     //productos/buscarPorMarca?marca=nombreDeLaMarca
     //http://localhost:8080/productos/buscarPorMarca?marca=Truper
     @GetMapping("/buscarPorMarca")
-    public List<Producto> buscarProductosPorMarca(@RequestParam String marca) {
-        return productoService.buscarProductosPorMarca(marca);
+    public ResponseEntity<List<Producto>> buscarProductosPorMarca(@RequestParam String marca) {
+        // Verificar si la marca es nula o está vacía
+        if (marca == null || marca.trim().isEmpty()) {
+            // Devolver una respuesta 400 Bad Request sin body
+            return ResponseEntity.badRequest().build();
+        }
+
+        try {
+            // Buscar productos por marca
+            List<Producto> productos = productoService.buscarProductosPorMarca(marca);
+
+            // Verificar si se encontraron productos
+            if (productos.isEmpty()) {
+                // Devolver una respuesta 404 Not Found sin body
+                return ResponseEntity.notFound().build();
+            }
+
+            // Devolver la lista de productos con un código 200 OK
+            return ResponseEntity.ok(productos);
+        } catch (Exception e) {
+            // Manejar otros errores y devolver una respuesta 500 Internal Server Error sin body
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
-    //endpoint para filtrar productos por categoría
-    //productos/buscarPorCategoria?categoria=nombreDeLaCategoria
-    //http://localhost:8080/productos/buscarPorCategoria?categoria=Herramientas
+    // endpoint para buscar productos por nombre de categoría
+    // productos/buscarPorCategoria?categoria=nombreDeLaCategoria
+    // http://localhost:8080/productos/buscarPorCategoria?categoria=Herramientas
     @GetMapping("/buscarPorCategoria")
-    public List<Producto> buscarProductosPorCategoria(@RequestParam String categoria) {
-        return productoService.buscarProductosPorCategoria(categoria);
+    public ResponseEntity<List<Producto>> buscarProductosPorCategoria(@RequestParam String categoria) {
+        // Verificar si la categoría es nula o está vacía
+        if (categoria == null || categoria.trim().isEmpty()) {
+            // Devolver una respuesta 400 Bad Request sin body
+            return ResponseEntity.badRequest().build();
+        }
+
+        try {
+            // Buscar productos por categoría
+            List<Producto> productos = productoService.buscarProductosPorCategoria(categoria);
+
+            // Verificar si se encontraron productos
+            if (productos.isEmpty()) {
+                // Devolver una respuesta 404 Not Found sin body
+                return ResponseEntity.notFound().build();
+            }
+
+            // Devolver la lista de productos con un código 200 OK
+            return ResponseEntity.ok(productos);
+        } catch (Exception e) {
+            // Manejar otros errores y devolver una respuesta 500 Internal Server Error sin body
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // endpoint para buscar productos por estado
+    // productos/buscarPorEstado?estado=ACTIVO
+    // http://localhost:8080/productos/buscarPorEstado?estado=ACTIVO
+    @GetMapping("/buscarPorEstado")
+    public ResponseEntity<List<Producto>> buscarProductosPorEstado(@RequestParam String estado) {
+        // Verificar si el estado es nulo o está vacío
+        if (estado == null || estado.trim().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        try {
+            // Buscar productos por estado
+            List<Producto> productos = productoService.buscarProductosPorEstado(estado);
+
+            // Verificar si se encontraron productos
+            if (productos.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            // Devolver la lista de productos con un código 200 OK
+            return ResponseEntity.ok(productos);
+        } catch (Exception e) {
+            // Manejar otros errores y devolver una respuesta 500 Internal Server Error sin body
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // endpoint para buscar productos por material
+    // productos/buscarPorMaterial?material=Acero
+    // http://localhost:8080/productos/buscarPorMaterial?material=Acero
+    @GetMapping("/buscarPorMaterial")
+    public ResponseEntity<List<Producto>> buscarProductosPorMaterial(@RequestParam String material) {
+        // Verificar si el material es nulo o está vacío
+        if (material == null || material.trim().isEmpty()) {
+            // Devolver una respuesta 400 Bad Request sin body
+            return ResponseEntity.badRequest().build();
+        }
+
+        try {
+            // Buscar productos por material
+            List<Producto> productos = productoService.buscarProductosPorMaterial(material);
+
+            // Verificar si se encontraron productos
+            if (productos.isEmpty()) {
+                // Devolver una respuesta 404 Not Found sin body
+                return ResponseEntity.notFound().build();
+            }
+
+            // Devolver la lista de productos con un código 200 OK
+            return ResponseEntity.ok(productos);
+        } catch (Exception e) {
+            // Manejar otros errores y devolver una respuesta 500 Internal Server Error sin body
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // endpoint para buscar por codigo de barra
+    // productos/buscarPorCodigoBarra?codigoBarra=VALOR_CODIGO_BARRA
+    // http://localhost:8080/productos/buscarPorCodigoBarra?codigoBarra=VALOR_CODIGO_BARRA
+    @GetMapping("/buscarPorCodigoBarra")
+    public ResponseEntity<List<Producto>> buscarProductosPorCodigoBarra(@RequestParam String codigoBarra) {
+        // Verificar si el código de barra es nulo o está vacío
+        if (codigoBarra == null || codigoBarra.trim().isEmpty()) {
+            // Devolver una respuesta 400 Bad Request sin body
+            return ResponseEntity.badRequest().build();
+        }
+
+        try {
+            // Buscar productos por código de barra
+            List<Producto> productos = productoService.buscarProductosPorCodigoBarra(codigoBarra);
+
+            // Verificar si se encontraron productos
+            if (productos.isEmpty()) {
+                // Devolver una respuesta 404 Not Found sin body
+                return ResponseEntity.notFound().build();
+            }
+
+            // Devolver la lista de productos con un código 200 OK
+            return ResponseEntity.ok(productos);
+        } catch (Exception e) {
+            // Manejar otros errores y devolver una respuesta 500 Internal Server Error sin body
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // endpoint para buscar por nombre de proveedor
+    // productos/buscarPorProveedor?idProveedor=VALOR_ID_PROVEEDOR
+    // http://localhost:8080/productos/buscarPorNombreProveedor?nombreProveedor=VALOR_NOMBRE_PROVEEDOR
+    @GetMapping("/buscarPorNombreProveedor")
+    public ResponseEntity<List<Producto>> buscarProductosPorNombreProveedor(@RequestParam String nombreProveedor) {
+        // Verificar si el nombre del proveedor es nulo o está vacío
+        if (nombreProveedor == null || nombreProveedor.trim().isEmpty()) {
+            return ResponseEntity.badRequest().build(); // 400 Bad Request
+        }
+
+        try {
+            // Buscar productos por nombre del proveedor
+            List<Producto> productos = productoService.buscarProductosPorNombreProveedor(nombreProveedor);
+
+            // Verificar si se encontraron productos
+            if (productos.isEmpty()) {
+                return ResponseEntity.notFound().build(); // 404 Not Found
+            }
+
+            // Devolver la lista de productos con un código 200 OK
+            return ResponseEntity.ok(productos);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
+        }
+    }
+
+    // endpoint para buscar por nombre de subcategoria
+    // productos/buscarPorNombreSubcategoria?nombreSubcategoria=VALOR_NOMBRE_SUBCATEGORIA
+    // http://localhost:8080/productos/buscarPorNombreSubcategoria?nombreSubcategoria=VALOR_NOMBRE_SUBCATEGORIA
+    @GetMapping("/buscarPorNombreSubcategoria")
+    public ResponseEntity<List<Producto>> buscarProductosPorNombreSubcategoria(@RequestParam String nombreSubcategoria) {
+        // Verificar si el nombre de la subcategoría es nulo o está vacío
+        if (nombreSubcategoria == null || nombreSubcategoria.trim().isEmpty()) {
+            return ResponseEntity.badRequest().build(); // 400 Bad Request
+        }
+
+        try {
+            // Buscar productos por nombre de la subcategoría
+            List<Producto> productos = productoService.buscarProductosPorNombreSubcategoria(nombreSubcategoria);
+
+            // Verificar si se encontraron productos
+            if (productos.isEmpty()) {
+                return ResponseEntity.notFound().build(); // 404 Not Found
+            }
+
+            // Devolver la lista de productos con un código 200 OK
+            return ResponseEntity.ok(productos);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
+        }
     }
 }

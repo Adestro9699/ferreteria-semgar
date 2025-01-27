@@ -30,16 +30,18 @@ public class ProductoService {
     }
 
     public Producto actualizar(Producto producto) {
-        return productoRepositorio.save(producto);  // Esto persiste los cambios del producto existente
+        return productoRepositorio.save(producto);
     }
 
     public void eliminar(Integer id) {
         productoRepositorio.deleteById(id);
     }
 
+    public void eliminarProductosPorIds(List<Integer> ids) {
+        productoRepositorio.deleteAllById(ids); // Eliminar todos los productos con los IDs proporcionados
+    }
 
-    //metodo para poder buscar nombres de productos
-    //complementar el metodo con el frontend
+    //metodo para buscar productos por nombre
     public List<Producto> buscarProductosPorNombre(String nombreProducto) {
         // Verificar si el nombre es nulo o está vacío
         if (nombreProducto == null || nombreProducto.trim().isEmpty()) {
@@ -86,6 +88,92 @@ public class ProductoService {
             return productoRepositorio.findByCategoriaNombreContainingIgnoreCase(nombreCategoria.trim());
         } catch (Exception e) {
             // Manejo de excepciones en caso de error
+            return Collections.emptyList(); // Devolver una lista vacía en caso de error
+        }
+    }
+
+    //metodo para buscar productos por estado
+    public List<Producto> buscarProductosPorEstado(String estado) {
+        // Verificar si el estado es nulo o está vacío
+        if (estado == null || estado.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        try {
+            // Convertir el String a enum EstadoProducto (ignorando mayúsculas/minúsculas)
+            Producto.EstadoProducto estadoProducto = Producto.EstadoProducto.valueOf(estado.toUpperCase());
+
+            // Buscar productos por estado
+            return productoRepositorio.findByEstadoProducto(estadoProducto);
+        } catch (IllegalArgumentException e) {
+            // Manejar el caso en que el estado no sea válido
+            return Collections.emptyList();
+        } catch (Exception e) {
+            // Manejar otros errores
+            return Collections.emptyList();
+        }
+    }
+
+    //metodo para buscar productos por material
+    public List<Producto> buscarProductosPorMaterial(String material) {
+        // Verificar si el material es nulo o está vacío
+        if (material == null || material.trim().isEmpty()) {
+            // Si el material es nulo o vacío, devolver una lista vacía
+            return Collections.emptyList();
+        }
+
+        try {
+            // Buscar productos por material (ignorando mayúsculas/minúsculas)
+            return productoRepositorio.findByMaterialContainingIgnoreCase(material.trim());
+        } catch (Exception e) {
+            // Manejo de excepciones si ocurre algún problema en la consulta
+            return Collections.emptyList(); // Devolver una lista vacía en caso de error
+        }
+    }
+
+    // metodo para buscar productos por codigo de barra
+    public List<Producto> buscarProductosPorCodigoBarra(String codigoBarra) {
+        // Verificar si el código de barra es nulo o está vacío
+        if (codigoBarra == null || codigoBarra.trim().isEmpty()) {
+            // Si el código de barra es nulo o vacío, devolver una lista vacía
+            return Collections.emptyList();
+        }
+
+        try {
+            // Buscar productos por código de barra
+            return productoRepositorio.findByCodigoBarra(codigoBarra.trim());
+        } catch (Exception e) {
+            // Manejo de excepciones si ocurre algún problema en la consulta
+            return Collections.emptyList(); // Devolver una lista vacía en caso de error
+        }
+    }
+
+    // metodo para buscar productos por proveedor
+    public List<Producto> buscarProductosPorNombreProveedor(String nombreProveedor) {
+        // Verificar si el nombre del proveedor es nulo o está vacío
+        if (nombreProveedor == null || nombreProveedor.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        try {
+            // Buscar productos por nombre del proveedor
+            return productoRepositorio.findByProveedorNombreContainingIgnoreCase(nombreProveedor.trim());
+        } catch (Exception e) {
+            return Collections.emptyList(); // Devolver una lista vacía en caso de error
+        }
+    }
+
+    // metodo para buscar productos por nombre de subcategoria
+    public List<Producto> buscarProductosPorNombreSubcategoria(String nombreSubcategoria) {
+        // Verificar si el nombre de la subcategoría es nulo o está vacío
+        if (nombreSubcategoria == null || nombreSubcategoria.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        try {
+            // Buscar productos por nombre de la subcategoría
+            return productoRepositorio.findBySubcategoriaNombreContainingIgnoreCase(nombreSubcategoria.trim());
+        } catch (Exception e) {
             return Collections.emptyList(); // Devolver una lista vacía en caso de error
         }
     }

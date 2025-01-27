@@ -16,7 +16,7 @@ public class Producto {
     }
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer idProducto;
 
     @Column(length = 255)
