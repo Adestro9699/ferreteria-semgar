@@ -63,7 +63,7 @@ public class CajaService {
 
             // Validar que la cotización y su tipo de pago no sean nulos
             if (cotizacion != null && cotizacion.getTipoPago() != null &&
-                    cotizacion.getTipoPago().getNombreTipoPago() == TipoPago.NombreTipoPago.EFECTIVO) {
+                    "EFECTIVO".equalsIgnoreCase(cotizacion.getTipoPago().getNombreTipoPago())) {
                 actualizarEntradasYCaja(caja, venta.getTotalVenta());
             }
         } else {

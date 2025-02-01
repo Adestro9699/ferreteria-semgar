@@ -29,10 +29,6 @@ public class CotizacionProductoInventarioService {
     }
 
     public List<CotizacionProductoInventario> guardar(List<CotizacionProductoInventario> productos) {
-        // Aquí podrías realizar alguna validación adicional si es necesario, por ejemplo:
-        // Verificar que los productos tengan todos los campos necesarios, o realizar cálculos previos.
-
-        // Guardar todos los productos a la vez usando el repositorio y retornar el resultado directamente
         return cotizacionProductoInventarioRepositorio.saveAll(productos);
     }
 

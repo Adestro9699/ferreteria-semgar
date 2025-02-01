@@ -38,7 +38,12 @@ public class ProductoService {
     }
 
     public void eliminarProductosPorIds(List<Integer> ids) {
-        productoRepositorio.deleteAllById(ids); // Eliminar todos los productos con los IDs proporcionados
+        if (ids == null || ids.isEmpty()) {
+            throw new IllegalArgumentException("La lista de IDs no puede estar vacía.");
+        }
+
+        // Metodo de JpaRepository para eliminar por IDs
+        productoRepositorio.deleteAllById(ids);
     }
 
     //metodo para buscar productos por nombre

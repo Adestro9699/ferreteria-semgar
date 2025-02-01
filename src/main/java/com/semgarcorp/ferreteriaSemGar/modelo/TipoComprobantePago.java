@@ -6,12 +6,6 @@ import jakarta.validation.constraints.NotNull;
 @Entity
 public class TipoComprobantePago {
 
-    // Enum para el tipo de comprobante de pago
-    public enum NombreComprobante {
-        BOLETA,
-        FACTURA
-    }
-
     // Enum para el estado del comprobante de pago
     public enum Estado {
         ACTIVO,
@@ -22,9 +16,9 @@ public class TipoComprobantePago {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer idTipoComprobantePago;
 
-    @Enumerated(EnumType.STRING)
+    @Column(length = 150) // Define el campo como VARCHAR(150) en la base de datos
     @NotNull(message = "El nombre del comprobante de pago no puede ser nulo")
-    private NombreComprobante nombre;
+    private String nombre; // Cambiado de enum a String
 
     @NotNull(message = "La descripción no puede ser nula")
     private String descripcion;
@@ -38,7 +32,7 @@ public class TipoComprobantePago {
     }
 
     // Constructor con parámetros
-    public TipoComprobantePago(Integer idTipoComprobantePago, NombreComprobante nombre, String descripcion, Estado estado) {
+    public TipoComprobantePago(Integer idTipoComprobantePago, String nombre, String descripcion, Estado estado) {
         this.idTipoComprobantePago = idTipoComprobantePago;
         this.nombre = nombre;
         this.descripcion = descripcion;
@@ -54,11 +48,11 @@ public class TipoComprobantePago {
         this.idTipoComprobantePago = idTipoComprobantePago;
     }
 
-    public NombreComprobante getNombre() {
+    public String getNombre() {
         return nombre;
     }
 
-    public void setNombre(NombreComprobante nombre) {
+    public void setNombre(String nombre) {
         this.nombre = nombre;
     }
 

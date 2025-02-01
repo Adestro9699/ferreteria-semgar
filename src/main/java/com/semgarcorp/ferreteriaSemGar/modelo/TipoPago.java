@@ -12,21 +12,12 @@ public class TipoPago {
         INACTIVO
     }
 
-    public enum NombreTipoPago {
-        EFECTIVO,
-        DEBITO,
-        CREDITO,
-        YAPE,
-        PLIN,
-        TRANSFERENCIA,
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer idTipoPago;
 
-    @Enumerated(EnumType.STRING)
-    private NombreTipoPago nombreTipoPago;
+    @Column(length = 200) // Define el campo como VARCHAR(200) en la base de datos
+    private String nombreTipoPago; // Cambiado de enum a String
 
     @Column(length = 300)
     private String descripcionTipoPago;
@@ -41,13 +32,13 @@ public class TipoPago {
 
     private LocalDate fechaModificacion;
 
-    @Column(unique = true, length = 20)
+    @Column(length = 20)
     private String codigoTipoPago;
 
     public TipoPago() {
     }
 
-    public TipoPago(Integer idTipoPago, NombreTipoPago nombreTipoPago, String descripcionTipoPago,
+    public TipoPago(Integer idTipoPago, String nombreTipoPago, String descripcionTipoPago,
                     EstadoTipoPago estadoTipoPago, BigDecimal comision, LocalDate fechaCreacion,
                     LocalDate fechaModificacion, String codigoTipoPago) {
         this.idTipoPago = idTipoPago;
@@ -68,11 +59,11 @@ public class TipoPago {
         this.idTipoPago = idTipoPago;
     }
 
-    public NombreTipoPago getNombreTipoPago() {
+    public String getNombreTipoPago() {
         return nombreTipoPago;
     }
 
-    public void setNombreTipoPago(NombreTipoPago nombreTipoPago) {
+    public void setNombreTipoPago(String nombreTipoPago) {
         this.nombreTipoPago = nombreTipoPago;
     }
 

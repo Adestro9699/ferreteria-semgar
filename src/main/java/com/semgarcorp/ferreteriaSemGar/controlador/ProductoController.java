@@ -85,12 +85,19 @@ public class ProductoController {
     @DeleteMapping("/eliminar-multiples")
     public ResponseEntity<Void> eliminarProductos(@RequestBody List<Integer> ids) {
         try {
+            if (ids == null || ids.isEmpty()) {
+                return ResponseEntity.badRequest().build(); // Respuesta 400 Bad Request si la lista está vacía
+            }
             System.out.println("IDs recibidos: " + ids); // Log para depuración
             productoService.eliminarProductosPorIds(ids);
-            return ResponseEntity.noContent().build(); // Respuesta 204 No Content
+
+            return ResponseEntity.noContent().build(); // Respuesta 204 No Content si la operación fue exitosa
+        } catch (IllegalArgumentException e) {
+            System.err.println("Error en la solicitud: " + e.getMessage());
+            return ResponseEntity.badRequest().build(); // Respuesta 400 Bad Request si hay argumentos inválidos
         } catch (Exception e) {
-            System.err.println("Error al eliminar productos: " + e.getMessage()); // Log para depuración
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // Respuesta 500 Internal Server Error
+            System.err.println("Error al eliminar productos: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // Respuesta 500 si ocurre un error interno
         }
     }
 

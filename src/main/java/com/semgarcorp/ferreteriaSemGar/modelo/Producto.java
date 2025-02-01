@@ -64,6 +64,10 @@ public class Producto {
     @JoinColumn(name = "idSubcategoria")
     private Subcategoria subcategoria;
 
+    @ManyToOne
+    @JoinColumn(name = "idUnidadMedida") // Nombre de la columna en la tabla Producto
+    private UnidadMedida unidadMedida; // Relación con la tabla UnidadMedida
+
     @OneToMany(mappedBy = "producto")
     private List<InventarioProducto> inventarioProductos = new ArrayList<>();
 
@@ -73,7 +77,7 @@ public class Producto {
     public Producto(Integer idProducto, String nombreProducto, String descripcion, BigDecimal precio, Integer stock,
                     LocalDate fechaModificacion, String imagenURL, EstadoProducto estadoProducto, String codigoSKU,
                     String marca, String material, String codigoBarra, Proveedor proveedor, Categoria categoria,
-                    Subcategoria subcategoria, List<InventarioProducto> inventarioProductos) {
+                    Subcategoria subcategoria, UnidadMedida unidadMedida, List<InventarioProducto> inventarioProductos) {
         this.idProducto = idProducto;
         this.nombreProducto = nombreProducto;
         this.descripcion = descripcion;
@@ -89,6 +93,7 @@ public class Producto {
         this.proveedor = proveedor;
         this.categoria = categoria;
         this.subcategoria = subcategoria;
+        this.unidadMedida = unidadMedida;
         this.inventarioProductos = inventarioProductos;
     }
 
@@ -210,6 +215,14 @@ public class Producto {
 
     public void setSubcategoria(Subcategoria subcategoria) {
         this.subcategoria = subcategoria;
+    }
+
+    public UnidadMedida getUnidadMedida() {
+        return unidadMedida;
+    }
+
+    public void setUnidadMedida(UnidadMedida unidadMedida) {
+        this.unidadMedida = unidadMedida;
     }
 
     public List<InventarioProducto> getInventarioProductos() {
