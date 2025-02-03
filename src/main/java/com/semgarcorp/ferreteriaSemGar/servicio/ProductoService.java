@@ -182,4 +182,19 @@ public class ProductoService {
             return Collections.emptyList(); // Devolver una lista vacía en caso de error
         }
     }
+
+    public List<Producto> buscarProductosPorCodigoSKU(String codigoSKU) {
+        // Verificar si el código SKU es nulo o está vacío
+        if (codigoSKU == null || codigoSKU.trim().isEmpty()) {
+            return Collections.emptyList(); // Retorna una lista vacía si el código SKU está vacío
+        }
+
+        try {
+            // Buscar productos por código SKU
+            return productoRepositorio.findByCodigoSKUContainingIgnoreCase(codigoSKU.trim());
+        } catch (Exception e) {
+            // Manejar cualquier excepción y devolver una lista vacía
+            return Collections.emptyList(); // Devolver una lista vacía en caso de error
+        }
+    }
 }

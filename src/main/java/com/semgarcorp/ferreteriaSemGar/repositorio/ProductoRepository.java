@@ -32,4 +32,7 @@ public interface ProductoRepository extends JpaRepository<Producto, Integer> {
 
     // Metodo para buscar productos por nombre de subcategoría
     List<Producto> findBySubcategoriaNombreContainingIgnoreCase(String nombreSubcategoria);
+
+    List<Producto> findByCodigoSKUContainingIgnoreCase(String codigoSKU);
+
 }
