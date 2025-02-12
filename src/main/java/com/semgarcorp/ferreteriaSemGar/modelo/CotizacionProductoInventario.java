@@ -22,6 +22,12 @@ public class CotizacionProductoInventario {
     @Column(precision = 10, scale = 2)
     private BigDecimal total; // Valor total de una cotización
 
+    @Column(precision = 10, scale = 2)
+    private BigDecimal igv;
+
+    @Column(precision = 10, scale = 2)
+    private BigDecimal precioUnitario;
+
     private LocalDate fechaModificacion;
 
     @ManyToOne
@@ -36,14 +42,16 @@ public class CotizacionProductoInventario {
     }
 
     public CotizacionProductoInventario(Integer idCotizacionProductoInventario, BigDecimal cantidad, BigDecimal subtotal,
-                                        BigDecimal descuento, BigDecimal total, LocalDate fechaModificacion,
-                                        Cotizacion cotizacion, InventarioProducto inventarioProducto) {
+                                        BigDecimal descuento, BigDecimal total, BigDecimal igv, LocalDate fechaModificacion,
+                                        BigDecimal precioUnitario, Cotizacion cotizacion, InventarioProducto inventarioProducto) {
         this.idCotizacionProductoInventario = idCotizacionProductoInventario;
         this.cantidad = cantidad;
         this.subtotal = subtotal;
         this.descuento = descuento;
         this.total = total;
+        this.igv = igv;
         this.fechaModificacion = fechaModificacion;
+        this.precioUnitario = precioUnitario;
         this.cotizacion = cotizacion;
         this.inventarioProducto = inventarioProducto;
     }
@@ -88,6 +96,22 @@ public class CotizacionProductoInventario {
         this.total = total;
     }
 
+    public BigDecimal getIgv() {
+        return igv;
+    }
+
+    public void setIgv(BigDecimal igv) {
+        this.igv = igv;
+    }
+
+    public BigDecimal getPrecioUnitario() {
+        return precioUnitario;
+    }
+
+    public void setPrecioUnitario(BigDecimal precioUnitario) {
+        this.precioUnitario = precioUnitario;
+    }
+
     public LocalDate getFechaModificacion() {
         return fechaModificacion;
     }
@@ -96,19 +120,19 @@ public class CotizacionProductoInventario {
         this.fechaModificacion = fechaModificacion;
     }
 
-    public Cotizacion getCotizacion() {
-        return cotizacion;
-    }
-
-    public void setCotizacion(Cotizacion cotizacion) {
-        this.cotizacion = cotizacion;
-    }
-
     public InventarioProducto getInventarioProducto() {
         return inventarioProducto;
     }
 
     public void setInventarioProducto(InventarioProducto inventarioProducto) {
         this.inventarioProducto = inventarioProducto;
+    }
+
+    public Cotizacion getCotizacion() {
+        return cotizacion;
+    }
+
+    public void setCotizacion(Cotizacion cotizacion) {
+        this.cotizacion = cotizacion;
     }
 }

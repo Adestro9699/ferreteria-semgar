@@ -1,5 +1,6 @@
 package com.semgarcorp.ferreteriaSemGar.controlador;
 
+import com.semgarcorp.ferreteriaSemGar.dto.VentaDTO;
 import com.semgarcorp.ferreteriaSemGar.modelo.Venta;
 import com.semgarcorp.ferreteriaSemGar.servicio.VentaService;
 import org.springframework.http.HttpStatus;
@@ -7,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.math.BigDecimal;
 import java.net.URI;
 import java.util.List;
 
@@ -19,6 +21,25 @@ public class VentaController {
     public VentaController(VentaService ventaService) {
         this.ventaService = ventaService;
     }
+
+    /**
+     * Endpoint para obtener el precio de un producto.
+     */
+    @GetMapping("/producto/{idProducto}/precio")
+    public ResponseEntity<BigDecimal> obtenerPrecioProducto(@PathVariable Integer idProducto) {
+        BigDecimal precioUnitario = ventaService.obtenerPrecioProducto(idProducto);
+        return ResponseEntity.ok(precioUnitario);
+    }
+
+    /**
+     * Endpoint para registrar una nueva venta.
+     */
+    @PostMapping("/registrar")
+    public ResponseEntity<VentaDTO> registrarVenta(@RequestBody VentaDTO ventaDTO) {
+        VentaDTO nuevaVenta = ventaService.registrarVenta(ventaDTO);
+        return ResponseEntity.ok(nuevaVenta);
+    }
+
 
     // Obtener la lista de todas las ventas
     @GetMapping
