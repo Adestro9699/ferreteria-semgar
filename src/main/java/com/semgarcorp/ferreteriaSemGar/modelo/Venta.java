@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -17,11 +19,17 @@ public class Venta {
     }
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)  // Cambiado a IDENTITY
     private Integer idVenta;
 
+    @Column(length = 4, nullable = false)
+    private String serieComprobante;  // Ejemplo: "F001" o "B001"
+
+    @Column(length = 6, nullable = false)
+    private String numeroComprobante; // Ejemplo: "000123"
+
     @NotNull(message = "La fecha de venta no puede ser nula")
-    private LocalDate fechaVenta;
+    private LocalDateTime fechaVenta;
 
     @Enumerated(EnumType.STRING)
     private EstadoVenta estadoVenta;
@@ -30,32 +38,26 @@ public class Venta {
     @Column(precision = 10, scale = 2)
     private BigDecimal totalVenta;
 
-    @NotNull(message = "La cantidad de la venta no puede ser nula")
-    @Column(precision = 10, scale = 2)  // Definido para permitir decimales en la cantidad
-    private BigDecimal cantidadVenta;
-
-    @NotNull(message = "El descuento no puede ser nulo")
-    @Column(precision = 10, scale = 2)
-    private BigDecimal descuento;
-
     @Column(name = "fecha_modificacion")
-    private LocalDate fechaModificacion;
-
-    @NotNull(message = "El código de transacción no puede ser nulo")
-    @Column(length = 50)
-    private String codigoTransaccion;
+    private LocalDateTime fechaModificacion;
 
     @Lob
     private String observaciones;
-
-    @ManyToOne
-    @JoinColumn(name = "idCotizacionProductoInventario")
-    private CotizacionProductoInventario cotizacionProductoInventario;
 
     // Relación con Caja (Many-to-One)
     @ManyToOne
     @JoinColumn(name = "idCaja", nullable = false)
     private Caja caja;
+
+    // Relación con Empresa (Many-to-One)
+    @ManyToOne
+    @JoinColumn(name = "idEmpresa", nullable = false)
+    private Empresa empresa;
+
+    // Relación con Cotizacion (Many-to-One, opcional)
+    @ManyToOne
+    @JoinColumn(name = "idCotizacion", nullable = true)  // Opcional, ya que no todas las ventas provienen de una cotización
+    private Cotizacion cotizacion;
 
     // Relación con la tabla puente VentaImpuestoCotizacion
     @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -63,32 +65,55 @@ public class Venta {
 
     // Relación con TipoComprobantePago (Many-to-One)
     @ManyToOne
-    @JoinColumn(name = "idTipoComprobantePago", nullable = false)  // Referencia a TipoComprobantePago
+    @JoinColumn(name = "idTipoComprobantePago", nullable = false)
     private TipoComprobantePago tipoComprobantePago;
+
+    // Relación con DetalleVenta (One-to-Many)
+    @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DetalleVenta> detalles;
+
+    // Relación con Trabajador
+    @ManyToOne
+    @JoinColumn(name = "idTrabajador", referencedColumnName = "idTrabajador")
+    private Trabajador trabajador;
+
+    // Relación con Cliente
+    @ManyToOne
+    @JoinColumn(name = "idCliente", referencedColumnName = "idCliente")
+    private Cliente cliente;
+
+    // Relación con Tipo_Pago
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "idTipoPago", referencedColumnName = "idTipoPago")
+    private TipoPago tipoPago;
 
     public Venta() {
     }
 
-    public Venta(Integer idVenta, LocalDate fechaVenta, EstadoVenta estadoVenta, BigDecimal totalVenta,
-                 BigDecimal cantidadVenta, BigDecimal descuento, LocalDate fechaModificacion, String codigoTransaccion,
-                 String observaciones, CotizacionProductoInventario cotizacionProductoInventario, Caja caja,
-                 Set<VentaImpuestoCotizacion> ventaImpuestoCotizaciones, TipoComprobantePago tipoComprobantePago) {
+    public Venta(Integer idVenta, String serieComprobante, String numeroComprobante, LocalDateTime fechaVenta,
+                 EstadoVenta estadoVenta, BigDecimal totalVenta, LocalDateTime fechaModificacion, String observaciones,
+                 Caja caja, Empresa empresa, Cotizacion cotizacion, Set<VentaImpuestoCotizacion> ventaImpuestoCotizaciones,
+                 TipoComprobantePago tipoComprobantePago, List<DetalleVenta> detalles, Trabajador trabajador,
+                 Cliente cliente, TipoPago tipoPago) {
         this.idVenta = idVenta;
+        this.serieComprobante = serieComprobante;
+        this.numeroComprobante = numeroComprobante;
         this.fechaVenta = fechaVenta;
         this.estadoVenta = estadoVenta;
         this.totalVenta = totalVenta;
-        this.cantidadVenta = cantidadVenta;
-        this.descuento = descuento;
         this.fechaModificacion = fechaModificacion;
-        this.codigoTransaccion = codigoTransaccion;
         this.observaciones = observaciones;
-        this.cotizacionProductoInventario = cotizacionProductoInventario;
         this.caja = caja;
+        this.empresa = empresa;
+        this.cotizacion = cotizacion;
         this.ventaImpuestoCotizaciones = ventaImpuestoCotizaciones;
-        this.tipoComprobantePago = tipoComprobantePago;  // Inicialización del tipo de comprobante de pago
+        this.tipoComprobantePago = tipoComprobantePago;
+        this.detalles = detalles;
+        this.trabajador = trabajador;
+        this.cliente = cliente;
+        this.tipoPago = tipoPago;
     }
 
-    // Getters y setters
     public Integer getIdVenta() {
         return idVenta;
     }
@@ -97,11 +122,27 @@ public class Venta {
         this.idVenta = idVenta;
     }
 
-    public LocalDate getFechaVenta() {
+    public String getSerieComprobante() {
+        return serieComprobante;
+    }
+
+    public void setSerieComprobante(String serieComprobante) {
+        this.serieComprobante = serieComprobante;
+    }
+
+    public String getNumeroComprobante() {
+        return numeroComprobante;
+    }
+
+    public void setNumeroComprobante(String numeroComprobante) {
+        this.numeroComprobante = numeroComprobante;
+    }
+
+    public LocalDateTime getFechaVenta() {
         return fechaVenta;
     }
 
-    public void setFechaVenta(LocalDate fechaVenta) {
+    public void setFechaVenta(LocalDateTime fechaVenta) {
         this.fechaVenta = fechaVenta;
     }
 
@@ -121,36 +162,12 @@ public class Venta {
         this.totalVenta = totalVenta;
     }
 
-    public BigDecimal getCantidadVenta() {
-        return cantidadVenta;
-    }
-
-    public void setCantidadVenta(BigDecimal cantidadVenta) {
-        this.cantidadVenta = cantidadVenta;
-    }
-
-    public BigDecimal getDescuento() {
-        return descuento;
-    }
-
-    public void setDescuento(BigDecimal descuento) {
-        this.descuento = descuento;
-    }
-
-    public LocalDate getFechaModificacion() {
+    public LocalDateTime getFechaModificacion() {
         return fechaModificacion;
     }
 
-    public void setFechaModificacion(LocalDate fechaModificacion) {
+    public void setFechaModificacion(LocalDateTime fechaModificacion) {
         this.fechaModificacion = fechaModificacion;
-    }
-
-    public String getCodigoTransaccion() {
-        return codigoTransaccion;
-    }
-
-    public void setCodigoTransaccion(String codigoTransaccion) {
-        this.codigoTransaccion = codigoTransaccion;
     }
 
     public String getObservaciones() {
@@ -161,20 +178,28 @@ public class Venta {
         this.observaciones = observaciones;
     }
 
-    public CotizacionProductoInventario getCotizacionProductoInventario() {
-        return cotizacionProductoInventario;
-    }
-
-    public void setCotizacionProductoInventario(CotizacionProductoInventario cotizacionProductoInventario) {
-        this.cotizacionProductoInventario = cotizacionProductoInventario;
-    }
-
     public Caja getCaja() {
         return caja;
     }
 
     public void setCaja(Caja caja) {
         this.caja = caja;
+    }
+
+    public Empresa getEmpresa() {
+        return empresa;
+    }
+
+    public void setEmpresa(Empresa empresa) {
+        this.empresa = empresa;
+    }
+
+    public Cotizacion getCotizacion() {
+        return cotizacion;
+    }
+
+    public void setCotizacion(Cotizacion cotizacion) {
+        this.cotizacion = cotizacion;
     }
 
     public Set<VentaImpuestoCotizacion> getVentaImpuestoCotizaciones() {
@@ -191,5 +216,37 @@ public class Venta {
 
     public void setTipoComprobantePago(TipoComprobantePago tipoComprobantePago) {
         this.tipoComprobantePago = tipoComprobantePago;
+    }
+
+    public List<DetalleVenta> getDetalles() {
+        return detalles;
+    }
+
+    public void setDetalles(List<DetalleVenta> detalles) {
+        this.detalles = detalles;
+    }
+
+    public Trabajador getTrabajador() {
+        return trabajador;
+    }
+
+    public void setTrabajador(Trabajador trabajador) {
+        this.trabajador = trabajador;
+    }
+
+    public Cliente getCliente() {
+        return cliente;
+    }
+
+    public void setCliente(Cliente cliente) {
+        this.cliente = cliente;
+    }
+
+    public TipoPago getTipoPago() {
+        return tipoPago;
+    }
+
+    public void setTipoPago(TipoPago tipoPago) {
+        this.tipoPago = tipoPago;
     }
 }

@@ -4,8 +4,8 @@ import com.semgarcorp.ferreteriaSemGar.modelo.Impuesto;
 import com.semgarcorp.ferreteriaSemGar.repositorio.ImpuestoRepository;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ImpuestoService {
@@ -14,6 +14,19 @@ public class ImpuestoService {
     //Constructor
     public ImpuestoService(ImpuestoRepository impuestoRepositorio) {
         this.impuestoRepositorio = impuestoRepositorio;
+    }
+
+    //metodo para obtener impuestos ACTIVOS
+    public List<Impuesto> obtenerImpuestosActivos() {
+        return impuestoRepositorio.findByEstado(Impuesto.EstadoActivo.ACTIVO);
+    }
+
+    //metodo para activar o desactivar un impuesto
+    public void actualizarEstadoImpuesto(Integer idImpuesto, Impuesto.EstadoActivo estado) {
+        Impuesto impuesto = impuestoRepositorio.findById(idImpuesto)
+                .orElseThrow(() -> new IllegalArgumentException("Impuesto no encontrado"));
+        impuesto.setEstado(estado);
+        impuestoRepositorio.save(impuesto);
     }
 
     public List<Impuesto> listar() {
@@ -26,10 +39,6 @@ public class ImpuestoService {
     }
 
     public Impuesto guardar(Impuesto impuesto) {
-        // Validación: Verificar si ya existe un impuesto con el mismo nombre o porcentaje
-        if (existeImpuesto(impuesto)) {
-            throw new IllegalArgumentException("El impuesto ya existe.");
-        }
         return impuestoRepositorio.save(impuesto);
     }
 
@@ -41,43 +50,16 @@ public class ImpuestoService {
         return impuestoRepositorio.save(impuesto);
     }
 
-    // Metodo privado para verificar si ya existe un impuesto con el mismo nombre o porcentaje y si está activo
-    private boolean existeImpuesto(Impuesto impuesto) {
-        // Buscar si ya existe un impuesto con el mismo nombre y estado activo
-        Optional<Impuesto> impuestoExistentePorNombreYActivo = impuestoRepositorio.findByNombreImpuestoAndEstado(impuesto.getNombreImpuesto(), Impuesto.EstadoActivo.ACTIVO);
-        // Buscar si ya existe un impuesto con el mismo porcentaje y estado activo
-        Optional<Impuesto> impuestoExistentePorPorcentajeYActivo = impuestoRepositorio.findByPorcentajeAndEstado(impuesto.getPorcentaje(), Impuesto.EstadoActivo.ACTIVO);
-
-        // Verificar si existe un impuesto con el mismo nombre o porcentaje, y que esté activo
-        return impuestoExistentePorNombreYActivo.isPresent() || impuestoExistentePorPorcentajeYActivo.isPresent();
-    }
-
     public void eliminar(Integer id) {
         impuestoRepositorio.deleteById(id);
     }
 
-    //metodo para desactivar un impuesto
-    public Impuesto desactivarImpuesto(Integer idImpuesto) {
-        Impuesto impuesto = impuestoRepositorio.findById(idImpuesto)
-                .orElseThrow(() -> new IllegalArgumentException("Impuesto no encontrado"));
-
-        // Cambiar el estado a INACTIVO
-        impuesto.setEstado(Impuesto.EstadoActivo.INACTIVO);
-        return impuestoRepositorio.save(impuesto);
-    }
-
-    //metodo para activar un impuesto
-    public Impuesto activarImpuesto(Integer idImpuesto) {
-        Impuesto impuesto = impuestoRepositorio.findById(idImpuesto)
-                .orElseThrow(() -> new IllegalArgumentException("Impuesto no encontrado"));
-
-        // Cambiar el estado a ACTIVO
-        impuesto.setEstado(Impuesto.EstadoActivo.ACTIVO);
-        return impuestoRepositorio.save(impuesto);
-    }
-
-    //metodo para traer impuestos que tengan estado ACTIVO
-    public List<Impuesto> listarActivos() {
-        return impuestoRepositorio.findByEstado(Impuesto.EstadoActivo.ACTIVO);
+    //metodo que calcula el valor del impuesto basado en un subtotal y el porcentaje del impuesto
+    public BigDecimal calcularValorImpuesto(BigDecimal subtotal, Impuesto impuesto) {
+        if (subtotal == null || impuesto == null || impuesto.getPorcentaje() == null) {
+            return BigDecimal.ZERO;
+        }
+        return subtotal.multiply(impuesto.getPorcentaje().divide(BigDecimal.valueOf(100)))
+                .setScale(2, BigDecimal.ROUND_HALF_UP);
     }
 }

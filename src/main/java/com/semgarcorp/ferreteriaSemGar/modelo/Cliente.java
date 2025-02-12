@@ -19,7 +19,10 @@ public class Cliente {
     private TipoCliente tipoCliente;
 
     @Column(length = 255)
-    private String nombreCompletoCliente;
+    private String nombresCliente;
+
+    @Column(length = 255)
+    private String apellidosCliente;
 
     @Column(length = 255)
     private String razonSocial;
@@ -40,21 +43,27 @@ public class Cliente {
     @Email(message = "El correo debe tener un formato válido")
     private String correoCliente;
 
+    @ManyToOne
+    @JoinColumn(name = "id_tipo_documento", nullable = false)
+    private TipoDocumento tipoDocumento;
+
     public Cliente() {
     }
 
-    public Cliente(Integer idCliente, TipoCliente tipoCliente, String nombreCompletoCliente, String razonSocial,
-                   String ruc, String dniCliente, String direccionCliente, String telefonoCliente,
-                   String correoCliente) {
+    public Cliente(Integer idCliente, TipoCliente tipoCliente, String nombresCliente, String apellidosCliente,
+                   String razonSocial, String ruc, String dniCliente, String direccionCliente, String telefonoCliente,
+                   String correoCliente, TipoDocumento tipoDocumento) {
         this.idCliente = idCliente;
         this.tipoCliente = tipoCliente;
-        this.nombreCompletoCliente = nombreCompletoCliente;
+        this.nombresCliente = nombresCliente;
+        this.apellidosCliente = apellidosCliente;
         this.razonSocial = razonSocial;
         this.ruc = ruc;
         this.dniCliente = dniCliente;
         this.direccionCliente = direccionCliente;
         this.telefonoCliente = telefonoCliente;
         this.correoCliente = correoCliente;
+        this.tipoDocumento = tipoDocumento;
     }
 
     public Integer getIdCliente() {
@@ -73,12 +82,20 @@ public class Cliente {
         this.tipoCliente = tipoCliente;
     }
 
-    public String getNombreCompletoCliente() {
-        return nombreCompletoCliente;
+    public String getNombresCliente() {
+        return nombresCliente;
     }
 
-    public void setNombreCompletoCliente(String nombreCompletoCliente) {
-        this.nombreCompletoCliente = nombreCompletoCliente;
+    public void setNombresCliente(String nombresCliente) {
+        this.nombresCliente = nombresCliente;
+    }
+
+    public String getApellidosCliente() {
+        return apellidosCliente;
+    }
+
+    public void setApellidosCliente(String apellidosCliente) {
+        this.apellidosCliente = apellidosCliente;
     }
 
     public String getRazonSocial() {
@@ -127,5 +144,13 @@ public class Cliente {
 
     public void setCorreoCliente(String correoCliente) {
         this.correoCliente = correoCliente;
+    }
+
+    public TipoDocumento getTipoDocumento() {
+        return tipoDocumento;
+    }
+
+    public void setTipoDocumento(TipoDocumento tipoDocumento) {
+        this.tipoDocumento = tipoDocumento;
     }
 }

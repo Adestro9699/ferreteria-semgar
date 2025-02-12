@@ -77,25 +77,4 @@ public class ImpuestoController {
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Si no se encuentra, 404
     }
-
-    //endpoint para activar Impuesto
-    @PutMapping("/{id}/activar")
-    public ResponseEntity<Impuesto> activarImpuesto(@PathVariable Integer id) {
-        Impuesto impuestoActivado = impuestoService.activarImpuesto(id);
-        return ResponseEntity.ok(impuestoActivado);
-    }
-
-    //endpoint para desactivar Impuesto
-    @PutMapping("/{id}/desactivar")
-    public ResponseEntity<Impuesto> desactivarImpuesto(@PathVariable Integer id) {
-        Impuesto impuestoDesactivado = impuestoService.desactivarImpuesto(id);
-        return ResponseEntity.ok(impuestoDesactivado);
-    }
-
-    // endpoint para listar impuestos activos
-    @GetMapping("/impuestos/activos")
-    public ResponseEntity<List<Impuesto>> listarImpuestosActivos() {
-        List<Impuesto> impuestosActivos = impuestoService.listarActivos();
-        return ResponseEntity.ok(impuestosActivos);
-    }
 }

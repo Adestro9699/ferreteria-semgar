@@ -17,7 +17,7 @@ public class TipoPago {
     private Integer idTipoPago;
 
     @Column(length = 200) // Define el campo como VARCHAR(200) en la base de datos
-    private String nombreTipoPago; // Cambiado de enum a String
+    private String nombre; // Cambiado de enum a String
 
     @Column(length = 300)
     private String descripcionTipoPago;
@@ -38,11 +38,10 @@ public class TipoPago {
     public TipoPago() {
     }
 
-    public TipoPago(Integer idTipoPago, String nombreTipoPago, String descripcionTipoPago,
-                    EstadoTipoPago estadoTipoPago, BigDecimal comision, LocalDate fechaCreacion,
-                    LocalDate fechaModificacion, String codigoTipoPago) {
+    public TipoPago(Integer idTipoPago, String nombre, String descripcionTipoPago, EstadoTipoPago estadoTipoPago,
+                    BigDecimal comision, LocalDate fechaCreacion, LocalDate fechaModificacion, String codigoTipoPago) {
         this.idTipoPago = idTipoPago;
-        this.nombreTipoPago = nombreTipoPago;
+        this.nombre = nombre;
         this.descripcionTipoPago = descripcionTipoPago;
         this.estadoTipoPago = estadoTipoPago;
         this.comision = comision;
@@ -59,12 +58,12 @@ public class TipoPago {
         this.idTipoPago = idTipoPago;
     }
 
-    public String getNombreTipoPago() {
-        return nombreTipoPago;
+    public String getNombre() {
+        return nombre;
     }
 
-    public void setNombreTipoPago(String nombreTipoPago) {
-        this.nombreTipoPago = nombreTipoPago;
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
     }
 
     public String getDescripcionTipoPago() {

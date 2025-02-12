@@ -51,7 +51,7 @@ public class CajaService {
         cajaRepositorio.deleteById(id);
     }
 
-    public void registrarVentaEnEfectivo(Caja caja, Venta venta) {
+    /*public void registrarVentaEnEfectivo(Caja caja, Venta venta) {
         // Validar que la venta y la caja no sean nulas
         if (venta == null || caja == null) {
             throw new IllegalArgumentException("La venta o la caja no pueden ser nulas");
@@ -70,7 +70,7 @@ public class CajaService {
             // Caso de venta directa (asumimos pago en efectivo)
             actualizarEntradasYCaja(caja, venta.getTotalVenta());
         }
-    }
+    }*/
 
     private void actualizarEntradasYCaja(Caja caja, BigDecimal montoVenta) {
         // Actualizar las entradas

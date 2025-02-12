@@ -29,7 +29,7 @@ public class Producto {
     private BigDecimal precio; //precio de venta al cliente
 
     @Column(length = 11)
-    private Integer stock; //stock global del producto en todos los inventarios
+    private BigDecimal stock; //stock global del producto en todos los inventarios
 
     private LocalDate fechaModificacion;
 
@@ -74,7 +74,7 @@ public class Producto {
     public Producto() {
     }
 
-    public Producto(Integer idProducto, String nombreProducto, String descripcion, BigDecimal precio, Integer stock,
+    public Producto(Integer idProducto, String nombreProducto, String descripcion, BigDecimal precio, BigDecimal stock,
                     LocalDate fechaModificacion, String imagenURL, EstadoProducto estadoProducto, String codigoSKU,
                     String marca, String material, String codigoBarra, Proveedor proveedor, Categoria categoria,
                     Subcategoria subcategoria, UnidadMedida unidadMedida, List<InventarioProducto> inventarioProductos) {
@@ -129,11 +129,11 @@ public class Producto {
         this.precio = precio;
     }
 
-    public Integer getStock() {
+    public BigDecimal getStock() {
         return stock;
     }
 
-    public void setStock(Integer stock) {
+    public void setStock(BigDecimal stock) {
         this.stock = stock;
     }
 

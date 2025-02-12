@@ -5,7 +5,6 @@ import com.semgarcorp.ferreteriaSemGar.repositorio.TipoPagoRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class TipoPagoService {

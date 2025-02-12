@@ -9,5 +9,4 @@ class FerreteriaSemGarApplicationTests {
 	@Test
 	void contextLoads() {
 	}
-
 }
