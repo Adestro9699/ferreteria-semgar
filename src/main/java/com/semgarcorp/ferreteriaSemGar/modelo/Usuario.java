@@ -7,7 +7,6 @@ import java.time.LocalDate;
 
 @Entity
 public class Usuario {
-
     public enum EstadoUsuario {
         ACTIVO,
         INACTIVO
@@ -35,12 +34,14 @@ public class Usuario {
     private LocalDate fechaCreacion;
 
     @ManyToOne
-    @JoinColumn(name = "id_trabajador", nullable= false)
+    @JoinColumn(name = "id_trabajador", nullable = false)
     private Trabajador trabajador;
 
+    // Constructor vacío
     public Usuario() {
     }
 
+    // Constructor con parámetros
     public Usuario(Integer idUsuario, String nombreUsuario, String contrasena, EstadoUsuario estadoUsuario,
                    LocalDate fechaCreacion, Trabajador trabajador) {
         this.idUsuario = idUsuario;
@@ -51,6 +52,7 @@ public class Usuario {
         this.trabajador = trabajador;
     }
 
+    // Getters y setters
     public Integer getIdUsuario() {
         return idUsuario;
     }

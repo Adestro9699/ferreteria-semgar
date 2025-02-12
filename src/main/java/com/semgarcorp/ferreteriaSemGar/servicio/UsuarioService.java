@@ -1,19 +1,24 @@
 package com.semgarcorp.ferreteriaSemGar.servicio;
 
+import com.semgarcorp.ferreteriaSemGar.modelo.Acceso;
 import com.semgarcorp.ferreteriaSemGar.modelo.Usuario;
+import com.semgarcorp.ferreteriaSemGar.repositorio.AccesoRepository;
 import com.semgarcorp.ferreteriaSemGar.repositorio.UsuarioRepository;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepositorio;
+    private final AccesoRepository accesoRepositorio;
 
-    public UsuarioService(UsuarioRepository usuarioRepositorio) {
+    public UsuarioService(UsuarioRepository usuarioRepositorio, AccesoRepository accesoRepositorio) {
         this.usuarioRepositorio = usuarioRepositorio;
+        this.accesoRepositorio = accesoRepositorio;
     }
 
     // Listar todos los usuarios
@@ -26,15 +31,26 @@ public class UsuarioService {
         return usuarioRepositorio.findById(id).orElse(null);
     }
 
+    // Guardar un nuevo usuario
     public Usuario guardar(Usuario usuario) {
         // Hashear la contraseña antes de guardarla
         String hashedPassword = BCrypt.hashpw(usuario.getContrasena(), BCrypt.gensalt());
         usuario.setContrasena(hashedPassword);
 
         // Guardar el usuario en la base de datos
-        return usuarioRepositorio.save(usuario);
+        Usuario usuarioGuardado = usuarioRepositorio.save(usuario);
+
+        // Crear el acceso asociado al usuario
+        Acceso acceso = new Acceso();
+        acceso.setRol("USER"); // Rol predeterminado
+        acceso.setPermisos(null); // Permisos nulos inicialmente
+        acceso.setUsuario(usuarioGuardado); // Asociar el usuario al acceso
+        accesoRepositorio.save(acceso);
+
+        return usuarioGuardado;
     }
 
+    // Actualizar un usuario existente
     public Usuario actualizar(Usuario usuario) {
         // Hashear la contraseña antes de guardarla
         String hashedPassword = BCrypt.hashpw(usuario.getContrasena(), BCrypt.gensalt());
@@ -50,19 +66,7 @@ public class UsuarioService {
     }
 
     // Obtener usuario por nombre de usuario
-    public Usuario obtenerPorNombreUsuario(String nombreUsuario) {
+    public Optional<Usuario> obtenerPorNombreUsuario(String nombreUsuario) {
         return usuarioRepositorio.findByNombreUsuario(nombreUsuario);
-    }
-
-    public boolean autenticarUsuario(String nombreUsuario, String password) {
-        // Buscar al usuario por su nombre de usuario
-        Usuario usuario = usuarioRepositorio.findByNombreUsuario(nombreUsuario);
-
-        if (usuario != null) {
-            // Verificar si la contraseña coincide con el hash almacenado
-            return BCrypt.checkpw(password, usuario.getContrasena());
-        }
-
-        return false; // Usuario no encontrado
     }
 }
