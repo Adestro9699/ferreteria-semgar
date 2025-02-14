@@ -5,7 +5,6 @@ import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Set;
 
 @Entity
 public class Cotizacion {
@@ -58,18 +57,24 @@ public class Cotizacion {
     @JoinColumn(name = "idEmpresa", nullable = false)
     private Empresa empresa;
 
-    // Relación con la tabla puente VentaImpuestoCotizacion
-    @OneToMany(mappedBy = "cotizacion", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<VentaImpuestoCotizacion> ventaImpuestoCotizaciones;
-
-    // Relación con CotizacionProductoInventario (One-to-Many)
-    @OneToMany(mappedBy = "cotizacion", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<CotizacionProductoInventario> detalles;
-
     public Cotizacion() {
     }
 
-    // Getters y setters
+    public Cotizacion(Integer idCotizacion, LocalDate fechaCotizacion, BigDecimal totalCotizacion,
+                      EstadoCotizacion estadoCotizacion, String observaciones, LocalDate fechaModificacion,
+                      Trabajador trabajador, Cliente cliente, TipoPago tipoPago, Empresa empresa) {
+        this.idCotizacion = idCotizacion;
+        this.fechaCotizacion = fechaCotizacion;
+        this.totalCotizacion = totalCotizacion;
+        this.estadoCotizacion = estadoCotizacion;
+        this.observaciones = observaciones;
+        this.fechaModificacion = fechaModificacion;
+        this.trabajador = trabajador;
+        this.cliente = cliente;
+        this.tipoPago = tipoPago;
+        this.empresa = empresa;
+    }
+
     public Integer getIdCotizacion() {
         return idCotizacion;
     }
@@ -148,21 +153,5 @@ public class Cotizacion {
 
     public void setEmpresa(Empresa empresa) {
         this.empresa = empresa;
-    }
-
-    public Set<VentaImpuestoCotizacion> getVentaImpuestoCotizaciones() {
-        return ventaImpuestoCotizaciones;
-    }
-
-    public void setVentaImpuestoCotizaciones(Set<VentaImpuestoCotizacion> ventaImpuestoCotizaciones) {
-        this.ventaImpuestoCotizaciones = ventaImpuestoCotizaciones;
-    }
-
-    public Set<CotizacionProductoInventario> getDetalles() {
-        return detalles;
-    }
-
-    public void setDetalles(Set<CotizacionProductoInventario> detalles) {
-        this.detalles = detalles;
     }
 }

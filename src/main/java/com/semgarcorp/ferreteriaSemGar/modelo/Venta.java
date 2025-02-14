@@ -4,10 +4,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 public class Venta {
@@ -54,15 +52,6 @@ public class Venta {
     @JoinColumn(name = "idEmpresa", nullable = false)
     private Empresa empresa;
 
-    // Relación con Cotizacion (Many-to-One, opcional)
-    @ManyToOne
-    @JoinColumn(name = "idCotizacion", nullable = true)  // Opcional, ya que no todas las ventas provienen de una cotización
-    private Cotizacion cotizacion;
-
-    // Relación con la tabla puente VentaImpuestoCotizacion
-    @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<VentaImpuestoCotizacion> ventaImpuestoCotizaciones;
-
     // Relación con TipoComprobantePago (Many-to-One)
     @ManyToOne
     @JoinColumn(name = "idTipoComprobantePago", nullable = false)
@@ -92,9 +81,8 @@ public class Venta {
 
     public Venta(Integer idVenta, String serieComprobante, String numeroComprobante, LocalDateTime fechaVenta,
                  EstadoVenta estadoVenta, BigDecimal totalVenta, LocalDateTime fechaModificacion, String observaciones,
-                 Caja caja, Empresa empresa, Cotizacion cotizacion, Set<VentaImpuestoCotizacion> ventaImpuestoCotizaciones,
-                 TipoComprobantePago tipoComprobantePago, List<DetalleVenta> detalles, Trabajador trabajador,
-                 Cliente cliente, TipoPago tipoPago) {
+                 Caja caja, Empresa empresa, TipoComprobantePago tipoComprobantePago, List<DetalleVenta> detalles,
+                 Trabajador trabajador, Cliente cliente, TipoPago tipoPago) {
         this.idVenta = idVenta;
         this.serieComprobante = serieComprobante;
         this.numeroComprobante = numeroComprobante;
@@ -105,8 +93,6 @@ public class Venta {
         this.observaciones = observaciones;
         this.caja = caja;
         this.empresa = empresa;
-        this.cotizacion = cotizacion;
-        this.ventaImpuestoCotizaciones = ventaImpuestoCotizaciones;
         this.tipoComprobantePago = tipoComprobantePago;
         this.detalles = detalles;
         this.trabajador = trabajador;
@@ -192,22 +178,6 @@ public class Venta {
 
     public void setEmpresa(Empresa empresa) {
         this.empresa = empresa;
-    }
-
-    public Cotizacion getCotizacion() {
-        return cotizacion;
-    }
-
-    public void setCotizacion(Cotizacion cotizacion) {
-        this.cotizacion = cotizacion;
-    }
-
-    public Set<VentaImpuestoCotizacion> getVentaImpuestoCotizaciones() {
-        return ventaImpuestoCotizaciones;
-    }
-
-    public void setVentaImpuestoCotizaciones(Set<VentaImpuestoCotizacion> ventaImpuestoCotizaciones) {
-        this.ventaImpuestoCotizaciones = ventaImpuestoCotizaciones;
     }
 
     public TipoComprobantePago getTipoComprobantePago() {
