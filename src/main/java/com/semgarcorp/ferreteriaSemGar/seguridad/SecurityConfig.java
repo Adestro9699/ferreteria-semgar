@@ -47,7 +47,6 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        System.out.println("Configurando SecurityFilterChain...");
         http
                 .cors(cors -> cors.configurationSource(request -> {
                     var corsConfiguration = new org.springframework.web.cors.CorsConfiguration();
@@ -59,13 +58,23 @@ public class SecurityConfig {
                 }))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/usuarios", "/usuarios/login", "/trabajadores/**", "/accesos/**").permitAll()
+                        // Rutas públicas accesibles para todos
+                        .requestMatchers("/usuarios", "/usuarios/login", "/trabajadores/*", "/accesos/*").permitAll()
+
+                        // Rutas específicas para USER y ADMIN
+                        .requestMatchers("/productos", "/categorias", "/subcategorias", "/proveedores")
+                        .hasAnyAuthority("USER", "ADMIN") // Permite tanto USER como ADMIN
+
+                        // Rutas específicas para MANAGER y ADMIN
+                        .requestMatchers("/reportes-ventas", "/reportes-compras")
+                        .hasAnyAuthority("MANAGER", "ADMIN") // Permite tanto MANAGER como ADMIN
+
+                        // ADMIN tiene acceso a todas las rutas
                         .anyRequest().hasAuthority("ADMIN")
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(new JwtRequestFilter(jwtUtil, customUserDetailsService), UsernamePasswordAuthenticationFilter.class);
 
-        System.out.println("Rutas públicas configuradas: /usuarios, /usuarios/login, /trabajadores/**, /accesos/**");
         return http.build();
     }
 }

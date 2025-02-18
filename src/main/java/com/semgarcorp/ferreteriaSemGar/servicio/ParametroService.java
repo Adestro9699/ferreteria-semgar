@@ -4,6 +4,7 @@ import com.semgarcorp.ferreteriaSemGar.modelo.Parametro;
 import com.semgarcorp.ferreteriaSemGar.repositorio.ParametroRepository;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -25,24 +26,16 @@ public class ParametroService {
         return parametroRepositorio.findAll();
     }
 
-    /**
-     * Obtiene un parámetro por su ID.
-     *
-     * @param id El ID del parámetro.
-     * @return El parámetro si existe, o null si no se encuentra.
-     */
-    public Parametro obtenerPorId(Integer id) {
-        return parametroRepositorio.findById(id).orElse(null);
+    public BigDecimal obtenerValorPorClave(String clave) {
+        Parametro parametro = parametroRepositorio.findByClave(clave)
+                .orElseThrow(() -> new RuntimeException("No se encontró el parámetro con clave: " + clave));
+        return new BigDecimal(parametro.getValor()); // Convertir el valor a BigDecimal
     }
 
-    /**
-     * Obtiene un parámetro por su clave.
-     *
-     * @param clave La clave del parámetro (ej: "IGV", "DESCUENTO_VENDEDOR").
-     * @return El parámetro si existe, o null si no se encuentra.
-     */
-    public Parametro obtenerPorClave(String clave) {
-        return parametroRepositorio.findByClave(clave).orElse(null);
+    public BigDecimal obtenerValorIGV() {
+        Parametro parametroIGV = parametroRepositorio.findByClave("IGV")
+                .orElseThrow(() -> new RuntimeException("No se encontró el parámetro IGV"));
+        return new BigDecimal(parametroIGV.getValor());
     }
 
     /**
@@ -62,15 +55,22 @@ public class ParametroService {
      * @return El parámetro actualizado.
      */
     public Parametro actualizar(Parametro parametro) {
-        return parametroRepositorio.save(parametro);
+        // Verifica si el parámetro ya existe
+        Parametro parametroExistente = parametroRepositorio.findByClave(parametro.getClave()).orElse(null);
+        if (parametroExistente != null) {
+            // Actualiza el valor del parámetro existente
+            parametroExistente.setValor(parametro.getValor());
+            return parametroRepositorio.save(parametroExistente);
+        }
+        return null; // Si no existe, no se actualiza
     }
 
     /**
-     * Elimina un parámetro por su ID.
+     * Elimina un parámetro por su clave.
      *
-     * @param id El ID del parámetro a eliminar.
+     * @param clave La clave del parámetro a eliminar.
      */
-    public void eliminar(Integer id) {
-        parametroRepositorio.deleteById(id);
+    public void eliminar(String clave) {
+        parametroRepositorio.deleteByClave(clave);
     }
 }

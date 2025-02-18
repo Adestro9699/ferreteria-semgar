@@ -23,6 +23,7 @@ public class VentaController {
     }
 
 
+
     // Obtener la lista de todas las ventas
     @GetMapping
     public List<Venta> listar() {

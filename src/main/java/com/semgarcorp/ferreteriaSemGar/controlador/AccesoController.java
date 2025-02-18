@@ -61,7 +61,7 @@ public class AccesoController {
             acceso.setIdAcceso(id);
             // Aquí reemplazas completamente el acceso con la información que viene en el cuerpo
             Acceso accesoActualizado = accesoService.actualizar(acceso);
-            return ResponseEntity.ok(accesoActualizado); // Usamos el método estático "ok" para la respuesta exitosa
+            return ResponseEntity.ok(accesoActualizado); // Usamos el metodo estático "ok" para la respuesta exitosa
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Usamos "status" para construir la respuesta 404
         }
