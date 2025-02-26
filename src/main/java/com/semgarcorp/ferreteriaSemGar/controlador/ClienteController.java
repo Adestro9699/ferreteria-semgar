@@ -9,6 +9,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/clientes")
@@ -80,5 +81,92 @@ public class ClienteController {
             return ResponseEntity.noContent().build(); // Respuesta sin contenido
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Si no se encuentra, 404
+    }
+
+    @GetMapping("/buscarPorNumeroDocumento")
+    public ResponseEntity<Cliente> buscarPorNumeroDocumento(@RequestParam String numeroDocumento) {
+        // Verificar si el número de documento es nulo o está vacío
+        if (numeroDocumento == null || numeroDocumento.trim().isEmpty()) {
+            return ResponseEntity.badRequest().build(); // 400 Bad Request
+        }
+
+        try {
+            // Buscar el cliente por número de documento
+            Optional<Cliente> cliente = clienteService.buscarPorNumeroDocumento(numeroDocumento);
+
+            // Verificar si se encontró el cliente
+            return cliente.map(ResponseEntity::ok)
+                    .orElseGet(() -> ResponseEntity.ok().build()); // 200 OK sin cuerpo si no se encuentra
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
+        }
+    }
+
+    // Endpoint para buscar un cliente por su razón social
+    @GetMapping("/buscarPorRazonSocial")
+    public ResponseEntity<Cliente> buscarPorRazonSocial(@RequestParam String razonSocial) {
+        // Verificar si la razón social es nula o está vacía
+        if (razonSocial == null || razonSocial.trim().isEmpty()) {
+            return ResponseEntity.badRequest().build(); // 400 Bad Request
+        }
+
+        try {
+            // Buscar el cliente por razón social
+            Optional<Cliente> cliente = clienteService.buscarPorRazonSocial(razonSocial);
+
+            // Verificar si se encontró el cliente
+            return cliente.map(ResponseEntity::ok)
+                    .orElseGet(() -> ResponseEntity.ok().build()); // 200 OK sin cuerpo si no se encuentra
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
+        }
+    }
+
+    // Endpoint para buscar clientes por nombre
+    @GetMapping("/buscarPorNombre")
+    public ResponseEntity<List<Cliente>> buscarPorNombre(@RequestParam String nombres) {
+        // Verificar si el nombre es nulo o está vacío
+        if (nombres == null || nombres.trim().isEmpty()) {
+            return ResponseEntity.badRequest().build(); // 400 Bad Request
+        }
+
+        try {
+            // Buscar clientes por nombre
+            List<Cliente> clientes = clienteService.buscarPorNombre(nombres);
+
+            // Verificar si se encontraron clientes
+            if (clientes.isEmpty()) {
+                return ResponseEntity.ok().build(); // 200 OK sin cuerpo
+            }
+
+            // Devolver la lista de clientes con un código 200 OK
+            return ResponseEntity.ok(clientes);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
+        }
+    }
+
+    // Endpoint para buscar clientes por apellido
+    @GetMapping("/buscarPorApellido")
+    public ResponseEntity<List<Cliente>> buscarPorApellido(@RequestParam String apellidos) {
+        // Verificar si el apellido es nulo o está vacío
+        if (apellidos == null || apellidos.trim().isEmpty()) {
+            return ResponseEntity.badRequest().build(); // 400 Bad Request
+        }
+
+        try {
+            // Buscar clientes por apellido
+            List<Cliente> clientes = clienteService.buscarPorApellido(apellidos);
+
+            // Verificar si se encontraron clientes
+            if (clientes.isEmpty()) {
+                return ResponseEntity.ok().build(); // 200 OK sin cuerpo
+            }
+
+            // Devolver la lista de clientes con un código 200 OK
+            return ResponseEntity.ok(clientes);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
+        }
     }
 }

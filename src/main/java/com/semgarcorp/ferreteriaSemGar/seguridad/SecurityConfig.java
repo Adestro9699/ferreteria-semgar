@@ -1,8 +1,5 @@
 package com.semgarcorp.ferreteriaSemGar.seguridad;
 
-import com.semgarcorp.ferreteriaSemGar.seguridad.CustomUserDetailsService;
-import com.semgarcorp.ferreteriaSemGar.seguridad.JwtRequestFilter;
-import com.semgarcorp.ferreteriaSemGar.seguridad.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,8 +13,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.List;
 
@@ -59,17 +54,17 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         // Rutas públicas accesibles para todos
-                        .requestMatchers("/usuarios", "/usuarios/login", "/trabajadores/*", "/accesos/*").permitAll()
+                        .requestMatchers("/usuarios", "/usuarios/login", "/trabajadores", "/accesos").permitAll()
 
-                        // Rutas específicas para USER y ADMIN
-                        .requestMatchers("/productos", "/categorias", "/subcategorias", "/proveedores")
-                        .hasAnyAuthority("USER", "ADMIN") // Permite tanto USER como ADMIN
+                        // Rutas específicas para USER
+                        .requestMatchers("/productos/**", "/categorias/**", "/subcategorias/**", "/proveedores/**", "/clientes/**", "/tipos-documento/**")
+                        .hasAnyAuthority("USER", "ADMIN") // Solo USER
 
-                        // Rutas específicas para MANAGER y ADMIN
-                        .requestMatchers("/reportes-ventas", "/reportes-compras")
-                        .hasAnyAuthority("MANAGER", "ADMIN") // Permite tanto MANAGER como ADMIN
+                        // Rutas específicas para MANAGER
+                        .requestMatchers("/reportes-ventas/**", "/reportes-compras/**")
+                        .hasAnyAuthority("MANAGER", "ADMIN") // Solo MANAGER
 
-                        // ADMIN tiene acceso a todas las rutas
+                        // ADMIN tiene acceso a todas las rutas y subrutas
                         .anyRequest().hasAuthority("ADMIN")
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

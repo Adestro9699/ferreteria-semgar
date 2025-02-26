@@ -9,7 +9,7 @@ public class TipoDocumento {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer idTipoDocumento;
 
-    @Column(unique = true, length = 50, nullable = false)
+    @Column(length = 50, nullable = false)
     private String nombre;
 
     public TipoDocumento() {

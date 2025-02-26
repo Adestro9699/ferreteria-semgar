@@ -9,7 +9,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.lang.NonNull;
 
 import java.io.IOException;
@@ -64,6 +63,20 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                     // Validar el token
                     if (jwtUtil.validarToken(token, username)) {
                         UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
+
+                        // Extraer el rol del token
+                        String rol = jwtUtil.extraerRol(token);
+
+                        // Si el usuario es ADMIN, otorgar acceso sin verificar permisos
+                        if ("ADMIN".equals(rol)) {
+                            System.out.println("Usuario ADMIN detectado, otorgando acceso total...");
+                            UsernamePasswordAuthenticationToken authentication =
+                                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                            SecurityContextHolder.getContext().setAuthentication(authentication);
+                            filterChain.doFilter(request, response);
+                            return;
+                        }
 
                         // Extraer los permisos del token
                         Map<String, Boolean> permisos = jwtUtil.extraerPermisos(token);

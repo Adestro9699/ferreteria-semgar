@@ -6,63 +6,49 @@ import jakarta.validation.constraints.Email;
 @Entity
 public class Cliente {
 
-    public enum TipoCliente {
-        NATURAL,
-        JURIDICA
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer idCliente;
 
-    @Enumerated(EnumType.STRING)
-    private TipoCliente tipoCliente;
+    @Column(length = 255)
+    private String nombres;
 
     @Column(length = 255)
-    private String nombresCliente;
-
-    @Column(length = 255)
-    private String apellidosCliente;
+    private String apellidos;
 
     @Column(length = 255)
     private String razonSocial;
 
-    @Column(unique = true, length = 11)
-    private String ruc;
-
-    @Column(unique = true, length = 8)
-    private String dniCliente;
+    @Column(unique = true, length = 50)
+    private String numeroDocumento;
 
     @Column(length = 200)
-    private String direccionCliente;
+    private String direccion;
 
     @Column(length = 50)
-    private String telefonoCliente;
+    private String telefono;
 
-    @Column(unique = true, length = 100)
+    @Column(length = 100)
     @Email(message = "El correo debe tener un formato válido")
-    private String correoCliente;
+    private String correo;
 
     @ManyToOne
-    @JoinColumn(name = "id_tipo_documento", nullable = false)
+    @JoinColumn(name = "idTipoDocumento", nullable = false)
     private TipoDocumento tipoDocumento;
 
     public Cliente() {
     }
 
-    public Cliente(Integer idCliente, TipoCliente tipoCliente, String nombresCliente, String apellidosCliente,
-                   String razonSocial, String ruc, String dniCliente, String direccionCliente, String telefonoCliente,
-                   String correoCliente, TipoDocumento tipoDocumento) {
+    public Cliente(Integer idCliente, String nombres, String apellidos, String razonSocial, String numeroDocumento,
+                   String direccion, String telefono, String correo, TipoDocumento tipoDocumento) {
         this.idCliente = idCliente;
-        this.tipoCliente = tipoCliente;
-        this.nombresCliente = nombresCliente;
-        this.apellidosCliente = apellidosCliente;
+        this.nombres = nombres;
+        this.apellidos = apellidos;
         this.razonSocial = razonSocial;
-        this.ruc = ruc;
-        this.dniCliente = dniCliente;
-        this.direccionCliente = direccionCliente;
-        this.telefonoCliente = telefonoCliente;
-        this.correoCliente = correoCliente;
+        this.numeroDocumento = numeroDocumento;
+        this.direccion = direccion;
+        this.telefono = telefono;
+        this.correo = correo;
         this.tipoDocumento = tipoDocumento;
     }
 
@@ -74,28 +60,20 @@ public class Cliente {
         this.idCliente = idCliente;
     }
 
-    public TipoCliente getTipoCliente() {
-        return tipoCliente;
+    public String getNombres() {
+        return nombres;
     }
 
-    public void setTipoCliente(TipoCliente tipoCliente) {
-        this.tipoCliente = tipoCliente;
+    public void setNombres(String nombres) {
+        this.nombres = nombres;
     }
 
-    public String getNombresCliente() {
-        return nombresCliente;
+    public String getApellidos() {
+        return apellidos;
     }
 
-    public void setNombresCliente(String nombresCliente) {
-        this.nombresCliente = nombresCliente;
-    }
-
-    public String getApellidosCliente() {
-        return apellidosCliente;
-    }
-
-    public void setApellidosCliente(String apellidosCliente) {
-        this.apellidosCliente = apellidosCliente;
+    public void setApellidos(String apellidos) {
+        this.apellidos = apellidos;
     }
 
     public String getRazonSocial() {
@@ -106,44 +84,36 @@ public class Cliente {
         this.razonSocial = razonSocial;
     }
 
-    public String getRuc() {
-        return ruc;
+    public String getNumeroDocumento() {
+        return numeroDocumento;
     }
 
-    public void setRuc(String ruc) {
-        this.ruc = ruc;
+    public void setNumeroDocumento(String numeroDocumento) {
+        this.numeroDocumento = numeroDocumento;
     }
 
-    public String getDniCliente() {
-        return dniCliente;
+    public String getDireccion() {
+        return direccion;
     }
 
-    public void setDniCliente(String dniCliente) {
-        this.dniCliente = dniCliente;
+    public void setDireccion(String direccion) {
+        this.direccion = direccion;
     }
 
-    public String getDireccionCliente() {
-        return direccionCliente;
+    public String getTelefono() {
+        return telefono;
     }
 
-    public void setDireccionCliente(String direccionCliente) {
-        this.direccionCliente = direccionCliente;
+    public void setTelefono(String telefono) {
+        this.telefono = telefono;
     }
 
-    public String getTelefonoCliente() {
-        return telefonoCliente;
+    public String getCorreo() {
+        return correo;
     }
 
-    public void setTelefonoCliente(String telefonoCliente) {
-        this.telefonoCliente = telefonoCliente;
-    }
-
-    public String getCorreoCliente() {
-        return correoCliente;
-    }
-
-    public void setCorreoCliente(String correoCliente) {
-        this.correoCliente = correoCliente;
+    public void setCorreo(String correo) {
+        this.correo = correo;
     }
 
     public TipoDocumento getTipoDocumento() {

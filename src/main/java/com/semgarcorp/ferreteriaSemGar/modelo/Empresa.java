@@ -7,6 +7,12 @@ import java.util.List;
 @Entity
 public class Empresa {
 
+    // Enum para el estado de la empresa
+    public enum EstadoEmpresa {
+        ACTIVO,
+        INACTIVO
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer idEmpresa;
@@ -26,7 +32,8 @@ public class Empresa {
     @Column(length = 100)
     private String correo;
 
-    private boolean activa = true; // Por defecto, la empresa está activa
+    @Enumerated(EnumType.STRING) // Mapea el enum como una cadena en la base de datos
+    private EstadoEmpresa estado = EstadoEmpresa.ACTIVO; // Por defecto, la empresa está ACTIVA
 
     // Relación con Venta (One-to-Many)
     @OneToMany(mappedBy = "empresa", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -40,14 +47,14 @@ public class Empresa {
     }
 
     public Empresa(Integer idEmpresa, String ruc, String razonSocial, String direccion, String telefono, String correo,
-                   boolean activa, List<Venta> ventas, List<Cotizacion> cotizaciones) {
+                   EstadoEmpresa estado, List<Venta> ventas, List<Cotizacion> cotizaciones) {
         this.idEmpresa = idEmpresa;
         this.ruc = ruc;
         this.razonSocial = razonSocial;
         this.direccion = direccion;
         this.telefono = telefono;
         this.correo = correo;
-        this.activa = activa;
+        this.estado = estado;
         this.ventas = ventas;
         this.cotizaciones = cotizaciones;
     }
@@ -100,12 +107,12 @@ public class Empresa {
         this.correo = correo;
     }
 
-    public boolean isActiva() {
-        return activa;
+    public EstadoEmpresa getEstado() {
+        return estado;
     }
 
-    public void setActiva(boolean activa) {
-        this.activa = activa;
+    public void setEstado(EstadoEmpresa estado) {
+        this.estado = estado;
     }
 
     public List<Venta> getVentas() {

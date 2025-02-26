@@ -5,6 +5,7 @@ import com.semgarcorp.ferreteriaSemGar.repositorio.ClienteRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ClienteService {
@@ -33,5 +34,25 @@ public class ClienteService {
 
     public void eliminar(Integer id) {
         clienteRepositorio.deleteById(id);
+    }
+
+    // Metodo para buscar un cliente por su número de documento
+    public Optional<Cliente> buscarPorNumeroDocumento(String numeroDocumento) {
+        return clienteRepositorio.findByNumeroDocumento(numeroDocumento);
+    }
+
+    // Metodo para buscar un cliente por su razón social
+    public Optional<Cliente> buscarPorRazonSocial(String razonSocial) {
+        return clienteRepositorio.findByRazonSocialContainingIgnoreCase(razonSocial);
+    }
+
+    // Metodo para buscar clientes por nombre
+    public List<Cliente> buscarPorNombre(String nombres) {
+        return clienteRepositorio.findByNombresContainingIgnoreCase(nombres);
+    }
+
+    // Metodo para buscar clientes por apellido
+    public List<Cliente> buscarPorApellido(String apellidos) {
+        return clienteRepositorio.findByApellidosContaining(apellidos);
     }
 }
