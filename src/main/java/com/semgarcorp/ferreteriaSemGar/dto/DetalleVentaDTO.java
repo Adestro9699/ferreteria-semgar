@@ -4,26 +4,47 @@ import java.math.BigDecimal;
 
 public class DetalleVentaDTO {
 
-    private Integer idProducto;
-    private String nombreProducto;
-    private String unidadMedida;
-    private BigDecimal precioUnitario;
+    private Integer idDetalleVenta;
+    private Integer idVenta; // Solo el ID de la venta
+    private Integer idProducto; // Solo el ID del producto
     private BigDecimal cantidad;
+    private BigDecimal precioUnitario;
     private BigDecimal descuento;
-    private BigDecimal subtotal;
+    private BigDecimal subtotalSinImpuestos;
+    private BigDecimal impuesto;
 
+    // Constructor vacío
     public DetalleVentaDTO() {
     }
 
-    public DetalleVentaDTO(Integer idProducto, String nombreProducto, String unidadMedida, BigDecimal precioUnitario,
-                           BigDecimal cantidad, BigDecimal descuento, BigDecimal subtotal) {
+    // Constructor con todos los campos
+    public DetalleVentaDTO(Integer idDetalleVenta, Integer idVenta, Integer idProducto, BigDecimal cantidad,
+                           BigDecimal precioUnitario, BigDecimal descuento, BigDecimal subtotalSinImpuestos, BigDecimal impuesto) {
+        this.idDetalleVenta = idDetalleVenta;
+        this.idVenta = idVenta;
         this.idProducto = idProducto;
-        this.nombreProducto = nombreProducto;
-        this.unidadMedida = unidadMedida;
-        this.precioUnitario = precioUnitario;
         this.cantidad = cantidad;
+        this.precioUnitario = precioUnitario;
         this.descuento = descuento;
-        this.subtotal = subtotal;
+        this.subtotalSinImpuestos = subtotalSinImpuestos;
+        this.impuesto = impuesto;
+    }
+
+    // Getters y Setters
+    public Integer getIdDetalleVenta() {
+        return idDetalleVenta;
+    }
+
+    public void setIdDetalleVenta(Integer idDetalleVenta) {
+        this.idDetalleVenta = idDetalleVenta;
+    }
+
+    public Integer getIdVenta() {
+        return idVenta;
+    }
+
+    public void setIdVenta(Integer idVenta) {
+        this.idVenta = idVenta;
     }
 
     public Integer getIdProducto() {
@@ -34,20 +55,12 @@ public class DetalleVentaDTO {
         this.idProducto = idProducto;
     }
 
-    public String getNombreProducto() {
-        return nombreProducto;
+    public BigDecimal getCantidad() {
+        return cantidad;
     }
 
-    public void setNombreProducto(String nombreProducto) {
-        this.nombreProducto = nombreProducto;
-    }
-
-    public String getUnidadMedida() {
-        return unidadMedida;
-    }
-
-    public void setUnidadMedida(String unidadMedida) {
-        this.unidadMedida = unidadMedida;
+    public void setCantidad(BigDecimal cantidad) {
+        this.cantidad = cantidad;
     }
 
     public BigDecimal getPrecioUnitario() {
@@ -58,14 +71,6 @@ public class DetalleVentaDTO {
         this.precioUnitario = precioUnitario;
     }
 
-    public BigDecimal getCantidad() {
-        return cantidad;
-    }
-
-    public void setCantidad(BigDecimal cantidad) {
-        this.cantidad = cantidad;
-    }
-
     public BigDecimal getDescuento() {
         return descuento;
     }
@@ -74,11 +79,19 @@ public class DetalleVentaDTO {
         this.descuento = descuento;
     }
 
-    public BigDecimal getSubtotal() {
-        return subtotal;
+    public BigDecimal getSubtotalSinImpuestos() {
+        return subtotalSinImpuestos;
     }
 
-    public void setSubtotal(BigDecimal subtotal) {
-        this.subtotal = subtotal;
+    public void setSubtotalSinImpuestos(BigDecimal subtotalSinImpuestos) {
+        this.subtotalSinImpuestos = subtotalSinImpuestos;
+    }
+
+    public BigDecimal getImpuesto() {
+        return impuesto;
+    }
+
+    public void setImpuesto(BigDecimal impuesto) {
+        this.impuesto = impuesto;
     }
 }

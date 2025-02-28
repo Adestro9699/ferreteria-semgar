@@ -57,10 +57,6 @@ public class Venta {
     @JoinColumn(name = "idTipoComprobantePago", nullable = false)
     private TipoComprobantePago tipoComprobantePago;
 
-    // Relación con DetalleVenta (One-to-Many)
-    @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<DetalleVenta> detalles;
-
     // Relación con Trabajador
     @ManyToOne
     @JoinColumn(name = "idTrabajador", referencedColumnName = "idTrabajador")
@@ -75,6 +71,10 @@ public class Venta {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "idTipoPago", referencedColumnName = "idTipoPago")
     private TipoPago tipoPago;
+
+    // Relación con DetalleVenta (One-to-Many)
+    @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DetalleVenta> detalles;
 
     public Venta() {
     }
