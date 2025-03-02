@@ -29,24 +29,24 @@ public class DetalleVenta {
     private BigDecimal descuento;
 
     @Column(precision = 10, scale = 2)
-    private BigDecimal subtotalSinImpuestos;
+    private BigDecimal subtotalSinIGV;
 
     @Column(precision = 10, scale = 2)
-    private BigDecimal impuesto;
+    private BigDecimal igvAplicado;
 
     public DetalleVenta() {
     }
 
     public DetalleVenta(Integer idDetalleVenta, Venta venta, Producto producto, BigDecimal cantidad,
-                        BigDecimal precioUnitario, BigDecimal descuento, BigDecimal subtotalSinImpuestos, BigDecimal impuesto) {
+                        BigDecimal precioUnitario, BigDecimal descuento, BigDecimal subtotalSinIGV, BigDecimal igvAplicado) {
         this.idDetalleVenta = idDetalleVenta;
         this.venta = venta;
         this.producto = producto;
         this.cantidad = cantidad;
         this.precioUnitario = precioUnitario;
         this.descuento = descuento;
-        this.subtotalSinImpuestos = subtotalSinImpuestos;
-        this.impuesto = impuesto;
+        this.subtotalSinIGV = subtotalSinIGV;
+        this.igvAplicado = igvAplicado;
     }
 
     public Integer getIdDetalleVenta() {
@@ -97,19 +97,19 @@ public class DetalleVenta {
         this.descuento = descuento;
     }
 
-    public BigDecimal getSubtotalSinImpuestos() {
-        return subtotalSinImpuestos;
+    public BigDecimal getSubtotalSinIGV() {
+        return subtotalSinIGV;
     }
 
-    public void setSubtotalSinImpuestos(BigDecimal subtotalSinImpuestos) {
-        this.subtotalSinImpuestos = subtotalSinImpuestos;
+    public void setSubtotalSinIGV(BigDecimal subtotalSinIGV) {
+        this.subtotalSinIGV = subtotalSinIGV;
     }
 
-    public BigDecimal getImpuesto() {
-        return impuesto;
+    public BigDecimal getIgvAplicado() {
+        return igvAplicado;
     }
 
-    public void setImpuesto(BigDecimal impuesto) {
-        this.impuesto = impuesto;
+    public void setIgvAplicado(BigDecimal igvAplicado) {
+        this.igvAplicado = igvAplicado;
     }
 }

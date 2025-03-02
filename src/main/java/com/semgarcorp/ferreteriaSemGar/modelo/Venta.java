@@ -10,12 +10,6 @@ import java.util.List;
 @Entity
 public class Venta {
 
-    // Enum para el estado de la venta
-    public enum EstadoVenta {
-        PENDIENTE,
-        COMPLETADA
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)  // Cambiado a IDENTITY
     private Integer idVenta;
@@ -81,8 +75,8 @@ public class Venta {
 
     public Venta(Integer idVenta, String serieComprobante, String numeroComprobante, LocalDateTime fechaVenta,
                  EstadoVenta estadoVenta, BigDecimal totalVenta, LocalDateTime fechaModificacion, String observaciones,
-                 Caja caja, Empresa empresa, TipoComprobantePago tipoComprobantePago, List<DetalleVenta> detalles,
-                 Trabajador trabajador, Cliente cliente, TipoPago tipoPago) {
+                 Caja caja, Empresa empresa, TipoComprobantePago tipoComprobantePago, Trabajador trabajador,
+                 Cliente cliente, TipoPago tipoPago, List<DetalleVenta> detalles) {
         this.idVenta = idVenta;
         this.serieComprobante = serieComprobante;
         this.numeroComprobante = numeroComprobante;
@@ -94,10 +88,10 @@ public class Venta {
         this.caja = caja;
         this.empresa = empresa;
         this.tipoComprobantePago = tipoComprobantePago;
-        this.detalles = detalles;
         this.trabajador = trabajador;
         this.cliente = cliente;
         this.tipoPago = tipoPago;
+        this.detalles = detalles;
     }
 
     public Integer getIdVenta() {
@@ -188,14 +182,6 @@ public class Venta {
         this.tipoComprobantePago = tipoComprobantePago;
     }
 
-    public List<DetalleVenta> getDetalles() {
-        return detalles;
-    }
-
-    public void setDetalles(List<DetalleVenta> detalles) {
-        this.detalles = detalles;
-    }
-
     public Trabajador getTrabajador() {
         return trabajador;
     }
@@ -218,5 +204,13 @@ public class Venta {
 
     public void setTipoPago(TipoPago tipoPago) {
         this.tipoPago = tipoPago;
+    }
+
+    public List<DetalleVenta> getDetalles() {
+        return detalles;
+    }
+
+    public void setDetalles(List<DetalleVenta> detalles) {
+        this.detalles = detalles;
     }
 }

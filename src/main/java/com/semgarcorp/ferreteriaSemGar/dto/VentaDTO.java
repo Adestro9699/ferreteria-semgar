@@ -1,59 +1,37 @@
 package com.semgarcorp.ferreteriaSemGar.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-
+import com.semgarcorp.ferreteriaSemGar.modelo.EstadoVenta; // Importa la enumeración común
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
 public class VentaDTO {
-    private String serieComprobante;
-    private String numeroComprobante;
-    private String tipoComprobante;
-    private String tipoPago;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    private Integer idVenta;
+    private String serieComprobante; //no puede ser nulo
+    private String numeroComprobante; //no puede ser nulo
     private LocalDateTime fechaVenta;
-
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    private EstadoVenta estadoVenta;
     private BigDecimal totalVenta;
-
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    private BigDecimal impuestoTotal;
-
-    private String estadoVenta;
-
-    // Información del cliente
-    private String nombresCliente;
-    private String apellidosCliente;
-    private String direccionCliente;
-    private String tipoDocumentoCliente;
-    private String numeroDocumentoCliente;
-
-    // Otros atributos relevantes
+    private LocalDateTime fechaModificacion;
+    private String observaciones;
+    private Integer idCaja;
+    private Integer idEmpresa;
+    private Integer idTipoComprobantePago;
+    private Integer idTrabajador;
+    private Integer idCliente;
+    private Integer idTipoPago;
     private List<DetalleVentaDTO> detalles;
 
     public VentaDTO() {
     }
 
-    public VentaDTO(String serieComprobante, String numeroComprobante, String tipoComprobante, String tipoPago,
-                    LocalDateTime fechaVenta, BigDecimal totalVenta, BigDecimal impuestoTotal, String estadoVenta,
-                    String nombresCliente, String apellidosCliente, String direccionCliente, String tipoDocumentoCliente,
-                    String numeroDocumentoCliente, List<DetalleVentaDTO> detalles) {
-        this.serieComprobante = serieComprobante;
-        this.numeroComprobante = numeroComprobante;
-        this.tipoComprobante = tipoComprobante;
-        this.tipoPago = tipoPago;
-        this.fechaVenta = fechaVenta;
-        this.totalVenta = totalVenta;
-        this.impuestoTotal = impuestoTotal;
-        this.estadoVenta = estadoVenta;
-        this.nombresCliente = nombresCliente;
-        this.apellidosCliente = apellidosCliente;
-        this.direccionCliente = direccionCliente;
-        this.tipoDocumentoCliente = tipoDocumentoCliente;
-        this.numeroDocumentoCliente = numeroDocumentoCliente;
-        this.detalles = detalles;
+    public Integer getIdVenta() {
+        return idVenta;
+    }
+
+    public void setIdVenta(Integer idVenta) {
+        this.idVenta = idVenta;
     }
 
     public String getSerieComprobante() {
@@ -72,28 +50,20 @@ public class VentaDTO {
         this.numeroComprobante = numeroComprobante;
     }
 
-    public String getTipoComprobante() {
-        return tipoComprobante;
-    }
-
-    public void setTipoComprobante(String tipoComprobante) {
-        this.tipoComprobante = tipoComprobante;
-    }
-
-    public String getTipoPago() {
-        return tipoPago;
-    }
-
-    public void setTipoPago(String tipoPago) {
-        this.tipoPago = tipoPago;
-    }
-
     public LocalDateTime getFechaVenta() {
         return fechaVenta;
     }
 
     public void setFechaVenta(LocalDateTime fechaVenta) {
         this.fechaVenta = fechaVenta;
+    }
+
+    public EstadoVenta getEstadoVenta() {
+        return estadoVenta;
+    }
+
+    public void setEstadoVenta(EstadoVenta estadoVenta) {
+        this.estadoVenta = estadoVenta;
     }
 
     public BigDecimal getTotalVenta() {
@@ -104,60 +74,68 @@ public class VentaDTO {
         this.totalVenta = totalVenta;
     }
 
-    public BigDecimal getImpuestoTotal() {
-        return impuestoTotal;
+    public LocalDateTime getFechaModificacion() {
+        return fechaModificacion;
     }
 
-    public void setImpuestoTotal(BigDecimal impuestoTotal) {
-        this.impuestoTotal = impuestoTotal;
+    public void setFechaModificacion(LocalDateTime fechaModificacion) {
+        this.fechaModificacion = fechaModificacion;
     }
 
-    public String getEstadoVenta() {
-        return estadoVenta;
+    public String getObservaciones() {
+        return observaciones;
     }
 
-    public void setEstadoVenta(String estadoVenta) {
-        this.estadoVenta = estadoVenta;
+    public void setObservaciones(String observaciones) {
+        this.observaciones = observaciones;
     }
 
-    public String getNombresCliente() {
-        return nombresCliente;
+    public Integer getIdCaja() {
+        return idCaja;
     }
 
-    public void setNombresCliente(String nombresCliente) {
-        this.nombresCliente = nombresCliente;
+    public void setIdCaja(Integer idCaja) {
+        this.idCaja = idCaja;
     }
 
-    public String getApellidosCliente() {
-        return apellidosCliente;
+    public Integer getIdEmpresa() {
+        return idEmpresa;
     }
 
-    public void setApellidosCliente(String apellidosCliente) {
-        this.apellidosCliente = apellidosCliente;
+    public void setIdEmpresa(Integer idEmpresa) {
+        this.idEmpresa = idEmpresa;
     }
 
-    public String getDireccionCliente() {
-        return direccionCliente;
+    public Integer getIdTipoComprobantePago() {
+        return idTipoComprobantePago;
     }
 
-    public void setDireccionCliente(String direccionCliente) {
-        this.direccionCliente = direccionCliente;
+    public void setIdTipoComprobantePago(Integer idTipoComprobantePago) {
+        this.idTipoComprobantePago = idTipoComprobantePago;
     }
 
-    public String getTipoDocumentoCliente() {
-        return tipoDocumentoCliente;
+    public Integer getIdTrabajador() {
+        return idTrabajador;
     }
 
-    public void setTipoDocumentoCliente(String tipoDocumentoCliente) {
-        this.tipoDocumentoCliente = tipoDocumentoCliente;
+    public void setIdTrabajador(Integer idTrabajador) {
+        this.idTrabajador = idTrabajador;
     }
 
-    public String getNumeroDocumentoCliente() {
-        return numeroDocumentoCliente;
+    public Integer getIdCliente() {
+        return idCliente;
     }
 
-    public void setNumeroDocumentoCliente(String numeroDocumentoCliente) {
-        this.numeroDocumentoCliente = numeroDocumentoCliente;
+    public void setIdCliente(Integer idCliente) {
+        this.idCliente = idCliente;
+    }
+
+    public Integer getIdTipoPago() {
+        return idTipoPago;
+    }
+
+    public void setIdTipoPago(Integer idTipoPago) {
+        this.idTipoPago = idTipoPago;
     }
 
     public List<DetalleVentaDTO> getDetalles() {
@@ -168,4 +146,3 @@ public class VentaDTO {
         this.detalles = detalles;
     }
 }
-

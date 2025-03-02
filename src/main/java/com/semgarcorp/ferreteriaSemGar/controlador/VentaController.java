@@ -22,8 +22,6 @@ public class VentaController {
         this.ventaService = ventaService;
     }
 
-
-
     // Obtener la lista de todas las ventas
     @GetMapping
     public List<Venta> listar() {
@@ -42,18 +40,18 @@ public class VentaController {
 
     // Crear una nueva venta
     @PostMapping
-    public ResponseEntity<Venta> guardar(@RequestBody Venta venta) {
-        // Guardar la venta usando el servicio
-        Venta nuevaVenta = ventaService.guardar(venta);
+    public ResponseEntity<VentaDTO> guardarVenta(@RequestBody VentaDTO ventaDTO) {
+        // 1. Guardar la venta usando el servicio
+        VentaDTO nuevaVentaDTO = ventaService.guardarVenta(ventaDTO);
 
-        // Crear la URI del recurso recién creado
+        // 2. Crear la URI del recurso recién creado
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
                 .path("/{id}")
-                .buildAndExpand(nuevaVenta.getIdVenta()).toUri();
+                .buildAndExpand(nuevaVentaDTO.getIdVenta()).toUri();
 
-        // Devolver la respuesta con la URI en la cabecera Location y el objeto creado en el cuerpo
-        return ResponseEntity.created(location).body(nuevaVenta);
+        // 3. Devolver la respuesta con la URI en la cabecera Location y el DTO en el cuerpo
+        return ResponseEntity.created(location).body(nuevaVentaDTO);
     }
 
     // Actualizar una venta existente (PUT)

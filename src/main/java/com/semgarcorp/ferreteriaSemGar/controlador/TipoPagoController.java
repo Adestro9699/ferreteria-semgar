@@ -11,7 +11,7 @@ import java.net.URI;
 import java.util.List;
 
 @RestController
-@RequestMapping("/tipospago")
+@RequestMapping("/tipos-pago")
 public class TipoPagoController {
 
     private final TipoPagoService tipoPagoService;

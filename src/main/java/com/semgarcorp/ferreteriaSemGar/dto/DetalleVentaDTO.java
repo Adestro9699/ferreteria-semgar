@@ -5,32 +5,29 @@ import java.math.BigDecimal;
 public class DetalleVentaDTO {
 
     private Integer idDetalleVenta;
-    private Integer idVenta; // Solo el ID de la venta
-    private Integer idProducto; // Solo el ID del producto
+    private Integer idVenta;
+    private Integer idProducto;
     private BigDecimal cantidad;
     private BigDecimal precioUnitario;
     private BigDecimal descuento;
-    private BigDecimal subtotalSinImpuestos;
-    private BigDecimal impuesto;
+    private BigDecimal subtotalSinIGV;
+    private BigDecimal igvAplicado;
 
-    // Constructor vacío
     public DetalleVentaDTO() {
     }
 
-    // Constructor con todos los campos
     public DetalleVentaDTO(Integer idDetalleVenta, Integer idVenta, Integer idProducto, BigDecimal cantidad,
-                           BigDecimal precioUnitario, BigDecimal descuento, BigDecimal subtotalSinImpuestos, BigDecimal impuesto) {
+                           BigDecimal precioUnitario, BigDecimal descuento, BigDecimal subtotalSinIGV, BigDecimal igvAplicado) {
         this.idDetalleVenta = idDetalleVenta;
         this.idVenta = idVenta;
         this.idProducto = idProducto;
         this.cantidad = cantidad;
         this.precioUnitario = precioUnitario;
         this.descuento = descuento;
-        this.subtotalSinImpuestos = subtotalSinImpuestos;
-        this.impuesto = impuesto;
+        this.subtotalSinIGV = subtotalSinIGV;
+        this.igvAplicado = igvAplicado;
     }
 
-    // Getters y Setters
     public Integer getIdDetalleVenta() {
         return idDetalleVenta;
     }
@@ -79,19 +76,19 @@ public class DetalleVentaDTO {
         this.descuento = descuento;
     }
 
-    public BigDecimal getSubtotalSinImpuestos() {
-        return subtotalSinImpuestos;
+    public BigDecimal getSubtotalSinIGV() {
+        return subtotalSinIGV;
     }
 
-    public void setSubtotalSinImpuestos(BigDecimal subtotalSinImpuestos) {
-        this.subtotalSinImpuestos = subtotalSinImpuestos;
+    public void setSubtotalSinIGV(BigDecimal subtotalSinIGV) {
+        this.subtotalSinIGV = subtotalSinIGV;
     }
 
-    public BigDecimal getImpuesto() {
-        return impuesto;
+    public BigDecimal getIgvAplicado() {
+        return igvAplicado;
     }
 
-    public void setImpuesto(BigDecimal impuesto) {
-        this.impuesto = impuesto;
+    public void setIgvAplicado(BigDecimal igvAplicado) {
+        this.igvAplicado = igvAplicado;
     }
 }
