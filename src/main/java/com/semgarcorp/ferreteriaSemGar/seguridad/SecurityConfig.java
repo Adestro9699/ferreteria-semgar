@@ -54,7 +54,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         // Rutas públicas accesibles para todos
-                        .requestMatchers("/usuarios", "/usuarios/login", "/trabajadores", "/accesos").permitAll()
+                        .requestMatchers("/usuarios", "/usuarios/login", "/trabajadores").permitAll()
 
                         // Rutas específicas para USER
                         .requestMatchers("/productos/**", "/categorias/**", "/subcategorias/**", "/proveedores/**", "/clientes/**", "/tipos-documento/**")

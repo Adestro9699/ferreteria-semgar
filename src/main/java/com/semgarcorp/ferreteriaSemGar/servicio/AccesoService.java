@@ -51,10 +51,13 @@ public class AccesoService {
      * @param nuevosPermisos Un mapa con los nuevos permisos (clave: funcionalidad, valor: booleano).
      * @return El acceso actualizado.
      */
-    public Acceso actualizarPermisos(Integer idAcceso, Map<String, Boolean> nuevosPermisos) {
+    public Acceso actualizarPermisosYRol(Integer idAcceso, String nuevoRol, Map<String, Boolean> nuevosPermisos) {
         // Buscar el acceso por su ID
         Acceso acceso = accesoRepositorio.findById(idAcceso)
                 .orElseThrow(() -> new RuntimeException("Acceso no encontrado"));
+
+        // Actualizar el rol
+        acceso.setRol(nuevoRol);
 
         // Convertir los permisos a JSON
         ObjectMapper objectMapper = new ObjectMapper();

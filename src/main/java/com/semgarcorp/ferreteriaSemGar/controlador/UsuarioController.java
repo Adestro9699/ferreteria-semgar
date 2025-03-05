@@ -1,6 +1,8 @@
 package com.semgarcorp.ferreteriaSemGar.controlador;
 
+import com.semgarcorp.ferreteriaSemGar.dto.UsuarioCompletoDTO;
 import com.semgarcorp.ferreteriaSemGar.modelo.Acceso;
+import com.semgarcorp.ferreteriaSemGar.modelo.Trabajador;
 import com.semgarcorp.ferreteriaSemGar.modelo.Usuario;
 import com.semgarcorp.ferreteriaSemGar.repositorio.AccesoRepository;
 import com.semgarcorp.ferreteriaSemGar.repositorio.UsuarioRepository;
@@ -20,6 +22,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/usuarios")
@@ -129,5 +132,31 @@ public class UsuarioController {
 
         // Devolver el token en la respuesta
         return ResponseEntity.ok(new JwtResponse(token));
+    }
+
+    // Nuevo endpoint para obtener los datos completos de los usuarios
+    @GetMapping("/completo")
+    public ResponseEntity<List<UsuarioCompletoDTO>> obtenerUsuariosCompletos() {
+        List<Usuario> usuarios = usuarioService.listar();
+        List<UsuarioCompletoDTO> usuariosCompletos = usuarios.stream().map(usuario -> {
+            // Obtener el trabajador asociado al usuario
+            Trabajador trabajador = usuario.getTrabajador();
+
+            // Obtener el acceso asociado al usuario
+            Acceso acceso = accesoRepository.findByUsuario(usuario)
+                    .orElseThrow(() -> new RuntimeException("Acceso no encontrado para el usuario"));
+
+            // Crear el DTO con los datos combinados
+            return new UsuarioCompletoDTO(
+                    trabajador.getNombreTrabajador(),
+                    trabajador.getCargoTrabajador(),
+                    usuario.getNombreUsuario(),
+                    acceso.getRol(),
+                    acceso.getPermisos(),
+                    acceso.getIdAcceso()
+            );
+        }).collect(Collectors.toList());
+
+        return ResponseEntity.ok(usuariosCompletos);
     }
 }
