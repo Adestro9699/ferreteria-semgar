@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Size;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Entity
@@ -65,9 +66,10 @@ public class Acceso {
         if (permisos == null && permisosJson != null && !permisosJson.isEmpty()) {
             try {
                 ObjectMapper objectMapper = new ObjectMapper();
+                objectMapper.readTree(permisosJson); // Validar JSON
                 this.permisos = objectMapper.readValue(permisosJson, new TypeReference<Map<String, Boolean>>() {});
             } catch (Exception e) {
-                throw new RuntimeException("Error al convertir permisos JSON a Map", e);
+                throw new RuntimeException("Error al procesar permisos JSON. Detalles: " + e.getMessage(), e);
             }
         }
         return permisos;
@@ -83,7 +85,7 @@ public class Acceso {
                 ObjectMapper objectMapper = new ObjectMapper();
                 this.permisosJson = objectMapper.writeValueAsString(permisos);
             } catch (Exception e) {
-                throw new RuntimeException("Error al convertir permisos Map a JSON", e);
+                throw new RuntimeException("Error al convertir permisos Map a JSON. Detalles: " + e.getMessage(), e);
             }
         } else {
             this.permisosJson = null;
@@ -104,7 +106,28 @@ public class Acceso {
     }
 
     public void setPermisosJson(String permisosJson) {
+        if (permisosJson != null && !permisosJson.isEmpty()) {
+            try {
+                ObjectMapper objectMapper = new ObjectMapper();
+                objectMapper.readTree(permisosJson); // Validar JSON
+            } catch (Exception e) {
+                throw new RuntimeException("El JSON de permisos no es válido. Detalles: " + e.getMessage(), e);
+            }
+        }
         this.permisosJson = permisosJson;
         this.permisos = null; // Invalidar el mapa para forzar la reconversión
+    }
+
+    // Métodos de utilidad
+    public boolean tienePermiso(String endpoint) {
+        return permisos != null && permisos.getOrDefault(endpoint, false);
+    }
+
+    public void agregarPermiso(String endpoint, boolean valor) {
+        if (permisos == null) {
+            permisos = new HashMap<>();
+        }
+        permisos.put(endpoint, valor);
+        setPermisos(permisos); // Actualizar automáticamente permisosJson
     }
 }

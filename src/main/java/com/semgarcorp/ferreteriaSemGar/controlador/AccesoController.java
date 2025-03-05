@@ -78,22 +78,24 @@ public class AccesoController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Si no se encuentra, 404
     }
 
-    // Nuevo endpoint para actualizar los permisos de un acceso
+    // Nuevo endpoint para actualizar los permisos y el rol de un acceso
     @PutMapping("/{id}/permisos")
-    public ResponseEntity<Acceso> actualizarPermisos(
+    public ResponseEntity<Acceso> actualizarPermisosYRol(
             @PathVariable Integer id,
             @RequestBody Map<String, Object> requestBody) {
-        // Obtener los nuevos permisos del cuerpo de la solicitud
+
+        // Obtener el rol y los nuevos permisos del cuerpo de la solicitud
+        String nuevoRol = (String) requestBody.get("rol");
         Map<String, Boolean> nuevosPermisos = (Map<String, Boolean>) requestBody.get("permisos");
 
-        // Validar que los permisos no sean nulos
-        if (nuevosPermisos == null || nuevosPermisos.isEmpty()) {
-            return ResponseEntity.badRequest().build(); // Respuesta 400 Bad Request si no hay permisos
+        // Validar que ni el rol ni los permisos sean nulos
+        if (nuevoRol == null || nuevosPermisos == null || nuevosPermisos.isEmpty()) {
+            return ResponseEntity.badRequest().build(); // Respuesta 400 Bad Request si falta algún dato
         }
 
-        // Llamar al servicio para actualizar los permisos
+        // Llamar al servicio para actualizar el rol y los permisos
         try {
-            Acceso accesoActualizado = accesoService.actualizarPermisos(id, nuevosPermisos);
+            Acceso accesoActualizado = accesoService.actualizarPermisosYRol(id, nuevoRol, nuevosPermisos);
             return ResponseEntity.ok(accesoActualizado); // Respuesta 200 OK con el acceso actualizado
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // Respuesta 500 en caso de error
