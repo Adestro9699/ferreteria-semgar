@@ -1,6 +1,7 @@
 package com.semgarcorp.ferreteriaSemGar.controlador;
 
 import com.semgarcorp.ferreteriaSemGar.modelo.Acceso;
+import com.semgarcorp.ferreteriaSemGar.modelo.Trabajador;
 import com.semgarcorp.ferreteriaSemGar.modelo.Usuario;
 import com.semgarcorp.ferreteriaSemGar.repositorio.AccesoRepository;
 import com.semgarcorp.ferreteriaSemGar.repositorio.UsuarioRepository;
@@ -99,35 +100,17 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
-    // Login de usuario
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Usuario usuarioRequest) {
-        // Cargar los detalles del usuario usando la instancia inyectada de UsuarioRepository
-        Usuario usuario = usuarioRepository.findByNombreUsuario(usuarioRequest.getNombreUsuario())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-        // Verificar si la contraseña es válida
-        if (!passwordEncoder.matches(usuarioRequest.getContrasena(), usuario.getContrasena())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales inválidas");
+        try {
+            // Llamar al servicio para manejar la lógica de autenticación
+            JwtResponse jwtResponse = usuarioService.autenticarUsuario(
+                    usuarioRequest.getNombreUsuario(),
+                    usuarioRequest.getContrasena()
+            );
+            return ResponseEntity.ok(jwtResponse);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
-
-        // Obtener el acceso asociado al usuario desde el repositorio usando el ID del usuario
-        Optional<Acceso> accesoOptional = accesoRepository.findAll().stream()
-                .filter(acceso -> acceso.getUsuario().getIdUsuario().equals(usuario.getIdUsuario()))
-                .findFirst();
-
-        if (accesoOptional.isEmpty() || accesoOptional.get().getRol() == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("El usuario no tiene un rol asignado");
-        }
-
-        // Obtener el rol y los permisos del acceso
-        String rol = accesoOptional.get().getRol();
-        Map<String, Boolean> permisos = accesoOptional.get().getPermisos(); // Asegúrate de que `permisos` sea un mapa
-
-        // Generar el token JWT con el nombre de usuario, el rol y los permisos
-        String token = jwtUtil.generarToken(usuario.getNombreUsuario(), rol, permisos);
-
-        // Devolver el token en la respuesta
-        return ResponseEntity.ok(new JwtResponse(token));
     }
 }

@@ -54,27 +54,24 @@ public class Caja {
     @JoinColumn(name = "idUsuario")
     private Usuario usuario;
 
-    // Relación con Venta (One-to-Many)
-    @OneToMany(mappedBy = "caja")
-    private List<Venta> ventas;
-
     public Caja() {
     }
 
     public Caja(Integer idCaja, LocalDate fechaApertura, LocalDate fechaClausura, BigDecimal saldoInicial,
-                BigDecimal entradas, BigDecimal salidas, String descripcion, EstadoCaja estado, Usuario usuario) {
+                BigDecimal entradas, BigDecimal salidas, BigDecimal saldoFinal, String descripcion, EstadoCaja estado,
+                Usuario usuario) {
         this.idCaja = idCaja;
         this.fechaApertura = fechaApertura;
         this.fechaClausura = fechaClausura;
         this.saldoInicial = saldoInicial;
         this.entradas = entradas;
         this.salidas = salidas;
+        this.saldoFinal = saldoFinal;
         this.descripcion = descripcion;
         this.estado = estado;
         this.usuario = usuario;
     }
 
-    // Getters y setters
     public Integer getIdCaja() {
         return idCaja;
     }
@@ -153,13 +150,5 @@ public class Caja {
 
     public void setUsuario(Usuario usuario) {
         this.usuario = usuario;
-    }
-
-    public List<Venta> getVentas() {
-        return ventas;
-    }
-
-    public void setVentas(List<Venta> ventas) {
-        this.ventas = ventas;
     }
 }

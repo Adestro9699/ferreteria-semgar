@@ -54,6 +54,12 @@ public class VentaController {
         return ResponseEntity.created(location).body(nuevaVentaDTO);
     }
 
+    @PostMapping("/{idVenta}/completar")
+    public ResponseEntity<VentaDTO> completarVenta(@PathVariable Integer idVenta) {
+        VentaDTO ventaCompletada = ventaService.completarVenta(idVenta);
+        return ResponseEntity.ok(ventaCompletada);
+    }
+
     // Actualizar una venta existente (PUT)
     @PutMapping("/{id}")
     public ResponseEntity<Venta> actualizar(@PathVariable Integer id, @RequestBody Venta venta) {

@@ -33,21 +33,13 @@ public class Empresa {
     private String correo;
 
     @Enumerated(EnumType.STRING) // Mapea el enum como una cadena en la base de datos
-    private EstadoEmpresa estado = EstadoEmpresa.ACTIVO; // Por defecto, la empresa está ACTIVA
-
-    // Relación con Venta (One-to-Many)
-    @OneToMany(mappedBy = "empresa", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Venta> ventas;
-
-    // Relación con Cotizacion (One-to-Many)
-    @OneToMany(mappedBy = "empresa", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Cotizacion> cotizaciones;
+    private EstadoEmpresa estado;
 
     public Empresa() {
     }
 
     public Empresa(Integer idEmpresa, String ruc, String razonSocial, String direccion, String telefono, String correo,
-                   EstadoEmpresa estado, List<Venta> ventas, List<Cotizacion> cotizaciones) {
+                   EstadoEmpresa estado) {
         this.idEmpresa = idEmpresa;
         this.ruc = ruc;
         this.razonSocial = razonSocial;
@@ -55,8 +47,6 @@ public class Empresa {
         this.telefono = telefono;
         this.correo = correo;
         this.estado = estado;
-        this.ventas = ventas;
-        this.cotizaciones = cotizaciones;
     }
 
     public Integer getIdEmpresa() {
@@ -113,21 +103,5 @@ public class Empresa {
 
     public void setEstado(EstadoEmpresa estado) {
         this.estado = estado;
-    }
-
-    public List<Venta> getVentas() {
-        return ventas;
-    }
-
-    public void setVentas(List<Venta> ventas) {
-        this.ventas = ventas;
-    }
-
-    public List<Cotizacion> getCotizaciones() {
-        return cotizaciones;
-    }
-
-    public void setCotizaciones(List<Cotizacion> cotizaciones) {
-        this.cotizaciones = cotizaciones;
     }
 }

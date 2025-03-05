@@ -7,6 +7,7 @@ import com.semgarcorp.ferreteriaSemGar.repositorio.*;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -109,35 +110,35 @@ public class VentaService {
         Venta venta = new Venta();
 
         // Asignar campos básicos de Venta
-        venta.setSerieComprobante(ventaDTO.getSerieComprobante());
-        venta.setNumeroComprobante(ventaDTO.getNumeroComprobante());
+        venta.setSerieComprobante(ventaDTO.getSerieComprobante() != null ? ventaDTO.getSerieComprobante() : ""); // Valor temporal
+        venta.setNumeroComprobante(ventaDTO.getNumeroComprobante() != null ? ventaDTO.getNumeroComprobante() : ""); // Valor temporal
         venta.setFechaVenta(ventaDTO.getFechaVenta());
         venta.setEstadoVenta(ventaDTO.getEstadoVenta() != null ? ventaDTO.getEstadoVenta() : EstadoVenta.PENDIENTE);
         venta.setTotalVenta(ventaDTO.getTotalVenta());
         venta.setFechaModificacion(ventaDTO.getFechaModificacion());
         venta.setObservaciones(ventaDTO.getObservaciones());
 
-        // Asignar entidades relacionadas (usando repositorios)
-        venta.setCaja(cajaRepository.findById(ventaDTO.getIdCaja())
-                .orElseThrow(() -> new EntityNotFoundException("Caja no encontrada")));
-        venta.setEmpresa(empresaRepository.findById(ventaDTO.getIdEmpresa())
-                .orElseThrow(() -> new EntityNotFoundException("Empresa no encontrada")));
-        venta.setTipoComprobantePago(tipoComprobanteRepository.findById(ventaDTO.getIdTipoComprobantePago())
-                .orElseThrow(() -> new EntityNotFoundException("TipoComprobantePago no encontrado")));
-        venta.setTrabajador(trabajadorRepository.findById(ventaDTO.getIdTrabajador())
-                .orElseThrow(() -> new EntityNotFoundException("Trabajador no encontrado")));
-        venta.setCliente(clienteRepository.findById(ventaDTO.getIdCliente())
-                .orElseThrow(() -> new EntityNotFoundException("Cliente no encontrado")));
-        venta.setTipoPago(tipoPagoRepository.findById(ventaDTO.getIdTipoPago())
-                .orElseThrow(() -> new EntityNotFoundException("TipoPago no encontrado")));
+        // Asignar idCaja solo si la venta no está en estado PENDIENTE
+        if (ventaDTO.getEstadoVenta() != null && ventaDTO.getEstadoVenta() != EstadoVenta.PENDIENTE) {
+            venta.setCaja(buscarEntidadPorId(cajaRepository, ventaDTO.getIdCaja(), "Caja"));
+        } else {
+            venta.setCaja(null); // No asignar caja si la venta está en estado PENDIENTE
+        }
 
-        // Convertir detallesVentaDTO a DetalleVenta
-        List<DetalleVenta> detallesVenta = ventaDTO.getDetalles() != null ?
+        // Cargar entidades relacionadas de forma más eficiente
+        venta.setEmpresa(buscarEntidadPorId(empresaRepository, ventaDTO.getIdEmpresa(), "Empresa"));
+        venta.setTipoComprobantePago(buscarEntidadPorId(tipoComprobanteRepository, ventaDTO.getIdTipoComprobantePago(), "TipoComprobantePago"));
+        venta.setTrabajador(buscarEntidadPorId(trabajadorRepository, ventaDTO.getIdTrabajador(), "Trabajador"));
+        venta.setCliente(buscarEntidadPorId(clienteRepository, ventaDTO.getIdCliente(), "Cliente"));
+        venta.setTipoPago(buscarEntidadPorId(tipoPagoRepository, ventaDTO.getIdTipoPago(), "TipoPago"));
+
+        // Convertir detallesVentaDTO a DetalleVenta (validando que la lista no sea null)
+        List<DetalleVenta> detallesVenta = ventaDTO.getDetalles() == null ?
+                new ArrayList<>() :
                 ventaDTO.getDetalles().stream()
                         .map(detalleDTO -> {
                             DetalleVenta detalle = new DetalleVenta();
-                            detalle.setProducto(productoRepository.findById(detalleDTO.getIdProducto())
-                                    .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado")));
+                            detalle.setProducto(buscarEntidadPorId(productoRepository, detalleDTO.getIdProducto(), "Producto"));
                             detalle.setCantidad(detalleDTO.getCantidad());
                             detalle.setPrecioUnitario(detalleDTO.getPrecioUnitario());
                             detalle.setDescuento(detalleDTO.getDescuento());
@@ -146,11 +147,51 @@ public class VentaService {
                             detalle.setVenta(venta); // Establecer la relación con la venta
                             return detalle;
                         })
-                        .collect(Collectors.toList()) :
-                new ArrayList<>(); // Si detalles es null, se asigna una lista vacía
+                        .collect(Collectors.toList());
 
         venta.setDetalles(detallesVenta);
         return venta;
+    }
+
+    // Metodo auxiliar para buscar entidades y lanzar excepción si no se encuentran
+    private <T> T buscarEntidadPorId(JpaRepository<T, Integer> repository, Integer id, String nombreEntidad) {
+        return repository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(nombreEntidad + " con ID " + id + " no encontrada"));
+    }
+
+    @Transactional
+    public VentaDTO completarVenta(Integer idVenta) {
+        // 1. Buscar la venta por ID
+        Venta venta = ventaRepository.findById(idVenta)
+                .orElseThrow(() -> new EntityNotFoundException("Venta con ID " + idVenta + " no encontrada"));
+
+        // 2. Verificar que la venta esté en estado "Pendiente"
+        if (venta.getEstadoVenta() != EstadoVenta.PENDIENTE) {
+            throw new IllegalStateException("La venta no está en estado PENDIENTE");
+        }
+
+        // 3. Generar serie y número (puedes implementar tu propia lógica aquí)
+        venta.setSerieComprobante(generarSerie());
+        venta.setNumeroComprobante(generarNumero());
+
+        // 4. Cambiar el estado a "Completada"
+        venta.setEstadoVenta(EstadoVenta.COMPLETADA);
+
+        // 5. Guardar la venta actualizada
+        venta = ventaRepository.save(venta);
+
+        // 6. Convertir la entidad Venta actualizada a VentaDTO
+        return convertirAVentaDTO(venta);
+    }
+
+    private String generarSerie() {
+        // Lógica para generar la serie (por ejemplo, "F001")
+        return "F001";
+    }
+
+    private String generarNumero() {
+        // Lógica para generar el número (por ejemplo, "0001")
+        return "0001";
     }
 
     public VentaDTO convertirAVentaDTO(Venta venta) {
@@ -198,13 +239,28 @@ public class VentaService {
 
     @Transactional
     public VentaDTO guardarVenta(VentaDTO ventaDTO) {
-        // 1. Convertir VentaDTO a Venta
+        // 1. Validar que la venta esté en estado "Pendiente"
+        if (ventaDTO.getEstadoVenta() != null && ventaDTO.getEstadoVenta() != EstadoVenta.PENDIENTE) {
+            throw new IllegalArgumentException("Una nueva venta debe estar en estado PENDIENTE");
+        }
+
+        // 2. Validar que no se envíen serie y número
+        if (ventaDTO.getSerieComprobante() != null || ventaDTO.getNumeroComprobante() != null) {
+            throw new IllegalArgumentException("No se pueden enviar serie y número para una venta en estado PENDIENTE");
+        }
+
+        // 3. Validar que no se envíe idCaja mientras la venta esté en estado PENDIENTE
+        if (ventaDTO.getIdCaja() != null) {
+            throw new IllegalArgumentException("No se puede enviar idCaja para una venta en estado PENDIENTE");
+        }
+
+        // 4. Convertir VentaDTO a Venta
         Venta venta = convertirAVenta(ventaDTO);
 
-        // 2. Guardar la venta en la base de datos
+        // 5. Guardar la venta en la base de datos
         venta = ventaRepository.save(venta);
 
-        // 3. Convertir la entidad Venta guardada de vuelta a VentaDTO
+        // 6. Convertir la entidad Venta guardada de vuelta a VentaDTO
         return convertirAVentaDTO(venta);
     }
 }
