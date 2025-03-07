@@ -38,7 +38,7 @@ public class Venta {
 
     // Relación con Caja (Many-to-One)
     @ManyToOne
-    @JoinColumn(name = "idCaja", nullable = false)
+    @JoinColumn(name = "idCaja", referencedColumnName = "idCaja", nullable = true)
     private Caja caja;
 
     // Relación con Empresa (Many-to-One)

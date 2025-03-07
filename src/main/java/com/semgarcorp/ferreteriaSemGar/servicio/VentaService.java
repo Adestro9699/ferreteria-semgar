@@ -120,9 +120,12 @@ public class VentaService {
 
         // Asignar idCaja solo si la venta no está en estado PENDIENTE
         if (ventaDTO.getEstadoVenta() != null && ventaDTO.getEstadoVenta() != EstadoVenta.PENDIENTE) {
+            if (ventaDTO.getIdCaja() == null) {
+                throw new IllegalArgumentException("Para una venta no PENDIENTE, el idCaja es obligatorio");
+            }
             venta.setCaja(buscarEntidadPorId(cajaRepository, ventaDTO.getIdCaja(), "Caja"));
         } else {
-            venta.setCaja(null); // No asignar caja si la venta está en estado PENDIENTE
+            venta.setCaja(null); // Establecer caja como null si la venta está en estado PENDIENTE o idCaja es null
         }
 
         // Cargar entidades relacionadas de forma más eficiente
