@@ -27,14 +27,19 @@ public class Subcategoria {
     @Enumerated(EnumType.STRING)
     private Estado estado; //estado ACTIVO o INACTIVO de la subcategoría
 
+    @ManyToOne
+    @JoinColumn(name = "idCategoria")
+    private Categoria categoria;
+
     public Subcategoria() {
     }
 
-    public Subcategoria(Integer idSubcategoria, String nombre, String descripcion, Estado estado) {
+    public Subcategoria(Integer idSubcategoria, String nombre, String descripcion, Estado estado, Categoria categoria) {
         this.idSubcategoria = idSubcategoria;
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.estado = estado;
+        this.categoria = categoria;
     }
 
     public Integer getIdSubcategoria() {
@@ -67,5 +72,13 @@ public class Subcategoria {
 
     public void setEstado(Estado estado) {
         this.estado = estado;
+    }
+
+    public Categoria getCategoria() {
+        return categoria;
+    }
+
+    public void setCategoria(Categoria categoria) {
+        this.categoria = categoria;
     }
 }

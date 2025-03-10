@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+import java.util.List;
+
 @Entity
 public class Categoria {
 
@@ -26,6 +28,9 @@ public class Categoria {
     @NotNull(message = "El estado no puede estar vacío")
     @Enumerated(EnumType.STRING)
     private Estado estado; //estado ACTIVO o INACTIVO de la categoría
+
+    @OneToMany(mappedBy = "categoria", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Subcategoria> subcategorias;
 
     public Categoria() {
     }

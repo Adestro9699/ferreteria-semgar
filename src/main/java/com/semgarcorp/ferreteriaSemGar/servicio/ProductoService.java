@@ -2,8 +2,16 @@ package com.semgarcorp.ferreteriaSemGar.servicio;
 
 import com.semgarcorp.ferreteriaSemGar.modelo.Producto;
 import com.semgarcorp.ferreteriaSemGar.repositorio.ProductoRepository;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import java.util.HashMap;
+import java.util.Map;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 
@@ -44,6 +52,52 @@ public class ProductoService {
 
         // Metodo de JpaRepository para eliminar por IDs
         productoRepositorio.deleteAllById(ids);
+    }
+
+    public Map<String, Object> obtenerProductosPaginados(int page, int pageSize) {
+        // Calcular el offset (PageRequest usa índices base 0)
+        Pageable pageable = PageRequest.of(page - 1, pageSize);
+
+        // Obtener los productos paginados
+        Page<Producto> productosPage = productoRepositorio.findAll(pageable);
+
+        // Crear la respuesta
+        Map<String, Object> response = new HashMap<>();
+        response.put("data", productosPage.getContent()); // Lista de productos de la página actual
+        response.put("total", productosPage.getTotalElements()); // Total de productos
+        response.put("page", page); // Página actual
+        response.put("pageSize", pageSize); // Tamaño de la página
+        response.put("totalPages", productosPage.getTotalPages()); // Total de páginas
+
+        return response;
+    }
+
+    @Transactional
+    public void reducirStock(Integer idProducto, BigDecimal cantidadVendida) {
+        // 1. Buscar el producto por ID
+        Producto producto = productoRepositorio.findById(idProducto)
+                .orElseThrow(() -> new EntityNotFoundException("Producto con ID " + idProducto + " no encontrado"));
+
+        // 2. Validar que la cantidad sea un número positivo
+        if (cantidadVendida.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("La cantidad vendida debe ser un número positivo.");
+        }
+
+        // 3. Validar que la cantidad no tenga decimales
+        if (cantidadVendida.remainder(BigDecimal.ONE).compareTo(BigDecimal.ZERO) != 0) {
+            throw new IllegalArgumentException("La cantidad vendida debe ser un número entero.");
+        }
+
+        // 4. Validar que haya suficiente stock
+        if (producto.getStock().compareTo(cantidadVendida) < 0) {
+            throw new IllegalStateException("No hay suficiente stock para el producto: " + producto.getNombreProducto());
+        }
+
+        // 5. Reducir el stock
+        producto.setStock(producto.getStock().subtract(cantidadVendida));
+
+        // 6. Guardar el producto actualizado
+        productoRepositorio.save(producto);
     }
 
     //metodo para buscar productos por nombre

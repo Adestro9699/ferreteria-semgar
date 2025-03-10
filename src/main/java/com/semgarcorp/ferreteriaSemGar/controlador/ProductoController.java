@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import java.util.Map;
 
 import java.net.URI;
 import java.util.List;
@@ -325,5 +326,17 @@ public class ProductoController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
         }
+    }
+
+    @GetMapping("/paginados")
+    public ResponseEntity<Map<String, Object>> obtenerProductosPaginados(
+            @RequestParam(defaultValue = "1") int page,          // Página actual (valor por defecto: 1)
+            @RequestParam(defaultValue = "10") int pageSize) {   // Tamaño de la página (valor por defecto: 10)
+
+        // Llamar al servicio para obtener los productos paginados
+        Map<String, Object> response = productoService.obtenerProductosPaginados(page, pageSize);
+
+        // Devolver la respuesta con el código de estado HTTP 200 (OK)
+        return ResponseEntity.ok(response);
     }
 }

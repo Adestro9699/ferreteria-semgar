@@ -6,11 +6,11 @@ import com.semgarcorp.ferreteriaSemGar.modelo.*;
 import com.semgarcorp.ferreteriaSemGar.repositorio.*;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,70 +22,43 @@ public class VentaService {
 
     private final ParametroService parametroService;
 
-    public VentaService(VentaRepository ventaRepositorio, ParametroService parametroService) {
+    private final VentaRepository ventaRepository;
+
+    private final ProductoRepository productoRepository;
+
+    private final TipoPagoRepository tipoPagoRepository;
+
+    private final EmpresaRepository empresaRepository;
+
+    private final ClienteRepository clienteRepository;
+
+    private final TipoComprobantePagoRepository tipoComprobanteRepository;
+
+    private final TrabajadorRepository trabajadorRepository;
+
+    private final CajaRepository cajaRepository;
+
+    private final ProductoService productoService;
+
+    public VentaService(VentaRepository ventaRepositorio, ParametroService parametroService,
+                        VentaRepository ventaRepository, ProductoRepository productoRepository,
+                        TipoPagoRepository tipoPagoRepository, EmpresaRepository empresaRepository,
+                        ClienteRepository clienteRepository, TipoComprobantePagoRepository tipoComprobanteRepository,
+                        TrabajadorRepository trabajadorRepository, CajaRepository cajaRepository,
+                        ProductoService productoService) {
         this.ventaRepositorio = ventaRepositorio;
         this.parametroService = parametroService;
+        this.ventaRepository = ventaRepository;
+        this.productoRepository = productoRepository;
+        this.tipoPagoRepository = tipoPagoRepository;
+        this.empresaRepository = empresaRepository;
+        this.clienteRepository = clienteRepository;
+        this.tipoComprobanteRepository = tipoComprobanteRepository;
+        this.trabajadorRepository = trabajadorRepository;
+        this.cajaRepository = cajaRepository;
+        this.productoService = productoService;
     }
 
-    @Autowired
-    private VentaRepository ventaRepository;
-
-    @Autowired
-    private ProductoRepository productoRepository;
-
-    @Autowired
-    private TipoPagoRepository tipoPagoRepository;
-
-    @Autowired
-    private EmpresaRepository empresaRepository;
-
-    @Autowired
-    private ClienteRepository clienteRepository;
-
-    @Autowired
-    private TipoComprobantePagoRepository tipoComprobanteRepository;
-
-    @Autowired
-    private TrabajadorRepository trabajadorRepository;
-
-    @Autowired
-    private CajaRepository cajaRepository;
-/*
-    public void calcularValoresVenta(Venta venta) {
-        // Obtener el valor del IGV
-        BigDecimal porcentajeIGV = parametroService.obtenerValorPorClave("IGV");
-
-        // Calcular el subtotal (suma de subtotales de los detalles)
-        BigDecimal subtotal = venta.getDetalles().stream()
-                .map(detalle -> detalle.getPrecioUnitario().multiply(detalle.getCantidad()))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        // Aplicar el descuento (si existe)
-        BigDecimal descuentoTotal = venta.getDetalles().stream()
-                .map(DetalleVenta::getDescuento)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        BigDecimal subtotalConDescuento = subtotal.subtract(descuentoTotal);
-
-        // Calcular el IGV (18% del subtotal después del descuento)
-        BigDecimal igv = subtotalConDescuento.multiply(porcentajeIGV);
-
-        // Calcular el total (subtotal con descuento + IGV)
-        BigDecimal total = subtotalConDescuento.add(igv);
-
-        // Asignar los valores a la venta
-        venta.setTotalVenta(total);
-
-        // Asignar el subtotal y el IGV a cada detalle
-        for (DetalleVenta detalle : venta.getDetalles()) {
-            BigDecimal subtotalDetalle = detalle.getPrecioUnitario().multiply(detalle.getCantidad());
-            detalle.setSubtotal(subtotalDetalle);
-
-            BigDecimal igvDetalle = subtotalDetalle.multiply(porcentajeIGV);
-            detalle.setImpuesto(igvDetalle);
-        }
-    }
-*/
     public List<Venta> listar() {
         return ventaRepositorio.findAll();
     }
@@ -173,17 +146,22 @@ public class VentaService {
             throw new IllegalStateException("La venta no está en estado PENDIENTE");
         }
 
-        // 3. Generar serie y número (puedes implementar tu propia lógica aquí)
+        // 3. Recorrer los detalles de la venta y reducir el stock de los productos
+        for (DetalleVenta detalle : venta.getDetalles()) {
+            productoService.reducirStock(detalle.getProducto().getIdProducto(), detalle.getCantidad());
+        }
+
+        // 4. Generar serie y número (puedes implementar tu propia lógica aquí)
         venta.setSerieComprobante(generarSerie());
         venta.setNumeroComprobante(generarNumero());
 
-        // 4. Cambiar el estado a "Completada"
+        // 5. Cambiar el estado a "Completada"
         venta.setEstadoVenta(EstadoVenta.COMPLETADA);
 
-        // 5. Guardar la venta actualizada
+        // 6. Guardar la venta actualizada
         venta = ventaRepository.save(venta);
 
-        // 6. Convertir la entidad Venta actualizada a VentaDTO
+        // 7. Convertir la entidad Venta actualizada a VentaDTO
         return convertirAVentaDTO(venta);
     }
 
@@ -240,6 +218,64 @@ public class VentaService {
         return ventaDTO;
     }
 
+    private BigDecimal calcularSubtotal(BigDecimal precioUnitario, BigDecimal cantidad, BigDecimal descuentoPorcentual) {
+        if (precioUnitario == null || cantidad == null || descuentoPorcentual == null) {
+            throw new IllegalArgumentException("El precio unitario, la cantidad y el descuento no pueden ser nulos");
+        }
+
+        // Calcular el subtotal sin descuento
+        BigDecimal subtotalSinDescuento = precioUnitario.multiply(cantidad);
+
+        // Convertir el descuento porcentual a decimal (por ejemplo, 5 -> 0.05)
+        BigDecimal descuentoDecimal = descuentoPorcentual.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+
+        // Calcular el monto del descuento
+        BigDecimal montoDescuento = subtotalSinDescuento.multiply(descuentoDecimal);
+
+        // Calcular el subtotal con descuento
+        return subtotalSinDescuento.subtract(montoDescuento);
+    }
+
+    private BigDecimal calcularSubtotalSinIGV(BigDecimal subtotal) {
+        if (subtotal == null || subtotal.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("El subtotal no puede ser nulo o negativo");
+        }
+
+        // Obtener el valor del IGV
+        BigDecimal tasaIGV = parametroService.obtenerValorIGV();
+
+        // Calcular el subtotal sin IGV
+        return subtotal.divide(BigDecimal.ONE.add(tasaIGV), 2, RoundingMode.HALF_UP);
+    }
+
+    private BigDecimal calcularIgvAplicado(BigDecimal subtotal, BigDecimal subtotalSinIGV) {
+        if (subtotal == null || subtotalSinIGV == null) {
+            throw new IllegalArgumentException("El subtotal y el subtotal sin IGV no pueden ser nulos");
+        }
+        return subtotal.subtract(subtotalSinIGV);
+    }
+
+    private BigDecimal calcularTotalVenta(List<DetalleVenta> detallesVenta) {
+        return detallesVenta.stream()
+                .map(DetalleVenta::getSubtotal) // Asume que el subtotal ya está calculado
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private void asignarValoresCalculados(Venta venta) {
+        for (DetalleVenta detalle : venta.getDetalles()) {
+            BigDecimal subtotal = calcularSubtotal(detalle.getPrecioUnitario(), detalle.getCantidad(), detalle.getDescuento());
+            BigDecimal subtotalSinIGV = calcularSubtotalSinIGV(subtotal);
+            BigDecimal igvAplicado = calcularIgvAplicado(subtotal, subtotalSinIGV);
+
+            detalle.setSubtotal(subtotal);
+            detalle.setSubtotalSinIGV(subtotalSinIGV);
+            detalle.setIgvAplicado(igvAplicado);
+        }
+
+        BigDecimal totalVenta = calcularTotalVenta(venta.getDetalles());
+        venta.setTotalVenta(totalVenta);
+    }
+
     @Transactional
     public VentaDTO guardarVenta(VentaDTO ventaDTO) {
         // 1. Validar que la venta esté en estado "Pendiente"
@@ -259,6 +295,9 @@ public class VentaService {
 
         // 4. Convertir VentaDTO a Venta
         Venta venta = convertirAVenta(ventaDTO);
+
+        // 3. Asignar valores calculados
+        asignarValoresCalculados(venta);
 
         // 5. Guardar la venta en la base de datos
         venta = ventaRepository.save(venta);

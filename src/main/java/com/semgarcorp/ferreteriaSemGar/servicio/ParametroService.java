@@ -5,6 +5,7 @@ import com.semgarcorp.ferreteriaSemGar.repositorio.ParametroRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 @Service
@@ -17,15 +18,6 @@ public class ParametroService {
         this.parametroRepositorio = parametroRepositorio;
     }
 
-    /**
-     * Obtiene todos los parámetros.
-     *
-     * @return Lista de parámetros.
-     */
-    public List<Parametro> listar() {
-        return parametroRepositorio.findAll();
-    }
-
     public BigDecimal obtenerValorPorClave(String clave) {
         Parametro parametro = parametroRepositorio.findByClave(clave)
                 .orElseThrow(() -> new RuntimeException("No se encontró el parámetro con clave: " + clave));
@@ -33,27 +25,37 @@ public class ParametroService {
     }
 
     public BigDecimal obtenerValorIGV() {
+        // Buscar el parámetro IGV en la base de datos
         Parametro parametroIGV = parametroRepositorio.findByClave("IGV")
-                .orElseThrow(() -> new RuntimeException("No se encontró el parámetro IGV"));
-        return new BigDecimal(parametroIGV.getValor());
+                .orElseThrow(() -> new IllegalStateException("No se encontró el parámetro IGV en la base de datos"));
+
+        // Obtener el valor del IGV como String
+        String valorIGV = parametroIGV.getValor();
+
+        try {
+            // Convertir el valor a BigDecimal
+            BigDecimal igv = new BigDecimal(valorIGV);
+
+            // Validar que el IGV sea un valor positivo
+            if (igv.compareTo(BigDecimal.ZERO) <= 0) {
+                throw new IllegalStateException("El valor del IGV debe ser mayor que 0");
+            }
+
+            // Convertir el IGV a formato decimal (por ejemplo, 18 -> 0.18)
+            return igv.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+        } catch (NumberFormatException e) {
+            throw new IllegalStateException("El valor del IGV no es un número válido: " + valorIGV);
+        }
     }
 
-    /**
-     * Guarda un nuevo parámetro.
-     *
-     * @param parametro El parámetro a guardar.
-     * @return El parámetro guardado.
-     */
+    public List<Parametro> listar() {
+        return parametroRepositorio.findAll();
+    }
+
     public Parametro guardar(Parametro parametro) {
         return parametroRepositorio.save(parametro);
     }
 
-    /**
-     * Actualiza un parámetro existente.
-     *
-     * @param parametro El parámetro a actualizar.
-     * @return El parámetro actualizado.
-     */
     public Parametro actualizar(Parametro parametro) {
         // Verifica si el parámetro ya existe
         Parametro parametroExistente = parametroRepositorio.findByClave(parametro.getClave()).orElse(null);
@@ -65,11 +67,6 @@ public class ParametroService {
         return null; // Si no existe, no se actualiza
     }
 
-    /**
-     * Elimina un parámetro por su clave.
-     *
-     * @param clave La clave del parámetro a eliminar.
-     */
     public void eliminar(String clave) {
         parametroRepositorio.deleteByClave(clave);
     }

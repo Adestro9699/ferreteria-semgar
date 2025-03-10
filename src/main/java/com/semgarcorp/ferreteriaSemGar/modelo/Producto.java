@@ -1,6 +1,5 @@
 package com.semgarcorp.ferreteriaSemGar.modelo;
 
-
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -57,12 +56,8 @@ public class Producto {
     private Proveedor proveedor; //quien provee el producto
 
     @ManyToOne
-    @JoinColumn(name = "idCategoria")
-    private Categoria categoria; //a qué categoría pertenece el producto
-
-    @ManyToOne
     @JoinColumn(name = "idSubcategoria")
-    private Subcategoria subcategoria;
+    private Subcategoria subcategoria; //a qué subcategoría pertenece el producto
 
     @ManyToOne
     @JoinColumn(name = "idUnidadMedida") // Nombre de la columna en la tabla Producto
@@ -76,8 +71,8 @@ public class Producto {
 
     public Producto(Integer idProducto, String nombreProducto, String descripcion, BigDecimal precio, BigDecimal stock,
                     LocalDate fechaModificacion, String imagenURL, EstadoProducto estadoProducto, String codigoSKU,
-                    String marca, String material, String codigoBarra, Proveedor proveedor, Categoria categoria,
-                    Subcategoria subcategoria, UnidadMedida unidadMedida, List<InventarioProducto> inventarioProductos) {
+                    String marca, String material, String codigoBarra, Proveedor proveedor, Subcategoria subcategoria,
+                    UnidadMedida unidadMedida, List<InventarioProducto> inventarioProductos) {
         this.idProducto = idProducto;
         this.nombreProducto = nombreProducto;
         this.descripcion = descripcion;
@@ -91,7 +86,6 @@ public class Producto {
         this.material = material;
         this.codigoBarra = codigoBarra;
         this.proveedor = proveedor;
-        this.categoria = categoria;
         this.subcategoria = subcategoria;
         this.unidadMedida = unidadMedida;
         this.inventarioProductos = inventarioProductos;
@@ -199,14 +193,6 @@ public class Producto {
 
     public void setProveedor(Proveedor proveedor) {
         this.proveedor = proveedor;
-    }
-
-    public Categoria getCategoria() {
-        return categoria;
-    }
-
-    public void setCategoria(Categoria categoria) {
-        this.categoria = categoria;
     }
 
     public Subcategoria getSubcategoria() {

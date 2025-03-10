@@ -29,6 +29,9 @@ public class DetalleVenta {
     private BigDecimal descuento;
 
     @Column(precision = 10, scale = 2)
+    private BigDecimal subtotal;
+
+    @Column(precision = 10, scale = 2)
     private BigDecimal subtotalSinIGV;
 
     @Column(precision = 10, scale = 2)
@@ -38,13 +41,15 @@ public class DetalleVenta {
     }
 
     public DetalleVenta(Integer idDetalleVenta, Venta venta, Producto producto, BigDecimal cantidad,
-                        BigDecimal precioUnitario, BigDecimal descuento, BigDecimal subtotalSinIGV, BigDecimal igvAplicado) {
+                        BigDecimal precioUnitario, BigDecimal descuento, BigDecimal subtotal, BigDecimal subtotalSinIGV,
+                        BigDecimal igvAplicado) {
         this.idDetalleVenta = idDetalleVenta;
         this.venta = venta;
         this.producto = producto;
         this.cantidad = cantidad;
         this.precioUnitario = precioUnitario;
         this.descuento = descuento;
+        this.subtotal = subtotal;
         this.subtotalSinIGV = subtotalSinIGV;
         this.igvAplicado = igvAplicado;
     }
@@ -95,6 +100,14 @@ public class DetalleVenta {
 
     public void setDescuento(BigDecimal descuento) {
         this.descuento = descuento;
+    }
+
+    public BigDecimal getSubtotal() {
+        return subtotal;
+    }
+
+    public void setSubtotal(BigDecimal subtotal) {
+        this.subtotal = subtotal;
     }
 
     public BigDecimal getSubtotalSinIGV() {

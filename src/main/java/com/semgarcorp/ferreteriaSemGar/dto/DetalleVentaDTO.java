@@ -10,6 +10,7 @@ public class DetalleVentaDTO {
     private BigDecimal cantidad;
     private BigDecimal precioUnitario;
     private BigDecimal descuento;
+    private BigDecimal subtotal;
     private BigDecimal subtotalSinIGV;
     private BigDecimal igvAplicado;
 
@@ -17,13 +18,15 @@ public class DetalleVentaDTO {
     }
 
     public DetalleVentaDTO(Integer idDetalleVenta, Integer idVenta, Integer idProducto, BigDecimal cantidad,
-                           BigDecimal precioUnitario, BigDecimal descuento, BigDecimal subtotalSinIGV, BigDecimal igvAplicado) {
+                           BigDecimal precioUnitario, BigDecimal descuento, BigDecimal subtotal,
+                           BigDecimal subtotalSinIGV, BigDecimal igvAplicado) {
         this.idDetalleVenta = idDetalleVenta;
         this.idVenta = idVenta;
         this.idProducto = idProducto;
         this.cantidad = cantidad;
         this.precioUnitario = precioUnitario;
         this.descuento = descuento;
+        this.subtotal = subtotal;
         this.subtotalSinIGV = subtotalSinIGV;
         this.igvAplicado = igvAplicado;
     }
@@ -74,6 +77,14 @@ public class DetalleVentaDTO {
 
     public void setDescuento(BigDecimal descuento) {
         this.descuento = descuento;
+    }
+
+    public BigDecimal getSubtotal() {
+        return subtotal;
+    }
+
+    public void setSubtotal(BigDecimal subtotal) {
+        this.subtotal = subtotal;
     }
 
     public BigDecimal getSubtotalSinIGV() {
