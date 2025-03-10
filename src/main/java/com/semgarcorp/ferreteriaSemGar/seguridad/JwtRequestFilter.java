@@ -80,12 +80,46 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                         // Extraer los permisos del token
                         Map<String, Boolean> permisos = jwtUtil.extraerPermisos(token);
 
-                        // Verificar si el usuario tiene permiso para acceder a la ruta solicitada
-                        String requestedPath = relativePath; // Ruta relativa
-                        if (!permisos.containsKey(requestedPath) || !permisos.getOrDefault(requestedPath, false)) {
-                            System.out.println("Acceso denegado: El usuario no tiene permiso para acceder a esta ruta.");
+                        // NUEVO CÓDIGO: Verificar permisos basados en la ruta y el método HTTP
+                        String requestedPath = relativePath;
+                        String method = request.getMethod();
+                        boolean permitido = false;
+
+                        // Si es ADMIN, permitir acceso
+                        if ("ADMIN".equals(rol)) {
+                            permitido = true;
+                        }
+                        // Comprobar permisos específicos
+                        else {
+                            // 1. Verificar permiso directo para la ruta exacta
+                            if (permisos.getOrDefault(requestedPath, false)) {
+                                permitido = true;
+                            }
+                            // 2. Verificar permisos para rutas con parámetros (formato: "/ruta/:id:MÉTODO")
+                            else {
+                                // Extraer la parte base de la ruta y cualquier ID
+                                String[] pathParts = requestedPath.split("/");
+                                if (pathParts.length >= 3) {
+                                    String basePath = "/" + pathParts[1]; // ej: "/proveedores"
+
+                                    // Verificar si es un número (ID)
+                                    if (pathParts[2].matches("\\d+")) {
+                                        // Construir clave de permiso con formato "/ruta/:id:MÉTODO"
+                                        String permissionKey = basePath + "/:id:" + method;
+
+                                        // Verificar si tiene ese permiso
+                                        if (permisos.getOrDefault(permissionKey, false)) {
+                                            permitido = true;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        if (!permitido) {
+                            System.out.println("Acceso denegado a: " + requestedPath + " con método: " + method);
                             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                            response.getWriter().write("Acceso denegado: No tienes permiso para acceder a esta ruta.");
+                            response.getWriter().write("Acceso denegado: No tienes permiso para realizar esta operación.");
                             return;
                         }
 
