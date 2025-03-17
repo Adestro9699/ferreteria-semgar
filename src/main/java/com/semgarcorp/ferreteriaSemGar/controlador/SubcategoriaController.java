@@ -20,9 +20,12 @@ public class SubcategoriaController {
         this.subcategoriaService = subcategoriaService;
     }
 
-    // Obtener la lista de todas las subcategorías
+    // Obtener la lista de subcategorías (con filtro opcional por categoría)
     @GetMapping
-    public List<Subcategoria> listar() {
+    public List<Subcategoria> listar(@RequestParam(required = false) Integer categoria) {
+        if (categoria != null) {
+            return subcategoriaService.listarPorCategoria(categoria);
+        }
         return subcategoriaService.listar();
     }
 

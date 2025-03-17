@@ -2,10 +2,19 @@ package com.semgarcorp.ferreteriaSemGar.controlador;
 
 import com.semgarcorp.ferreteriaSemGar.modelo.Producto;
 import com.semgarcorp.ferreteriaSemGar.servicio.ProductoService;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 
 import java.net.URI;
@@ -15,6 +24,7 @@ import java.util.List;
 @RequestMapping ("/productos")
 public class ProductoController {
     private final ProductoService productoService;
+    private static final String UPLOAD_DIR = "C:/uploads/";
 
     public ProductoController(ProductoService productoService) {
         this.productoService = productoService;
@@ -338,5 +348,46 @@ public class ProductoController {
 
         // Devolver la respuesta con el código de estado HTTP 200 (OK)
         return ResponseEntity.ok(response);
+    }
+
+    // Endpoint para subir imágenes
+    @PostMapping("/upload")
+    public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file) {
+        try {
+            // Verificar si el directorio existe, si no, crearlo
+            File uploadDir = new File(UPLOAD_DIR);
+            if (!uploadDir.exists()) {
+                uploadDir.mkdirs();
+            }
+
+            // Obtener el nombre original del archivo
+            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+
+            // Guardar el archivo en el directorio
+            Path path = Paths.get(UPLOAD_DIR + fileName);
+            Files.copy(file.getInputStream(), path);
+
+            // Devolver la ruta absoluta del archivo
+            String fileUrl = path.toAbsolutePath().toString(); // Ruta completa
+            return ResponseEntity.ok(fileUrl);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al subir la imagen");
+        }
+    }
+
+    // Endpoint para servir imágenes
+    @GetMapping("/imagen/{fileName:.+}")
+    public ResponseEntity<FileSystemResource> servirImagen(@PathVariable String fileName) {
+        // Construir la ruta completa del archivo
+        File file = new File(UPLOAD_DIR + fileName);
+
+        // Verificar si el archivo existe
+        if (!file.exists()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        // Devolver el archivo como recurso
+        return ResponseEntity.ok(new FileSystemResource(file));
     }
 }
