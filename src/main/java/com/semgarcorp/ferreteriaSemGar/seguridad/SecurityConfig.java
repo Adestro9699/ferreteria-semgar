@@ -57,7 +57,7 @@ public class SecurityConfig {
                         .requestMatchers("/usuarios", "/usuarios/login", "/trabajadores").permitAll()
 
                         // Rutas específicas para USER
-                        .requestMatchers("/productos/**", "/categorias/**", "/subcategorias/**", "/proveedores/**", "/clientes/**", "/tipos-documento/**")
+                        .requestMatchers("/productos/**", "/categorias/**", "/subcategorias/**", "/proveedores/**", "/clientes/**", "/unidades-medida/**")
                         .hasAnyAuthority("USER", "ADMIN") // Solo USER
 
                         // Rutas específicas para MANAGER

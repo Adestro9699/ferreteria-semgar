@@ -95,7 +95,15 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                             if (permisos.getOrDefault(requestedPath, false)) {
                                 permitido = true;
                             }
-                            // 2. Verificar permisos para rutas con parámetros (formato: "/ruta/:id:MÉTODO")
+                            // 2. Verificar permisos para rutas con parámetros dinámicos
+                            else if (requestedPath.startsWith("/productos/imagen/")) {
+                                // Manejar rutas como "/productos/imagen/{fileName:.+}"
+                                String permissionKey = "/productos/imagen/{fileName:.+}";
+                                if (permisos.getOrDefault(permissionKey, false)) {
+                                    permitido = true;
+                                }
+                            }
+                            // 3. Verificar permisos para rutas con formato "/ruta/:id:MÉTODO"
                             else {
                                 // Extraer la parte base de la ruta y cualquier ID
                                 String[] pathParts = requestedPath.split("/");
