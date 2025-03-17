@@ -40,12 +40,14 @@ public class VentaService {
 
     private final ProductoService productoService;
 
+    private final CajaService cajaService;
+
     public VentaService(VentaRepository ventaRepositorio, ParametroService parametroService,
                         VentaRepository ventaRepository, ProductoRepository productoRepository,
                         TipoPagoRepository tipoPagoRepository, EmpresaRepository empresaRepository,
                         ClienteRepository clienteRepository, TipoComprobantePagoRepository tipoComprobanteRepository,
                         TrabajadorRepository trabajadorRepository, CajaRepository cajaRepository,
-                        ProductoService productoService) {
+                        ProductoService productoService, CajaService cajaService) {
         this.ventaRepositorio = ventaRepositorio;
         this.parametroService = parametroService;
         this.ventaRepository = ventaRepository;
@@ -57,22 +59,37 @@ public class VentaService {
         this.trabajadorRepository = trabajadorRepository;
         this.cajaRepository = cajaRepository;
         this.productoService = productoService;
+        this.cajaService = cajaService;
     }
 
-    public List<Venta> listar() {
-        return ventaRepositorio.findAll();
+    public List<VentaDTO> listar() {
+        List<Venta> ventas = ventaRepositorio.findAll(); // Obtener las entidades
+        return ventas.stream()
+                .map(this::convertirAVentaDTO) // Convertir cada entidad a DTO
+                .collect(Collectors.toList());
     }
 
-    public Venta obtenerPorId(Integer id) {
-        return ventaRepositorio.findById(id).orElse(null);
+    public VentaDTO obtenerPorId(Integer id) {
+        Venta venta = ventaRepositorio.findById(id).orElse(null); // Obtener la entidad
+        if (venta != null) {
+            return convertirAVentaDTO(venta); // Convertir la entidad a DTO
+        }
+        return null; // Si no se encuentra la venta, devolver null
     }
 
     public Venta guardar(Venta venta) {
         return ventaRepositorio.save(venta);
     }
 
-    public Venta actualizar(Venta venta) {
-        return ventaRepositorio.save(venta);
+    public VentaDTO actualizar(Integer id, VentaDTO ventaDTO) {
+        Venta ventaExistente = ventaRepositorio.findById(id).orElse(null);
+        if (ventaExistente != null) {
+            Venta ventaActualizada = convertirAVenta(ventaDTO);
+            ventaActualizada.setIdVenta(id);
+            Venta ventaGuardada = ventaRepositorio.save(ventaActualizada);
+            return convertirAVentaDTO(ventaGuardada);
+        }
+        return null;
     }
 
     public void eliminar(Integer id) {
@@ -161,7 +178,12 @@ public class VentaService {
         // 6. Guardar la venta actualizada
         venta = ventaRepository.save(venta);
 
-        // 7. Convertir la entidad Venta actualizada a VentaDTO
+        // 7. Si la venta es en EFECTIVO y está COMPLETADA, registrar el total como entrada en la caja
+        if (venta.getTipoPago().getNombre().equalsIgnoreCase("EFECTIVO") && venta.getEstadoVenta() == EstadoVenta.COMPLETADA) {
+            cajaService.registrarEntradaPorVenta(venta.getCaja().getIdCaja(), venta.getTotalVenta());
+        }
+
+        // 8. Convertir la entidad Venta actualizada a VentaDTO
         return convertirAVentaDTO(venta);
     }
 
@@ -296,13 +318,13 @@ public class VentaService {
         // 4. Convertir VentaDTO a Venta
         Venta venta = convertirAVenta(ventaDTO);
 
-        // 3. Asignar valores calculados
+        // 5. Asignar valores calculados
         asignarValoresCalculados(venta);
 
-        // 5. Guardar la venta en la base de datos
+        // 6. Guardar la venta en la base de datos
         venta = ventaRepository.save(venta);
 
-        // 6. Convertir la entidad Venta guardada de vuelta a VentaDTO
+        // 7. Convertir la entidad Venta guardada de vuelta a VentaDTO
         return convertirAVentaDTO(venta);
     }
 }

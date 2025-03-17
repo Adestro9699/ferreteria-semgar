@@ -1,12 +1,15 @@
 package com.semgarcorp.ferreteriaSemGar.controlador;
 
+import com.semgarcorp.ferreteriaSemGar.dto.CajaDTO;
 import com.semgarcorp.ferreteriaSemGar.modelo.Caja;
 import com.semgarcorp.ferreteriaSemGar.servicio.CajaService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.math.BigDecimal;
 import java.net.URI;
 import java.util.List;
 
@@ -41,13 +44,17 @@ public class CajaController {
 
     // Endpoint POST para guardar un nuevo registro de caja
     @PostMapping
-    public ResponseEntity<Caja> guardar(@RequestBody Caja caja) {
-        Caja nuevaCaja = cajaService.guardar(caja);
+    public ResponseEntity<Caja> guardar(@RequestBody CajaDTO cajaDTO) {
+        // Llamar al servicio para crear la caja
+        Caja nuevaCaja = cajaService.crearCaja(cajaDTO);
 
+        // Construir la URI de la nueva caja
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
                 .buildAndExpand(nuevaCaja.getIdCaja())
                 .toUri();
+
+        // Retornar la respuesta con la nueva caja y la URI de ubicación
         return ResponseEntity.created(location).body(nuevaCaja);
     }
 
@@ -70,5 +77,45 @@ public class CajaController {
         }
         cajaService.eliminar(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/abrir")
+    public ResponseEntity<Caja> abrirCaja(@RequestBody CajaDTO cajaDTO) {
+        // Llamar al servicio para abrir la caja
+        Caja cajaAbierta = cajaService.abrirCaja(cajaDTO);
+
+        // Retornar la respuesta con la caja actualizada
+        return ResponseEntity.ok(cajaAbierta);
+    }
+
+    @PostMapping("/cerrar")
+    public ResponseEntity<Caja> cerrarCaja(@RequestBody CajaDTO cajaDTO) {
+        try {
+            Caja cajaCerrada = cajaService.cerrarCaja(cajaDTO);
+            return ResponseEntity.ok(cajaCerrada);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            // Maneja tanto IllegalArgumentException como IllegalStateException
+            return ResponseEntity.badRequest().body(null);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping("/{idCaja}/entrada-manual")
+    public ResponseEntity<Caja> registrarEntradaManual(
+            @PathVariable Integer idCaja,
+            @RequestParam BigDecimal monto,
+            @RequestParam(required = false) String observaciones) {
+        Caja caja = cajaService.registrarEntradaManual(idCaja, monto, observaciones);
+        return ResponseEntity.ok(caja);
+    }
+
+    @PostMapping("/{idCaja}/salida-manual")
+    public ResponseEntity<Caja> registrarSalidaManual(
+            @PathVariable Integer idCaja,
+            @RequestParam BigDecimal monto,
+            @RequestParam(required = false) String observaciones) {
+        Caja caja = cajaService.registrarSalidaManual(idCaja, monto, observaciones);
+        return ResponseEntity.ok(caja);
     }
 }

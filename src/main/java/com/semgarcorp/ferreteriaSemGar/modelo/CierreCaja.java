@@ -3,7 +3,7 @@ package com.semgarcorp.ferreteriaSemGar.modelo;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 public class CierreCaja {
@@ -12,9 +12,13 @@ public class CierreCaja {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer idCierreCaja;
 
+    @NotNull(message = "La fecha de apertura no puede ser nula")
+    @Column
+    private LocalDateTime fechaApertura;
+
     @NotNull(message = "La fecha de cierre no puede ser nula")
     @Column
-    private LocalDate fechaCierre;
+    private LocalDateTime fechaCierre;
 
     @NotNull(message = "El saldo inicial no puede ser nulo")
     @Column(precision = 10, scale = 2)
@@ -47,10 +51,11 @@ public class CierreCaja {
     public CierreCaja() {
     }
 
-    // Constructor con parámetros
-    public CierreCaja(Integer idCierreCaja, LocalDate fechaCierre, BigDecimal saldoInicial, BigDecimal totalEntradas,
-                      BigDecimal totalSalidas, BigDecimal saldoFinal, String observaciones, Usuario usuario, Caja caja) {
+    public CierreCaja(Integer idCierreCaja, LocalDateTime fechaApertura, LocalDateTime fechaCierre,
+                      BigDecimal saldoInicial, BigDecimal totalEntradas, BigDecimal totalSalidas, BigDecimal saldoFinal,
+                      String observaciones, Usuario usuario, Caja caja) {
         this.idCierreCaja = idCierreCaja;
+        this.fechaApertura = fechaApertura;
         this.fechaCierre = fechaCierre;
         this.saldoInicial = saldoInicial;
         this.totalEntradas = totalEntradas;
@@ -61,7 +66,6 @@ public class CierreCaja {
         this.caja = caja;
     }
 
-    // Getters y setters
     public Integer getIdCierreCaja() {
         return idCierreCaja;
     }
@@ -70,11 +74,19 @@ public class CierreCaja {
         this.idCierreCaja = idCierreCaja;
     }
 
-    public LocalDate getFechaCierre() {
+    public LocalDateTime getFechaApertura() {
+        return fechaApertura;
+    }
+
+    public void setFechaApertura(LocalDateTime fechaApertura) {
+        this.fechaApertura = fechaApertura;
+    }
+
+    public LocalDateTime getFechaCierre() {
         return fechaCierre;
     }
 
-    public void setFechaCierre(LocalDate fechaCierre) {
+    public void setFechaCierre(LocalDateTime fechaCierre) {
         this.fechaCierre = fechaCierre;
     }
 

@@ -1,14 +1,12 @@
 package com.semgarcorp.ferreteriaSemGar.controlador;
 
 import com.semgarcorp.ferreteriaSemGar.dto.VentaDTO;
-import com.semgarcorp.ferreteriaSemGar.modelo.Venta;
 import com.semgarcorp.ferreteriaSemGar.servicio.VentaService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.math.BigDecimal;
 import java.net.URI;
 import java.util.List;
 
@@ -24,18 +22,19 @@ public class VentaController {
 
     // Obtener la lista de todas las ventas
     @GetMapping
-    public List<Venta> listar() {
-        return ventaService.listar();
+    public ResponseEntity<List<VentaDTO>> listar() {
+        List<VentaDTO> ventasDTO = ventaService.listar(); // Obtener la lista de DTOs
+        return ResponseEntity.ok(ventasDTO); // Devolver la lista en la respuesta
     }
 
     // Obtener una venta por su ID
     @GetMapping("/{id}")
-    public ResponseEntity<Venta> obtenerPorId(@PathVariable Integer id) {
-        Venta venta = ventaService.obtenerPorId(id);
-        if (venta != null) {
-            return ResponseEntity.ok(venta); // Respuesta simplificada con 200 OK
+    public ResponseEntity<VentaDTO> obtenerPorId(@PathVariable Integer id) {
+        VentaDTO ventaDTO = ventaService.obtenerPorId(id); // Obtener el DTO
+        if (ventaDTO != null) {
+            return ResponseEntity.ok(ventaDTO); // Devolver el DTO en la respuesta
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Respuesta con 404 Not Found
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Si no se encuentra, devolver 404
     }
 
     // Crear una nueva venta
@@ -62,31 +61,25 @@ public class VentaController {
 
     // Actualizar una venta existente (PUT)
     @PutMapping("/{id}")
-    public ResponseEntity<Venta> actualizar(@PathVariable Integer id, @RequestBody Venta venta) {
-        // Obtener la venta existente
-        Venta ventaExistente = ventaService.obtenerPorId(id);
-
-        if (ventaExistente != null) {
-            // Asegurarse de que el ID se mantenga y reemplazar la venta
-            venta.setIdVenta(id);
-
-            // Aquí reemplazas completamente la venta con la información que viene en el cuerpo
-            Venta ventaActualizada = ventaService.actualizar(venta);
-
-            return ResponseEntity.ok(ventaActualizada); // Usamos el metodo estático "ok" para la respuesta exitosa
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Usamos "status" para construir la respuesta 404
+    public ResponseEntity<VentaDTO> actualizar(@PathVariable Integer id, @RequestBody VentaDTO ventaDTO) {
+        VentaDTO ventaExistenteDTO = ventaService.obtenerPorId(id);
+        if (ventaExistenteDTO != null) {
+            VentaDTO ventaActualizadaDTO = ventaService.actualizar(id, ventaDTO);
+            if (ventaActualizadaDTO != null) {
+                return ResponseEntity.ok(ventaActualizadaDTO);
+            }
         }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
     // Eliminar una venta por su ID
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
-        Venta ventaExistente = ventaService.obtenerPorId(id);
-        if (ventaExistente != null) {
+        VentaDTO ventaExistenteDTO = ventaService.obtenerPorId(id);
+        if (ventaExistenteDTO != null) {
             ventaService.eliminar(id);
-            return ResponseEntity.noContent().build(); // Respuesta sin contenido
+            return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Si no se encuentra, 404
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 }

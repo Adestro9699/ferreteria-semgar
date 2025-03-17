@@ -1,54 +1,30 @@
-package com.semgarcorp.ferreteriaSemGar.modelo;
+package com.semgarcorp.ferreteriaSemGar.dto;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
+import com.semgarcorp.ferreteriaSemGar.modelo.EstadoCaja;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Entity
-public class Caja {
+public class CajaDTO {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Integer idCaja;
-
-    @NotNull(message = "El nombre de caja no puede estar vacío")
-    @Column(unique = true) // Asegura que no haya duplicados
-    private String nombreCaja; // Identificador único de la caja física
-
+    private Integer idCaja; // Solo para operaciones que requieran identificar la caja
+    private String nombreCaja; // Solo para creación de cajas nuevas (si es necesario)
     private LocalDateTime fechaApertura;
-
     private LocalDateTime fechaClausura;
-
-    @Column(precision = 10, scale = 2)
     private BigDecimal saldoInicial;
-
-    @Column(precision = 10, scale = 2)
     private BigDecimal entradas;
-
-    @Column(precision = 10, scale = 2)
     private BigDecimal salidas;
-
-    @Column(precision = 10, scale = 2)
     private BigDecimal saldoFinal;
+    private EstadoCaja estado; // "ABIERTA" o "CERRADA"
+    private Integer idUsuario; // Usuario que realiza la operación (apertura o cierre)
+    private String observaciones; // Solo para el cierre de caja
 
-    @Column(length = 255)
-    private String observaciones;
-
-    @NotNull(message = "El estado no puede estar vacío")
-    @Enumerated(EnumType.STRING)
-    private EstadoCaja estado;
-
-    @ManyToOne(optional = true) // Permite valores nulos
-    @JoinColumn(name = "idUsuario", nullable = true) // Asegura que la columna en la base de datos permita nulos
-    private Usuario usuario;
-
-    public Caja() {
+    public CajaDTO() {
     }
 
-    public Caja(Integer idCaja, String nombreCaja, LocalDateTime fechaApertura, LocalDateTime fechaClausura,
-                BigDecimal saldoInicial, BigDecimal entradas, BigDecimal salidas, BigDecimal saldoFinal,
-                String observaciones, EstadoCaja estado, Usuario usuario) {
+    public CajaDTO(Integer idCaja, String nombreCaja, LocalDateTime fechaApertura, LocalDateTime fechaClausura,
+                   BigDecimal saldoInicial, BigDecimal entradas, BigDecimal salidas, BigDecimal saldoFinal,
+                   EstadoCaja estado, Integer idUsuario, String observaciones) {
         this.idCaja = idCaja;
         this.nombreCaja = nombreCaja;
         this.fechaApertura = fechaApertura;
@@ -57,9 +33,9 @@ public class Caja {
         this.entradas = entradas;
         this.salidas = salidas;
         this.saldoFinal = saldoFinal;
-        this.observaciones = observaciones;
         this.estado = estado;
-        this.usuario = usuario;
+        this.idUsuario = idUsuario;
+        this.observaciones = observaciones;
     }
 
     public Integer getIdCaja() {
@@ -126,14 +102,6 @@ public class Caja {
         this.saldoFinal = saldoFinal;
     }
 
-    public String getObservaciones() {
-        return observaciones;
-    }
-
-    public void setObservaciones(String observaciones) {
-        this.observaciones = observaciones;
-    }
-
     public EstadoCaja getEstado() {
         return estado;
     }
@@ -142,11 +110,19 @@ public class Caja {
         this.estado = estado;
     }
 
-    public Usuario getUsuario() {
-        return usuario;
+    public Integer getIdUsuario() {
+        return idUsuario;
     }
 
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
+    public void setIdUsuario(Integer idUsuario) {
+        this.idUsuario = idUsuario;
+    }
+
+    public String getObservaciones() {
+        return observaciones;
+    }
+
+    public void setObservaciones(String observaciones) {
+        this.observaciones = observaciones;
     }
 }

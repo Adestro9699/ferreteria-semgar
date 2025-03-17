@@ -11,7 +11,6 @@ public class CierreCajaService {
 
     private final CierreCajaRepository cierreCajaRepositorio;
 
-    // Constructor con inyección del repositorio
     public CierreCajaService(CierreCajaRepository cierreCajaRepositorio) {
         this.cierreCajaRepositorio = cierreCajaRepositorio;
     }

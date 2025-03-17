@@ -7,4 +7,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CajaRepository extends JpaRepository<Caja, Integer> {
 
+    boolean existsByNombreCaja(String nombreCaja);
+
 }
