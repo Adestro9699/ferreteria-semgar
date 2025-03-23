@@ -390,4 +390,27 @@ public class ProductoController {
         // Devolver el archivo como recurso
         return ResponseEntity.ok(new FileSystemResource(file));
     }
+
+    // Endpoint para eliminar imágenes
+    @DeleteMapping("/imagen/{fileName:.+}")
+    public ResponseEntity<String> eliminarImagen(@PathVariable String fileName) {
+        try {
+            // Construir la ruta completa del archivo
+            Path path = Paths.get(UPLOAD_DIR + fileName);
+
+            // Verificar si el archivo existe
+            if (!Files.exists(path)) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("La imagen no existe");
+            }
+
+            // Eliminar el archivo
+            Files.delete(path);
+
+            // Devolver una respuesta exitosa
+            return ResponseEntity.ok("Imagen eliminada correctamente");
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar la imagen");
+        }
+    }
 }
