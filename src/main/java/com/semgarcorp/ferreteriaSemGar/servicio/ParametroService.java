@@ -48,6 +48,34 @@ public class ParametroService {
         }
     }
 
+    /**
+     * Método para obtener el valor de la utilidad (ganancia) desde la tabla de parámetros.
+     * El valor debe estar almacenado en formato decimal (por ejemplo, 30 -> 0.30).
+     */
+    public BigDecimal obtenerValorUtilidad() {
+        // Buscar el parámetro UTILIDAD en la base de datos
+        Parametro parametroUtilidad = parametroRepositorio.findByClave("UTILIDAD")
+                .orElseThrow(() -> new IllegalStateException("No se encontró el parámetro UTILIDAD en la base de datos"));
+
+        // Obtener el valor de la utilidad como String
+        String valorUtilidad = parametroUtilidad.getValor();
+
+        try {
+            // Convertir el valor a BigDecimal
+            BigDecimal utilidad = new BigDecimal(valorUtilidad);
+
+            // Validar que la utilidad sea un valor positivo
+            if (utilidad.compareTo(BigDecimal.ZERO) <= 0) {
+                throw new IllegalStateException("El valor de la utilidad debe ser mayor que 0");
+            }
+
+            // Convertir la utilidad a formato decimal (por ejemplo, 30 -> 0.30)
+            return utilidad.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+        } catch (NumberFormatException e) {
+            throw new IllegalStateException("El valor de la utilidad no es un número válido: " + valorUtilidad);
+        }
+    }
+
     public List<Parametro> listar() {
         return parametroRepositorio.findAll();
     }
