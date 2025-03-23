@@ -4,25 +4,20 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 public class Cotizacion {
-
-    public enum EstadoCotizacion {
-        PENDIENTE,
-        CONFIRMADA,
-        RECHAZADA,
-        CANCELADA,
-        EXPIRADA
-    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)  // Cambiado a IDENTITY
     private Integer idCotizacion;
 
+    private String codigoCotizacion;
+
     @NotNull(message = "La fecha de cotización no puede ser nula")
-    private LocalDate fechaCotizacion;
+    private LocalDateTime fechaCotizacion;
 
     @NotNull(message = "El total de la cotización no puede ser nulo")
     @Column(precision = 10, scale = 2)
@@ -35,7 +30,7 @@ public class Cotizacion {
     @Lob  // Esto marca el atributo como tipo TEXT en la base de datos
     private String observaciones;
 
-    private LocalDate fechaModificacion;
+    private LocalDateTime fechaModificacion;
 
     // Relación con Trabajador
     @ManyToOne
@@ -57,13 +52,19 @@ public class Cotizacion {
     @JoinColumn(name = "idEmpresa", nullable = false)
     private Empresa empresa;
 
+    // Relación con DetalleCotizacion (One-to-Many)
+    @OneToMany(mappedBy = "cotizacion", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DetalleCotizacion> detalles;
+
     public Cotizacion() {
     }
 
-    public Cotizacion(Integer idCotizacion, LocalDate fechaCotizacion, BigDecimal totalCotizacion,
-                      EstadoCotizacion estadoCotizacion, String observaciones, LocalDate fechaModificacion,
-                      Trabajador trabajador, Cliente cliente, TipoPago tipoPago, Empresa empresa) {
+    public Cotizacion(Integer idCotizacion, String codigoCotizacion, LocalDateTime fechaCotizacion,
+                      BigDecimal totalCotizacion, EstadoCotizacion estadoCotizacion, String observaciones,
+                      LocalDateTime fechaModificacion, Trabajador trabajador, Cliente cliente, TipoPago tipoPago,
+                      Empresa empresa, List<DetalleCotizacion> detalles) {
         this.idCotizacion = idCotizacion;
+        this.codigoCotizacion = codigoCotizacion;
         this.fechaCotizacion = fechaCotizacion;
         this.totalCotizacion = totalCotizacion;
         this.estadoCotizacion = estadoCotizacion;
@@ -73,6 +74,7 @@ public class Cotizacion {
         this.cliente = cliente;
         this.tipoPago = tipoPago;
         this.empresa = empresa;
+        this.detalles = detalles;
     }
 
     public Integer getIdCotizacion() {
@@ -83,11 +85,19 @@ public class Cotizacion {
         this.idCotizacion = idCotizacion;
     }
 
-    public LocalDate getFechaCotizacion() {
+    public String getCodigoCotizacion() {
+        return codigoCotizacion;
+    }
+
+    public void setCodigoCotizacion(String codigoCotizacion) {
+        this.codigoCotizacion = codigoCotizacion;
+    }
+
+    public LocalDateTime getFechaCotizacion() {
         return fechaCotizacion;
     }
 
-    public void setFechaCotizacion(LocalDate fechaCotizacion) {
+    public void setFechaCotizacion(LocalDateTime fechaCotizacion) {
         this.fechaCotizacion = fechaCotizacion;
     }
 
@@ -115,11 +125,11 @@ public class Cotizacion {
         this.observaciones = observaciones;
     }
 
-    public LocalDate getFechaModificacion() {
+    public LocalDateTime getFechaModificacion() {
         return fechaModificacion;
     }
 
-    public void setFechaModificacion(LocalDate fechaModificacion) {
+    public void setFechaModificacion(LocalDateTime fechaModificacion) {
         this.fechaModificacion = fechaModificacion;
     }
 
@@ -153,5 +163,13 @@ public class Cotizacion {
 
     public void setEmpresa(Empresa empresa) {
         this.empresa = empresa;
+    }
+
+    public List<DetalleCotizacion> getDetalles() {
+        return detalles;
+    }
+
+    public void setDetalles(List<DetalleCotizacion> detalles) {
+        this.detalles = detalles;
     }
 }

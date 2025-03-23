@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 public class Caja {
@@ -43,12 +44,15 @@ public class Caja {
     @JoinColumn(name = "idUsuario", nullable = true) // Asegura que la columna en la base de datos permita nulos
     private Usuario usuario;
 
+    @OneToMany(mappedBy = "caja", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MovimientoCaja> movimientos;
+
     public Caja() {
     }
 
     public Caja(Integer idCaja, String nombreCaja, LocalDateTime fechaApertura, LocalDateTime fechaClausura,
                 BigDecimal saldoInicial, BigDecimal entradas, BigDecimal salidas, BigDecimal saldoFinal,
-                String observaciones, EstadoCaja estado, Usuario usuario) {
+                String observaciones, EstadoCaja estado, Usuario usuario, List<MovimientoCaja> movimientos) {
         this.idCaja = idCaja;
         this.nombreCaja = nombreCaja;
         this.fechaApertura = fechaApertura;
@@ -60,6 +64,7 @@ public class Caja {
         this.observaciones = observaciones;
         this.estado = estado;
         this.usuario = usuario;
+        this.movimientos = movimientos;
     }
 
     public Integer getIdCaja() {
@@ -148,5 +153,13 @@ public class Caja {
 
     public void setUsuario(Usuario usuario) {
         this.usuario = usuario;
+    }
+
+    public List<MovimientoCaja> getMovimientos() {
+        return movimientos;
+    }
+
+    public void setMovimientos(List<MovimientoCaja> movimientos) {
+        this.movimientos = movimientos;
     }
 }

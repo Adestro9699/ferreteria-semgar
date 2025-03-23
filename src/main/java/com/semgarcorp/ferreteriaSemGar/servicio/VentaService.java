@@ -153,7 +153,7 @@ public class VentaService {
     }
 
     @Transactional
-    public VentaDTO completarVenta(Integer idVenta) {
+    public VentaDTO completarVenta(Integer idVenta, Integer idCaja) {
         // 1. Buscar la venta por ID
         Venta venta = ventaRepository.findById(idVenta)
                 .orElseThrow(() -> new EntityNotFoundException("Venta con ID " + idVenta + " no encontrada"));
@@ -172,18 +172,23 @@ public class VentaService {
         venta.setSerieComprobante(generarSerie());
         venta.setNumeroComprobante(generarNumero());
 
-        // 5. Cambiar el estado a "Completada"
+        // 5. Asignar el idCaja a la venta
+        Caja caja = cajaRepository.findById(idCaja)
+                .orElseThrow(() -> new EntityNotFoundException("Caja con ID " + idCaja + " no encontrada"));
+        venta.setCaja(caja);
+
+        // 6. Cambiar el estado a "Completada"
         venta.setEstadoVenta(EstadoVenta.COMPLETADA);
 
-        // 6. Guardar la venta actualizada
+        // 7. Guardar la venta actualizada
         venta = ventaRepository.save(venta);
 
-        // 7. Si la venta es en EFECTIVO y está COMPLETADA, registrar el total como entrada en la caja
+        // 8. Si la venta es en EFECTIVO y está COMPLETADA, registrar el total como entrada en la caja
         if (venta.getTipoPago().getNombre().equalsIgnoreCase("EFECTIVO") && venta.getEstadoVenta() == EstadoVenta.COMPLETADA) {
             cajaService.registrarEntradaPorVenta(venta.getCaja().getIdCaja(), venta.getTotalVenta());
         }
 
-        // 8. Convertir la entidad Venta actualizada a VentaDTO
+        // 9. Convertir la entidad Venta actualizada a VentaDTO
         return convertirAVentaDTO(venta);
     }
 

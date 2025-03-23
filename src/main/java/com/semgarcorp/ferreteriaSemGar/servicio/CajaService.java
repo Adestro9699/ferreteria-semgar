@@ -1,17 +1,15 @@
 package com.semgarcorp.ferreteriaSemGar.servicio;
 
 import com.semgarcorp.ferreteriaSemGar.dto.CajaDTO;
-import com.semgarcorp.ferreteriaSemGar.modelo.Caja;
-import com.semgarcorp.ferreteriaSemGar.modelo.CierreCaja;
-import com.semgarcorp.ferreteriaSemGar.modelo.EstadoCaja;
-import com.semgarcorp.ferreteriaSemGar.modelo.Usuario;
+import com.semgarcorp.ferreteriaSemGar.dto.MovimientoCajaDTO;
+import com.semgarcorp.ferreteriaSemGar.modelo.*;
 import com.semgarcorp.ferreteriaSemGar.repositorio.*;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -24,11 +22,14 @@ public class CajaService {
 
     private final UsuarioRepository usuarioRepositorio;
 
+    private final MovimientoCajaRepository movimientoCajaRepositorio;
+
     public CajaService(CajaRepository cajaRepositorio, CierreCajaRepository cierreCajaRepositorio,
-                       UsuarioRepository usuarioRepositorio) {
+                       UsuarioRepository usuarioRepositorio, MovimientoCajaRepository movimientoCajaRepositorio) {
         this.cajaRepositorio = cajaRepositorio;
         this.cierreCajaRepositorio = cierreCajaRepositorio;
         this.usuarioRepositorio = usuarioRepositorio;
+        this.movimientoCajaRepositorio = movimientoCajaRepositorio;
     }
 
     public List<Caja> listar() {
@@ -74,10 +75,18 @@ public class CajaService {
     }
 
     public void eliminar(Integer id) {
-        cajaRepositorio.deleteById(id);
+        try {
+            cajaRepositorio.deleteById(id);
+        } catch (DataIntegrityViolationException e) {
+            // Captura la excepción de violación de integridad de datos
+            throw new RuntimeException("No se puede eliminar la caja porque tiene registros relacionados en cierre_caja.");
+        } catch (Exception e) {
+            // Captura cualquier otra excepción
+            throw new RuntimeException("Error al eliminar la caja: " + e.getMessage());
+        }
     }
 
-    public Caja convertirACaja(CajaDTO cajaDTO) {
+    public Caja convertirACaja(CajaDTO cajaDTO) { //convierte un DTO a entidad
         if (cajaDTO == null) {
             throw new IllegalArgumentException("El DTO de la caja no puede ser nulo.");
         }
@@ -108,7 +117,7 @@ public class CajaService {
                 .orElseThrow(() -> new EntityNotFoundException(nombreEntidad + " con ID " + id + " no encontrada"));
     }
 
-    public CajaDTO convertirACajaDTO(Caja caja) {
+    public CajaDTO convertirACajaDTO(Caja caja) { //convierte una entidad a DTO
         if (caja == null) {
             throw new IllegalArgumentException("La entidad Caja no puede ser nula.");
         }
@@ -164,6 +173,12 @@ public class CajaService {
         // Buscar el usuario por su ID
         Usuario usuario = usuarioRepositorio.findById(cajaDTO.getIdUsuario())
                 .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado."));
+
+        // Validar que el usuario no tenga ya una caja abierta
+        boolean tieneCajaAbierta = cajaRepositorio.existsByUsuarioAndEstado(usuario, EstadoCaja.ABIERTA);
+        if (tieneCajaAbierta) {
+            throw new IllegalStateException("El usuario ya tiene una caja abierta.");
+        }
 
         // Cambiar el estado a ABIERTA y asignar la fecha de apertura
         caja.setEstado(EstadoCaja.ABIERTA);
@@ -239,7 +254,16 @@ public class CajaService {
         cierreCaja.setCaja(caja); // Asignar la caja
 
         // Guardar el registro en la tabla CierreCaja
-        cierreCajaRepositorio.save(cierreCaja);
+        cierreCaja = cierreCajaRepositorio.save(cierreCaja);
+
+        // Obtener todos los movimientos no cerrados asociados a la caja
+        List<MovimientoCaja> movimientos = movimientoCajaRepositorio.findByCajaAndCierreCajaIsNull(caja);
+
+        // Asignar el CierreCaja a cada movimiento y guardar los cambios
+        for (MovimientoCaja movimiento : movimientos) {
+            movimiento.setCierreCaja(cierreCaja);
+            movimientoCajaRepositorio.save(movimiento);
+        }
 
         // Reiniciar los valores de la caja para el próximo ciclo
         caja.setFechaApertura(null); // Reiniciar fecha de apertura
@@ -258,9 +282,9 @@ public class CajaService {
         return caja;
     }
 
-    public Caja registrarEntradaManual(Integer idCaja, BigDecimal monto, String observaciones) {
+    public Caja registrarEntradaManual(Integer idCaja, MovimientoCajaDTO movimientoDTO) {
         // Validar que el monto no sea nulo o negativo
-        if (monto == null || monto.compareTo(BigDecimal.ZERO) <= 0) {
+        if (movimientoDTO.getMonto() == null || movimientoDTO.getMonto().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("El monto de la entrada debe ser un valor positivo.");
         }
 
@@ -273,22 +297,30 @@ public class CajaService {
             throw new IllegalStateException("La caja no está abierta.");
         }
 
-        // Actualizar las entradas y el saldo final
-        caja.setEntradas(caja.getEntradas().add(monto));
-        caja.setSaldoFinal(caja.getSaldoFinal().add(monto));
+        // Crear un nuevo movimiento de entrada
+        MovimientoCaja movimiento = new MovimientoCaja();
+        movimiento.setCaja(caja);
+        movimiento.setMonto(movimientoDTO.getMonto());
+        movimiento.setObservaciones(movimientoDTO.getObservaciones());
+        movimiento.setFecha(LocalDateTime.now());
+        movimiento.setTipo(TipoMovimiento.ENTRADA);
 
-        // Guardar observaciones (si se proporcionan)
-        if (observaciones != null && !observaciones.trim().isEmpty()) {
-            caja.setObservaciones(observaciones);
-        }
+        // Agregar el movimiento a la caja
+        caja.getMovimientos().add(movimiento);
+
+        // Actualizar el total de entradas
+        caja.setEntradas(caja.getEntradas().add(movimientoDTO.getMonto()));
+
+        // Actualizar el saldo final
+        caja.setSaldoFinal(caja.getSaldoFinal().add(movimientoDTO.getMonto()));
 
         // Guardar los cambios en la base de datos
         return cajaRepositorio.save(caja);
     }
 
-    public Caja registrarSalidaManual(Integer idCaja, BigDecimal monto, String observaciones) {
+    public Caja registrarSalidaManual(Integer idCaja, MovimientoCajaDTO movimientoDTO) {
         // Validar que el monto no sea nulo o negativo
-        if (monto == null || monto.compareTo(BigDecimal.ZERO) <= 0) {
+        if (movimientoDTO.getMonto() == null || movimientoDTO.getMonto().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("El monto de la salida debe ser un valor positivo.");
         }
 
@@ -302,18 +334,26 @@ public class CajaService {
         }
 
         // Validar que haya suficiente saldo para la salida
-        if (caja.getSaldoFinal().compareTo(monto) < 0) {
+        if (caja.getSaldoFinal().compareTo(movimientoDTO.getMonto()) < 0) {
             throw new IllegalStateException("Saldo insuficiente para realizar la salida.");
         }
 
-        // Actualizar las salidas y el saldo final
-        caja.setSalidas(caja.getSalidas().add(monto));
-        caja.setSaldoFinal(caja.getSaldoFinal().subtract(monto));
+        // Crear un nuevo movimiento de salida
+        MovimientoCaja movimiento = new MovimientoCaja();
+        movimiento.setCaja(caja);
+        movimiento.setMonto(movimientoDTO.getMonto());
+        movimiento.setObservaciones(movimientoDTO.getObservaciones());
+        movimiento.setFecha(LocalDateTime.now());
+        movimiento.setTipo(TipoMovimiento.SALIDA);
 
-        // Guardar observaciones (si se proporcionan)
-        if (observaciones != null && !observaciones.trim().isEmpty()) {
-            caja.setObservaciones(observaciones);
-        }
+        // Agregar el movimiento a la caja
+        caja.getMovimientos().add(movimiento);
+
+        // Actualizar el total de salidas
+        caja.setSalidas(caja.getSalidas().add(movimientoDTO.getMonto()));
+
+        // Actualizar el saldo final
+        caja.setSaldoFinal(caja.getSaldoFinal().subtract(movimientoDTO.getMonto()));
 
         // Guardar los cambios en la base de datos
         return cajaRepositorio.save(caja);

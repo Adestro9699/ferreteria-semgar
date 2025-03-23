@@ -9,6 +9,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/ventas")
@@ -54,8 +55,16 @@ public class VentaController {
     }
 
     @PostMapping("/{idVenta}/completar")
-    public ResponseEntity<VentaDTO> completarVenta(@PathVariable Integer idVenta) {
-        VentaDTO ventaCompletada = ventaService.completarVenta(idVenta);
+    public ResponseEntity<VentaDTO> completarVenta(
+            @PathVariable Integer idVenta,
+            @RequestBody Map<String, Integer> requestBody // Recibir el idCaja en el cuerpo de la solicitud
+    ) {
+        Integer idCaja = requestBody.get("idCaja"); // Obtener el idCaja del JSON
+        if (idCaja == null) {
+            throw new IllegalArgumentException("El idCaja es requerido para completar la venta.");
+        }
+
+        VentaDTO ventaCompletada = ventaService.completarVenta(idVenta, idCaja); // Pasar el idCaja al servicio
         return ResponseEntity.ok(ventaCompletada);
     }
 

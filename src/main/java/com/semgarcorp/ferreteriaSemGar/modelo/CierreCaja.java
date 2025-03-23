@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 public class CierreCaja {
@@ -47,13 +48,16 @@ public class CierreCaja {
     @JoinColumn(name = "idCaja")
     private Caja caja;
 
+    @OneToMany(mappedBy = "cierreCaja", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MovimientoCaja> movimientos;
+
     // Constructor vacío
     public CierreCaja() {
     }
 
     public CierreCaja(Integer idCierreCaja, LocalDateTime fechaApertura, LocalDateTime fechaCierre,
                       BigDecimal saldoInicial, BigDecimal totalEntradas, BigDecimal totalSalidas, BigDecimal saldoFinal,
-                      String observaciones, Usuario usuario, Caja caja) {
+                      String observaciones, Usuario usuario, Caja caja, List<MovimientoCaja> movimientos) {
         this.idCierreCaja = idCierreCaja;
         this.fechaApertura = fechaApertura;
         this.fechaCierre = fechaCierre;
@@ -64,6 +68,7 @@ public class CierreCaja {
         this.observaciones = observaciones;
         this.usuario = usuario;
         this.caja = caja;
+        this.movimientos = movimientos;
     }
 
     public Integer getIdCierreCaja() {
@@ -144,5 +149,13 @@ public class CierreCaja {
 
     public void setCaja(Caja caja) {
         this.caja = caja;
+    }
+
+    public List<MovimientoCaja> getMovimientos() {
+        return movimientos;
+    }
+
+    public void setMovimientos(List<MovimientoCaja> movimientos) {
+        this.movimientos = movimientos;
     }
 }

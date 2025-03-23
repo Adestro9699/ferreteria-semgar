@@ -4,6 +4,7 @@ import com.semgarcorp.ferreteriaSemGar.modelo.EstadoCaja;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class CajaDTO {
 
@@ -18,13 +19,14 @@ public class CajaDTO {
     private EstadoCaja estado; // "ABIERTA" o "CERRADA"
     private Integer idUsuario; // Usuario que realiza la operación (apertura o cierre)
     private String observaciones; // Solo para el cierre de caja
+    private List<MovimientoCajaDTO> movimientos;
 
     public CajaDTO() {
     }
 
     public CajaDTO(Integer idCaja, String nombreCaja, LocalDateTime fechaApertura, LocalDateTime fechaClausura,
                    BigDecimal saldoInicial, BigDecimal entradas, BigDecimal salidas, BigDecimal saldoFinal,
-                   EstadoCaja estado, Integer idUsuario, String observaciones) {
+                   EstadoCaja estado, Integer idUsuario, String observaciones, List<MovimientoCajaDTO> movimientos) {
         this.idCaja = idCaja;
         this.nombreCaja = nombreCaja;
         this.fechaApertura = fechaApertura;
@@ -36,6 +38,7 @@ public class CajaDTO {
         this.estado = estado;
         this.idUsuario = idUsuario;
         this.observaciones = observaciones;
+        this.movimientos = movimientos;
     }
 
     public Integer getIdCaja() {
@@ -124,5 +127,13 @@ public class CajaDTO {
 
     public void setObservaciones(String observaciones) {
         this.observaciones = observaciones;
+    }
+
+    public List<MovimientoCajaDTO> getMovimientos() {
+        return movimientos;
+    }
+
+    public void setMovimientos(List<MovimientoCajaDTO> movimientos) {
+        this.movimientos = movimientos;
     }
 }
