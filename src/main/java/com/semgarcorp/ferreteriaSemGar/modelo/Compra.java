@@ -1,5 +1,6 @@
 package com.semgarcorp.ferreteriaSemGar.modelo;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -7,6 +8,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
+@JsonInclude(JsonInclude.Include.NON_NULL) // Ignora campos nulos al serializar
 public class Compra {
 
     // Enum para el estado de la compra

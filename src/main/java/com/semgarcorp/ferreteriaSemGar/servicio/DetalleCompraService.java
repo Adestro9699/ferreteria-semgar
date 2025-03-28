@@ -1,5 +1,6 @@
 package com.semgarcorp.ferreteriaSemGar.servicio;
 
+import com.semgarcorp.ferreteriaSemGar.modelo.Compra;
 import com.semgarcorp.ferreteriaSemGar.modelo.DetalleCompra;
 import com.semgarcorp.ferreteriaSemGar.modelo.Producto;
 import com.semgarcorp.ferreteriaSemGar.repositorio.DetalleCompraRepository;
@@ -13,11 +14,15 @@ public class DetalleCompraService {
 
     private final DetalleCompraRepository detalleCompraRepositorio;
     private final ProductoService productoService;
+    private final CompraService compraService;
 
     // Constructor
-    public DetalleCompraService(DetalleCompraRepository detalleCompraRepositorio, ProductoService productoService) {
+    public DetalleCompraService(DetalleCompraRepository detalleCompraRepositorio,
+                                ProductoService productoService,
+                                CompraService compraService) {
         this.detalleCompraRepositorio = detalleCompraRepositorio;
         this.productoService = productoService;
+        this.compraService = compraService;
     }
 
     public List<DetalleCompra> listar() {
@@ -50,7 +55,14 @@ public class DetalleCompraService {
         }
 
         // Guardar el detalle de compra en la base de datos
-        return detalleCompraRepositorio.save(detalleCompra);
+        DetalleCompra nuevoDetalleCompra = detalleCompraRepositorio.save(detalleCompra);
+
+        // Recalcular el total de la compra asociada
+        if (nuevoDetalleCompra.getCompra() != null) {
+            compraService.recalcularTotalCompra(nuevoDetalleCompra.getCompra().getIdCompra());
+        }
+
+        return nuevoDetalleCompra;
     }
 
     public DetalleCompra actualizar(DetalleCompra detalleCompra) {
@@ -70,15 +82,38 @@ public class DetalleCompraService {
 
         // Incrementar el stock del producto con la cantidad comprada
         if (producto != null && detalleCompra.getCantidad() != null) {
-            BigDecimal cantidadComprada = detalleCompra.getCantidad(); // No es necesario usar BigDecimal.valueOf()
+            BigDecimal cantidadComprada = detalleCompra.getCantidad();
             productoService.incrementarStock(producto.getIdProducto(), cantidadComprada);
         }
 
         // Actualizar el detalle de compra en la base de datos
-        return detalleCompraRepositorio.save(detalleCompra);
+        DetalleCompra detalleActualizado = detalleCompraRepositorio.save(detalleCompra);
+
+        // Recalcular el total de la compra asociada
+        if (detalleActualizado.getCompra() != null) {
+            compraService.recalcularTotalCompra(detalleActualizado.getCompra().getIdCompra());
+        }
+
+        return detalleActualizado;
     }
 
     public void eliminar(Integer id) {
+        // Buscar el detalle de compra por ID
+        DetalleCompra detalleCompra = detalleCompraRepositorio.findById(id)
+                .orElseThrow(() -> new RuntimeException("Detalle de compra no encontrado"));
+
+        // Reducir el stock del producto asociado
+        Producto producto = detalleCompra.getProducto();
+        if (producto != null && detalleCompra.getCantidad() != null) {
+            productoService.reducirStock(producto.getIdProducto(), detalleCompra.getCantidad());
+        }
+
+        // Eliminar el detalle de compra
         detalleCompraRepositorio.deleteById(id);
+
+        // Recalcular el total de la compra asociada
+        if (detalleCompra.getCompra() != null) {
+            compraService.recalcularTotalCompra(detalleCompra.getCompra().getIdCompra());
+        }
     }
 }
