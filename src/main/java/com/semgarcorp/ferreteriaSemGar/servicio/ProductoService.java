@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -155,13 +156,20 @@ public class ProductoService {
      * @throws EntityNotFoundException Si el producto no existe.
      */
     @Transactional
-    public void actualizarPrecioVenta(Integer idProducto, BigDecimal precioCompra) {
+    public void actualizarPrecioVenta(Integer idProducto, BigDecimal precioCompra, BigDecimal utilidadManual) {
         Producto producto = productoRepositorio.findById(idProducto)
-                .orElseThrow(() -> new EntityNotFoundException("Producto con ID " + idProducto + " no encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado"));
 
-        BigDecimal igv = obtenerValorIGV(); // Obtener el valor del IGV desde ParametroService
-        BigDecimal utilidad = obtenerPorcentajeUtilidad(producto); // Obtener la utilidad jerárquica
+        BigDecimal utilidad;
+        if (utilidadManual != null) {
+            // Usar utilidad manual si fue especificada
+            utilidad = utilidadManual.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+        } else {
+            // Mantener la lógica existente de jerarquía de utilidades
+            utilidad = obtenerPorcentajeUtilidad(producto);
+        }
 
+        BigDecimal igv = obtenerValorIGV();
         BigDecimal precioVentaSinIGV = precioCompra.multiply(utilidad.add(BigDecimal.ONE));
         BigDecimal precioVentaConIGV = precioVentaSinIGV.multiply(igv.add(BigDecimal.ONE));
 

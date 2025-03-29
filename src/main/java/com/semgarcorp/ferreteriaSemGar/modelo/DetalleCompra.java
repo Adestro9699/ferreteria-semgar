@@ -29,6 +29,12 @@ public class DetalleCompra {
     @Column(precision = 10, scale = 2)
     private BigDecimal subtotal; // Subtotal calculado (cantidad * precioUnitario)
 
+    @Column(precision = 10, scale = 2)
+    private BigDecimal porcentajeUtilidadManual; // Nuevo campo para utilidad manual
+
+    @Transient // No se persiste, se calcula en tiempo de ejecución
+    private BigDecimal precioVentaCalculado;
+
     // Constructor vacío
     public DetalleCompra() {
     }
@@ -92,5 +98,23 @@ public class DetalleCompra {
 
     public void setSubtotal(BigDecimal subtotal) {
         this.subtotal = subtotal;
+    }
+
+    public BigDecimal getPorcentajeUtilidadManual() {
+        return porcentajeUtilidadManual;
+    }
+
+    public void setPorcentajeUtilidadManual(BigDecimal porcentajeUtilidadManual) {
+        this.porcentajeUtilidadManual = porcentajeUtilidadManual;
+    }
+
+    public BigDecimal getPrecioVentaCalculado() {
+        if (porcentajeUtilidadManual != null) {
+            // Usar utilidad manual si fue especificada
+            BigDecimal factorUtilidad = BigDecimal.ONE.add(porcentajeUtilidadManual.divide(BigDecimal.valueOf(100)));
+            return precioUnitario.multiply(factorUtilidad);
+        }
+        // Si no, el cálculo sigue como antes (en ProductoService)
+        return null;
     }
 }

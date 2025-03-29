@@ -48,4 +48,12 @@ public class UtilidadService {
         return utilidadRepositorio.findByCategoria(categoria)
                 .map(utilidad -> utilidad.getPorcentajeUtilidadComoDecimal());
     }
+
+    public List<Utilidad> obtenerUtilidadesProductos() {
+        return utilidadRepositorio.findByProductoIsNotNull();
+    }
+
+    public List<Utilidad> obtenerUtilidadesCategorias() {
+        return utilidadRepositorio.findByCategoriaIsNotNull();
+    }
 }

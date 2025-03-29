@@ -34,18 +34,18 @@ public class DetalleCompraService {
     }
 
     public DetalleCompra guardar(DetalleCompra detalleCompra) {
-        // Calcular el subtotal antes de guardar
-        if (detalleCompra.getCantidad() != null && detalleCompra.getPrecioUnitario() != null) {
-            BigDecimal subtotal = detalleCompra.getCantidad().multiply(detalleCompra.getPrecioUnitario());
-            detalleCompra.setSubtotal(subtotal);
-        }
+        // Calcular subtotal
+        BigDecimal subtotal = detalleCompra.getCantidad().multiply(detalleCompra.getPrecioUnitario());
+        detalleCompra.setSubtotal(subtotal);
 
-        // Obtener el producto asociado al detalle de compra
+        // Actualizar precio de venta del producto
         Producto producto = detalleCompra.getProducto();
-
-        // Actualizar el precio de venta del producto basado en el precio unitario (precio de compra)
-        if (producto != null && detalleCompra.getPrecioUnitario() != null) {
-            productoService.actualizarPrecioVenta(producto.getIdProducto(), detalleCompra.getPrecioUnitario());
+        if (producto != null) {
+            productoService.actualizarPrecioVenta(
+                    producto.getIdProducto(),
+                    detalleCompra.getPrecioUnitario(),
+                    detalleCompra.getPorcentajeUtilidadManual()
+            );
         }
 
         // Incrementar el stock del producto con la cantidad comprada
@@ -77,7 +77,11 @@ public class DetalleCompraService {
 
         // Actualizar el precio de venta del producto basado en el precio unitario (precio de compra)
         if (producto != null && detalleCompra.getPrecioUnitario() != null) {
-            productoService.actualizarPrecioVenta(producto.getIdProducto(), detalleCompra.getPrecioUnitario());
+            productoService.actualizarPrecioVenta(
+                    producto.getIdProducto(),
+                    detalleCompra.getPrecioUnitario(),
+                    detalleCompra.getPorcentajeUtilidadManual() // <- Nuevo tercer parámetro
+            );
         }
 
         // Incrementar el stock del producto con la cantidad comprada

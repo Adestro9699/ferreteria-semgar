@@ -42,17 +42,25 @@ public class UtilidadController {
     // Crear una nueva utilidad
     @PostMapping
     public ResponseEntity<Utilidad> guardar(@RequestBody Utilidad utilidad) {
-        // Guardar la utilidad usando el servicio
-        Utilidad nuevaUtilidad = utilidadService.guardar(utilidad);
+        try {
+            // Validar que tenga al menos categoría o producto
+            if (utilidad.getCategoria() == null && utilidad.getProducto() == null) {
+                return ResponseEntity.badRequest().build();
+            }
 
-        // Crear la URI del recurso recién creado
-        URI location = ServletUriComponentsBuilder
-                .fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(nuevaUtilidad.getIdUtilidad()).toUri();
+            // Si no viene porcentaje, asignar null
+            if (utilidad.getPorcentajeUtilidad() != null) {
+                // Validar rango si se proporciona
+                if (utilidad.getPorcentajeUtilidad() < 0 || utilidad.getPorcentajeUtilidad() > 100) {
+                    return ResponseEntity.badRequest().build();
+                }
+            }
 
-        // Devolver la respuesta con la URI en la cabecera Location y el objeto creado en el cuerpo
-        return ResponseEntity.created(location).body(nuevaUtilidad);
+            Utilidad guardada = utilidadService.guardar(utilidad);
+            return ResponseEntity.status(HttpStatus.CREATED).body(guardada);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     // Actualizar una utilidad existente
@@ -103,5 +111,19 @@ public class UtilidadController {
         return utilidadService.obtenerPorcentajeUtilidadPorCategoria(categoria)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    // Nuevo endpoint para obtener todas las utilidades de productos
+    @GetMapping("/producto")
+    public ResponseEntity<List<Utilidad>> obtenerUtilidadesProductos() {
+        List<Utilidad> utilidades = utilidadService.obtenerUtilidadesProductos();
+        return ResponseEntity.ok(utilidades);
+    }
+
+    // Nuevo endpoint para obtener todas las utilidades de categorías
+    @GetMapping("/categoria")
+    public ResponseEntity<List<Utilidad>> obtenerUtilidadesCategorias() {
+        List<Utilidad> utilidades = utilidadService.obtenerUtilidadesCategorias();
+        return ResponseEntity.ok(utilidades);
     }
 }

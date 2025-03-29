@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.math.BigDecimal;
 import java.net.URI;
 import java.util.List;
 
@@ -79,5 +80,24 @@ public class DetalleCompraController {
             return ResponseEntity.noContent().build(); // Respuesta sin contenido
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Si no se encuentra, 404
+    }
+
+    @PostMapping("/con-utilidad-manual")
+    public ResponseEntity<DetalleCompra> guardarConUtilidadManual(
+            @RequestBody DetalleCompra detalleCompra,
+            @RequestParam(required = false) BigDecimal utilidadManual) {
+
+        if (utilidadManual != null) {
+            detalleCompra.setPorcentajeUtilidadManual(utilidadManual);
+        }
+
+        DetalleCompra nuevoDetalle = detalleCompraService.guardar(detalleCompra);
+
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(nuevoDetalle.getIdDetalleCompra()).toUri();
+
+        return ResponseEntity.created(location).body(nuevoDetalle);
     }
 }
