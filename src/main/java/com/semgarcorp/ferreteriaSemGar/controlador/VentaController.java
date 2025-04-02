@@ -31,11 +31,9 @@ public class VentaController {
     // Obtener una venta por su ID
     @GetMapping("/{id}")
     public ResponseEntity<VentaDTO> obtenerPorId(@PathVariable Integer id) {
-        VentaDTO ventaDTO = ventaService.obtenerPorId(id); // Obtener el DTO
-        if (ventaDTO != null) {
-            return ResponseEntity.ok(ventaDTO); // Devolver el DTO en la respuesta
-        }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Si no se encuentra, devolver 404
+        return ventaService.obtenerPorId(id)
+                .map(ResponseEntity::ok)                      // Si está presente, devuelve 200 OK con el DTO
+                .orElseGet(() -> ResponseEntity.notFound().build()); // Si no está, devuelve 404 Not Found
     }
 
     // Crear una nueva venta
@@ -58,7 +56,10 @@ public class VentaController {
     public ResponseEntity<VentaDTO> completarVenta(
             @PathVariable Integer idVenta,
             @RequestBody Map<String, Integer> requestBody // Recibir el idCaja en el cuerpo de la solicitud
-    ) {
+    )
+    {
+        System.out.println("==== LLEGÓ AL CONTROLLER ====");
+
         Integer idCaja = requestBody.get("idCaja"); // Obtener el idCaja del JSON
         if (idCaja == null) {
             throw new IllegalArgumentException("El idCaja es requerido para completar la venta.");
@@ -71,24 +72,21 @@ public class VentaController {
     // Actualizar una venta existente (PUT)
     @PutMapping("/{id}")
     public ResponseEntity<VentaDTO> actualizar(@PathVariable Integer id, @RequestBody VentaDTO ventaDTO) {
-        VentaDTO ventaExistenteDTO = ventaService.obtenerPorId(id);
-        if (ventaExistenteDTO != null) {
-            VentaDTO ventaActualizadaDTO = ventaService.actualizar(id, ventaDTO);
-            if (ventaActualizadaDTO != null) {
-                return ResponseEntity.ok(ventaActualizadaDTO);
-            }
-        }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        return ventaService.obtenerPorId(id)
+                .map(ventaExistenteDTO -> {
+                    VentaDTO ventaActualizadaDTO = ventaService.actualizar(id, ventaDTO);
+                    return ResponseEntity.ok(ventaActualizadaDTO);
+                })
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    // Eliminar una venta por su ID
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
-        VentaDTO ventaExistenteDTO = ventaService.obtenerPorId(id);
-        if (ventaExistenteDTO != null) {
-            ventaService.eliminar(id);
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        return ventaService.obtenerPorId(id)
+                .map(venta -> {
+                    ventaService.eliminar(id);
+                    return ResponseEntity.noContent().<Void>build(); // Forzamos el tipo a Void
+                })
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 }

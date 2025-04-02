@@ -21,4 +21,6 @@ public interface ClienteRepository extends JpaRepository<Cliente, Integer> {
 
     // Buscar clientes por apellido (búsqueda parcial)
     List<Cliente> findByApellidosContaining(String apellidos);
+
+    boolean existsByNumeroDocumento(String numeroDocumento);
 }

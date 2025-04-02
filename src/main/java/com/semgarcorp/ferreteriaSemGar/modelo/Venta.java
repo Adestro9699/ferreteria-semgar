@@ -36,6 +36,9 @@ public class Venta {
     @Lob
     private String observaciones;
 
+    @Enumerated(EnumType.STRING)
+    private Moneda moneda;
+
     // Relación con Caja (Many-to-One)
     @ManyToOne
     @JoinColumn(name = "idCaja", referencedColumnName = "idCaja", nullable = true)
@@ -75,8 +78,8 @@ public class Venta {
 
     public Venta(Integer idVenta, String serieComprobante, String numeroComprobante, LocalDateTime fechaVenta,
                  EstadoVenta estadoVenta, BigDecimal totalVenta, LocalDateTime fechaModificacion, String observaciones,
-                 Caja caja, Empresa empresa, TipoComprobantePago tipoComprobantePago, Trabajador trabajador,
-                 Cliente cliente, TipoPago tipoPago, List<DetalleVenta> detalles) {
+                 Moneda moneda, Caja caja, Empresa empresa, TipoComprobantePago tipoComprobantePago,
+                 Trabajador trabajador, Cliente cliente, TipoPago tipoPago, List<DetalleVenta> detalles) {
         this.idVenta = idVenta;
         this.serieComprobante = serieComprobante;
         this.numeroComprobante = numeroComprobante;
@@ -85,6 +88,7 @@ public class Venta {
         this.totalVenta = totalVenta;
         this.fechaModificacion = fechaModificacion;
         this.observaciones = observaciones;
+        this.moneda = moneda;
         this.caja = caja;
         this.empresa = empresa;
         this.tipoComprobantePago = tipoComprobantePago;
@@ -156,6 +160,14 @@ public class Venta {
 
     public void setObservaciones(String observaciones) {
         this.observaciones = observaciones;
+    }
+
+    public Moneda getMoneda() {
+        return moneda;
+    }
+
+    public void setMoneda(Moneda moneda) {
+        this.moneda = moneda;
     }
 
     public Caja getCaja() {

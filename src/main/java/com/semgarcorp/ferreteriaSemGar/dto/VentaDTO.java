@@ -1,6 +1,8 @@
 package com.semgarcorp.ferreteriaSemGar.dto;
 
 import com.semgarcorp.ferreteriaSemGar.modelo.EstadoVenta; // Importa la enumeración común
+import com.semgarcorp.ferreteriaSemGar.modelo.Moneda;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,6 +16,7 @@ public class VentaDTO {
     private EstadoVenta estadoVenta;
     private BigDecimal totalVenta;
     private LocalDateTime fechaModificacion;
+    private Moneda moneda;
     private String observaciones;
     private Integer idCaja;
     private Integer idEmpresa;
@@ -24,6 +27,28 @@ public class VentaDTO {
     private List<DetalleVentaDTO> detalles;
 
     public VentaDTO() {
+    }
+
+    public VentaDTO(Integer idVenta, String serieComprobante, String numeroComprobante, LocalDateTime fechaVenta,
+                    EstadoVenta estadoVenta, BigDecimal totalVenta, LocalDateTime fechaModificacion, Moneda moneda,
+                    String observaciones, Integer idCaja, Integer idEmpresa, Integer idTipoComprobantePago,
+                    Integer idTrabajador, Integer idCliente, Integer idTipoPago, List<DetalleVentaDTO> detalles) {
+        this.idVenta = idVenta;
+        this.serieComprobante = serieComprobante;
+        this.numeroComprobante = numeroComprobante;
+        this.fechaVenta = fechaVenta;
+        this.estadoVenta = estadoVenta;
+        this.totalVenta = totalVenta;
+        this.fechaModificacion = fechaModificacion;
+        this.moneda = moneda;
+        this.observaciones = observaciones;
+        this.idCaja = idCaja;
+        this.idEmpresa = idEmpresa;
+        this.idTipoComprobantePago = idTipoComprobantePago;
+        this.idTrabajador = idTrabajador;
+        this.idCliente = idCliente;
+        this.idTipoPago = idTipoPago;
+        this.detalles = detalles;
     }
 
     public Integer getIdVenta() {
@@ -80,6 +105,14 @@ public class VentaDTO {
 
     public void setFechaModificacion(LocalDateTime fechaModificacion) {
         this.fechaModificacion = fechaModificacion;
+    }
+
+    public Moneda getMoneda() {
+        return moneda;
+    }
+
+    public void setMoneda(Moneda moneda) {
+        this.moneda = moneda;
     }
 
     public String getObservaciones() {

@@ -32,6 +32,9 @@ public class Cliente {
     @Email(message = "El correo debe tener un formato válido")
     private String correo;
 
+    @Column(length = 20)
+    private String estado;
+
     @ManyToOne
     @JoinColumn(name = "idTipoDocumento", nullable = false)
     private TipoDocumento tipoDocumento;
@@ -40,7 +43,7 @@ public class Cliente {
     }
 
     public Cliente(Integer idCliente, String nombres, String apellidos, String razonSocial, String numeroDocumento,
-                   String direccion, String telefono, String correo, TipoDocumento tipoDocumento) {
+                   String direccion, String telefono, String correo, String estado, TipoDocumento tipoDocumento) {
         this.idCliente = idCliente;
         this.nombres = nombres;
         this.apellidos = apellidos;
@@ -49,6 +52,7 @@ public class Cliente {
         this.direccion = direccion;
         this.telefono = telefono;
         this.correo = correo;
+        this.estado = estado;
         this.tipoDocumento = tipoDocumento;
     }
 
@@ -114,6 +118,14 @@ public class Cliente {
 
     public void setCorreo(String correo) {
         this.correo = correo;
+    }
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
     }
 
     public TipoDocumento getTipoDocumento() {

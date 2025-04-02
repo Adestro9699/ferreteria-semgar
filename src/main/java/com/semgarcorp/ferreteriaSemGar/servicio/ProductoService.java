@@ -90,7 +90,7 @@ public class ProductoService {
         productoRepositorio.save(producto);
     }
 
-    // Método para buscar productos por nombre
+    // Metodo para buscar productos por nombre
     public List<Producto> buscarProductosPorNombre(String nombreProducto) {
         // Verificar si el nombre es nulo o está vacío
         if (nombreProducto == null || nombreProducto.trim().isEmpty()) {
@@ -106,7 +106,7 @@ public class ProductoService {
         }
     }
 
-    // Método para buscar productos por marca
+    // Metodo para buscar productos por marca
     public List<Producto> buscarProductosPorMarca(String marca) {
         // Verificar si la marca es nula o está vacía
         if (marca == null || marca.trim().isEmpty()) {
@@ -122,7 +122,7 @@ public class ProductoService {
         }
     }
 
-    // Método para buscar productos por categoría
+    // Metodo para buscar productos por categoría
     public List<Producto> buscarProductosPorCategoria(String nombreCategoria) {
         // Verificar si el nombre de la categoría es nulo o está vacío
         if (nombreCategoria == null || nombreCategoria.trim().isEmpty()) {
@@ -138,7 +138,7 @@ public class ProductoService {
         }
     }
 
-    // Método para buscar productos por estado
+    // Metodo para buscar productos por estado
     public List<Producto> buscarProductosPorEstado(String estado) {
         // Verificar si el estado es nulo o está vacío
         if (estado == null || estado.trim().isEmpty()) {
@@ -158,7 +158,7 @@ public class ProductoService {
         }
     }
 
-    // Método para buscar productos por material
+    // Metodo para buscar productos por material
     public List<Producto> buscarProductosPorMaterial(String material) {
         // Verificar si el material es nulo o está vacío
         if (material == null || material.trim().isEmpty()) {
@@ -174,7 +174,7 @@ public class ProductoService {
         }
     }
 
-    // Método para buscar productos por código de barra
+    // Metodo para buscar productos por código de barra
     public List<Producto> buscarProductosPorCodigoBarra(String codigoBarra) {
         // Verificar si el código de barra es nulo o está vacío
         if (codigoBarra == null || codigoBarra.trim().isEmpty()) {
@@ -190,7 +190,7 @@ public class ProductoService {
         }
     }
 
-    // Método para buscar productos por proveedor
+    // Metodo para buscar productos por proveedor
     public List<Producto> buscarProductosPorNombreProveedor(String nombreProveedor) {
         // Verificar si el nombre del proveedor es nulo o está vacío
         if (nombreProveedor == null || nombreProveedor.trim().isEmpty()) {
@@ -204,7 +204,7 @@ public class ProductoService {
         }
     }
 
-    // Método para buscar productos por nombre de subcategoría
+    // Metodo para buscar productos por nombre de subcategoría
     public List<Producto> buscarProductosPorNombreSubcategoria(String nombreSubcategoria) {
         // Verificar si el nombre de la subcategoría es nulo o está vacío
         if (nombreSubcategoria == null || nombreSubcategoria.trim().isEmpty()) {
@@ -218,7 +218,7 @@ public class ProductoService {
         }
     }
 
-    // Método para buscar productos por código SKU
+    // Metodo para buscar productos por código SKU
     public List<Producto> buscarProductosPorCodigoSKU(String codigoSKU) {
         // Verificar si el código SKU es nulo o está vacío
         if (codigoSKU == null || codigoSKU.trim().isEmpty()) {
@@ -234,7 +234,7 @@ public class ProductoService {
     }
 
     /**
-     * Método para actualizar el precio de venta de un producto basado en el precio de compra,
+     * Metodo para actualizar el precio de venta de un producto basado en el precio de compra,
      * utilizando los parámetros de IGV y utilidad.
      */
     @Transactional
@@ -259,22 +259,22 @@ public class ProductoService {
     }
 
     /**
-     * Método auxiliar para obtener el valor del IGV desde ParametroService.
+     * Metodo auxiliar para obtener el valor del IGV desde ParametroService.
      */
     private BigDecimal obtenerValorIGV() {
         // Supongamos que tienes acceso al servicio ParametroService
         // Aquí debes inyectar ParametroService en el constructor de ProductoService
-        // y usar el método obtenerValorIGV() de ese servicio.
+        // y usar el metodo obtenerValorIGV() de ese servicio.
         return BigDecimal.valueOf(0.18); // Ejemplo temporal
     }
 
     /**
-     * Método auxiliar para obtener el valor de la utilidad desde ParametroService.
+     * Metodo auxiliar para obtener el valor de la utilidad desde ParametroService.
      */
     private BigDecimal obtenerValorUtilidad() {
         // Supongamos que tienes acceso al servicio ParametroService
         // Aquí debes inyectar ParametroService en el constructor de ProductoService
-        // y usar el método obtenerValorUtilidad() de ese servicio.
+        // y usar el metodo obtenerValorUtilidad() de ese servicio.
         return BigDecimal.valueOf(0.30); // Ejemplo temporal
     }
 

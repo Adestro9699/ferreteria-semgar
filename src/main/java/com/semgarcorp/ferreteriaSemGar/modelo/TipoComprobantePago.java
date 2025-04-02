@@ -6,7 +6,6 @@ import jakarta.validation.constraints.NotNull;
 @Entity
 public class TipoComprobantePago {
 
-    // Enum para el estado del comprobante de pago
     public enum Estado {
         ACTIVO,
         INACTIVO
@@ -16,9 +15,9 @@ public class TipoComprobantePago {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer idTipoComprobantePago;
 
-    @Column(length = 150) // Define el campo como VARCHAR(150) en la base de datos
+    @Column(length = 150)
     @NotNull(message = "El nombre del comprobante de pago no puede ser nulo")
-    private String nombre; // Cambiado de enum a String
+    private String nombre;
 
     @NotNull(message = "La descripción no puede ser nula")
     private String descripcion;
@@ -27,19 +26,21 @@ public class TipoComprobantePago {
     @NotNull(message = "El estado del comprobante de pago no puede ser nulo")
     private Estado estado;
 
-    // Constructor vacío
+    @Column(nullable = false, unique = true, updatable = false)
+    private Integer codigoNubefact;
+
     public TipoComprobantePago() {
     }
 
-    // Constructor con parámetros
-    public TipoComprobantePago(Integer idTipoComprobantePago, String nombre, String descripcion, Estado estado) {
+    public TipoComprobantePago(Integer idTipoComprobantePago, String nombre, String descripcion, Estado estado,
+                               Integer codigoNubefact) {
         this.idTipoComprobantePago = idTipoComprobantePago;
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.estado = estado;
+        this.codigoNubefact = codigoNubefact;
     }
 
-    // Getters y Setters
     public Integer getIdTipoComprobantePago() {
         return idTipoComprobantePago;
     }
@@ -70,5 +71,13 @@ public class TipoComprobantePago {
 
     public void setEstado(Estado estado) {
         this.estado = estado;
+    }
+
+    public Integer getCodigoNubefact() {
+        return codigoNubefact;
+    }
+
+    public void setCodigoNubefact(Integer codigoNubefact) {
+        this.codigoNubefact = codigoNubefact;
     }
 }

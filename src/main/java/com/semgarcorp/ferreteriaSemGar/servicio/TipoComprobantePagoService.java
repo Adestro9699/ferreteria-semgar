@@ -34,4 +34,10 @@ public class TipoComprobantePagoService {
     public void eliminar(Integer id) {
         tipoComprobantePagoRepositorio.deleteById(id);
     }
+
+    public Integer getCodigoNubefact(String nombreTipo) {
+        return tipoComprobantePagoRepositorio.findByNombre(nombreTipo)
+                .orElseThrow(() -> new IllegalArgumentException("Tipo de comprobante no existe"))
+                .getCodigoNubefact();
+    }
 }
