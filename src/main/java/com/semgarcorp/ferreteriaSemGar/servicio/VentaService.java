@@ -2,6 +2,9 @@ package com.semgarcorp.ferreteriaSemGar.servicio;
 
 import com.semgarcorp.ferreteriaSemGar.dto.DetalleVentaDTO;
 import com.semgarcorp.ferreteriaSemGar.dto.VentaDTO;
+import com.semgarcorp.ferreteriaSemGar.dto.VentaDetalleCompletoDTO;
+import com.semgarcorp.ferreteriaSemGar.dto.VentaResumenDTO;
+import com.semgarcorp.ferreteriaSemGar.integracion.NubeFactClient;
 import com.semgarcorp.ferreteriaSemGar.integracion.NubeFactService;
 import com.semgarcorp.ferreteriaSemGar.modelo.*;
 import com.semgarcorp.ferreteriaSemGar.repositorio.*;
@@ -14,13 +17,14 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
 public class VentaService {
-
-    private final VentaRepository ventaRepositorio;
 
     private final ParametroService parametroService;
 
@@ -46,13 +50,15 @@ public class VentaService {
 
     private final NubeFactService nubeFactService;
 
-    public VentaService(VentaRepository ventaRepositorio, ParametroService parametroService,
-                        VentaRepository ventaRepository, ProductoRepository productoRepository,
-                        TipoPagoRepository tipoPagoRepository, EmpresaRepository empresaRepository,
-                        ClienteRepository clienteRepository, TipoComprobantePagoRepository tipoComprobanteRepository,
+    private final NubeFactClient nubeFactClient;
+
+    public VentaService(ParametroService parametroService, VentaRepository ventaRepository,
+                        ProductoRepository productoRepository, TipoPagoRepository tipoPagoRepository,
+                        EmpresaRepository empresaRepository, ClienteRepository clienteRepository,
+                        TipoComprobantePagoRepository tipoComprobanteRepository,
                         TrabajadorRepository trabajadorRepository, CajaRepository cajaRepository,
-                        ProductoService productoService, CajaService cajaService, NubeFactService nubeFactService) {
-        this.ventaRepositorio = ventaRepositorio;
+                        ProductoService productoService, CajaService cajaService, NubeFactService nubeFactService,
+                        NubeFactClient nubeFactClient) {
         this.parametroService = parametroService;
         this.ventaRepository = ventaRepository;
         this.productoRepository = productoRepository;
@@ -65,32 +71,96 @@ public class VentaService {
         this.productoService = productoService;
         this.cajaService = cajaService;
         this.nubeFactService = nubeFactService;
+        this.nubeFactClient = nubeFactClient;
     }
 
     public List<VentaDTO> listar() {
-        List<Venta> ventas = ventaRepositorio.findAll(); // Obtener las entidades
+        List<Venta> ventas = ventaRepository.findAll(); // Obtener las entidades
         return ventas.stream()
                 .map(this::convertirAVentaDTO) // Convertir cada entidad a DTO
                 .collect(Collectors.toList());
     }
 
     public Optional<VentaDTO> obtenerPorId(Integer id) {
-        return ventaRepositorio.findById(id).map(this::convertirAVentaDTO);
+        return ventaRepository.findById(id).map(this::convertirAVentaDTO);
     }
 
+    @Transactional
     public VentaDTO actualizar(Integer id, VentaDTO ventaDTO) {
-        Venta ventaExistente = ventaRepositorio.findById(id).orElse(null);
-        if (ventaExistente != null) {
-            Venta ventaActualizada = convertirAVenta(ventaDTO);
-            ventaActualizada.setIdVenta(id);
-            Venta ventaGuardada = ventaRepositorio.save(ventaActualizada);
-            return convertirAVentaDTO(ventaGuardada);
+        // 1. Obtener venta existente (asegurando que está PENDIENTE)
+        Venta ventaExistente = ventaRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Venta no encontrada con ID: " + id));
+
+        // 2. Validar que la venta esté PENDIENTE (restricción clave)
+        if (ventaExistente.getEstadoVenta() != EstadoVenta.PENDIENTE) {
+            throw new IllegalStateException("Solo se pueden actualizar ventas en estado PENDIENTE");
         }
-        return null;
+
+        // 3. Validar que no se intente cambiar el estado (opcional, según negocio)
+        if (ventaDTO.getEstadoVenta() != null && !ventaDTO.getEstadoVenta().equals(EstadoVenta.PENDIENTE)) {
+            throw new IllegalArgumentException("No se puede cambiar el estado de una venta PENDIENTE mediante esta operación");
+        }
+
+        // 4. Actualizar datos complementarios (sin validar serie/número porque es PENDIENTE)
+        if (ventaDTO.getIdEmpresa() != null) {
+            ventaExistente.setEmpresa(buscarEntidadPorId(empresaRepository, ventaDTO.getIdEmpresa(), "Empresa"));
+        }
+
+        if (ventaDTO.getIdCliente() != null) {
+            ventaExistente.setCliente(buscarEntidadPorId(clienteRepository, ventaDTO.getIdCliente(), "Cliente"));
+        }
+
+        if (ventaDTO.getIdTipoComprobantePago() != null) {
+            // ¡Sin validación de serie/número porque es PENDIENTE!
+            ventaExistente.setTipoComprobantePago(
+                    buscarEntidadPorId(tipoComprobanteRepository, ventaDTO.getIdTipoComprobantePago(), "TipoComprobantePago")
+            );
+        }
+
+        if (ventaDTO.getIdTipoPago() != null) {
+            ventaExistente.setTipoPago(buscarEntidadPorId(tipoPagoRepository, ventaDTO.getIdTipoPago(), "TipoPago"));
+        }
+
+        if (ventaDTO.getIdTrabajador() != null) {
+            ventaExistente.setTrabajador(buscarEntidadPorId(trabajadorRepository, ventaDTO.getIdTrabajador(), "Trabajador"));
+        }
+
+        // 5. Actualizar campos simples
+        if (ventaDTO.getFechaVenta() != null) {
+            ventaExistente.setFechaVenta(ventaDTO.getFechaVenta());
+        }
+
+        if (ventaDTO.getObservaciones() != null) {
+            ventaExistente.setObservaciones(ventaDTO.getObservaciones());
+        }
+
+        // 6. Actualizar detalles (sin restricciones porque es PENDIENTE)
+        if (ventaDTO.getDetalles() != null) {
+            ventaExistente.getDetalles().clear();
+            List<DetalleVenta> nuevosDetalles = ventaDTO.getDetalles().stream()
+                    .map(detalleDTO -> {
+                        DetalleVenta detalle = new DetalleVenta();
+                        detalle.setProducto(buscarEntidadPorId(productoRepository, detalleDTO.getIdProducto(), "Producto"));
+                        detalle.setCantidad(detalleDTO.getCantidad());
+                        detalle.setPrecioUnitario(detalleDTO.getPrecioUnitario());
+                        detalle.setDescuento(detalleDTO.getDescuento());
+                        detalle.setVenta(ventaExistente);
+                        return detalle;
+                    })
+                    .collect(Collectors.toList());
+            ventaExistente.getDetalles().addAll(nuevosDetalles);
+        }
+
+        // 7. Recalcular valores (subtotal, IGV, total, etc.)
+        asignarValoresCalculados(ventaExistente);
+
+        // 8. Guardar cambios
+        Venta ventaActualizada = ventaRepository.save(ventaExistente);
+        return convertirAVentaDTO(ventaActualizada);
     }
 
     public void eliminar(Integer id) {
-        ventaRepositorio.deleteById(id);
+        ventaRepository.deleteById(id);
     }
 
     public Venta convertirAVenta(VentaDTO ventaDTO) {
@@ -104,6 +174,7 @@ public class VentaService {
         venta.setTotalVenta(ventaDTO.getTotalVenta());
         venta.setFechaModificacion(ventaDTO.getFechaModificacion());
         venta.setObservaciones(ventaDTO.getObservaciones());
+        venta.setMoneda(ventaDTO.getMoneda() != null ? ventaDTO.getMoneda() : Moneda.SOLES); // Valor por defecto SOLES
 
         // Asignar idCaja solo si la venta no está en estado PENDIENTE
         if (ventaDTO.getEstadoVenta() != null && ventaDTO.getEstadoVenta() != EstadoVenta.PENDIENTE) {
@@ -166,8 +237,10 @@ public class VentaService {
         venta.setCaja(caja);
 
         // 4. Generar serie y número (antes de emitir el comprobante)
-        venta.setSerieComprobante(generarSerie());
-        venta.setNumeroComprobante(generarNumero());
+        String serie = generarSerie(venta.getTipoComprobantePago());
+        String numero = generarNumero(serie, venta.getTipoComprobantePago());
+        venta.setSerieComprobante(serie);
+        venta.setNumeroComprobante(numero);
 
         // 5. Convertir la venta a DTO (ahora con serie y número asignados)
         VentaDTO ventaDTO = convertirAVentaDTO(venta);
@@ -193,14 +266,69 @@ public class VentaService {
         return convertirAVentaDTO(venta);
     }
 
-    private String generarSerie() {
-        // Lógica para generar la serie (por ejemplo, "F001")
-        return "FFF1";
+    // Mapeo de códigos NubeFact a series
+    private static final Map<Integer, String> SERIES_POR_CODIGO = Map.of(
+            1, "FFF1",
+            2, "BBB1"
+    );
+
+    private String generarSerie(TipoComprobantePago tipoComprobante) {
+        Integer codigo = tipoComprobante.getCodigoNubefact();
+
+        if (!SERIES_POR_CODIGO.containsKey(codigo)) {
+            throw new IllegalArgumentException("Código NubeFact no válido: " + codigo);
+        }
+
+        return SERIES_POR_CODIGO.get(codigo);
     }
 
-    private String generarNumero() {
-        // Lógica para generar el número (por ejemplo, "0001")
-        return "2";
+    // Metodo para obtener el próximo número disponible
+    private String generarNumero(String serie, TipoComprobantePago tipoComprobante) {
+        // 1. Último número en base de datos para esta serie y tipo
+        Integer ultimoNumeroLocal = ventaRepository
+                .findMaxNumeroBySerieAndTipo(serie, tipoComprobante.getCodigoNubefact())
+                .orElse(0);
+
+        // 2. Verificar en NubeFact
+        Integer ultimoNumeroNubeFact = consultarUltimoNumeroEnNubeFact(serie, tipoComprobante);
+
+        // 3. Calcular próximo número
+        Integer proximoNumero = Math.max(ultimoNumeroLocal, ultimoNumeroNubeFact) + 1;
+
+        return String.format("%04d", proximoNumero); // Formato 0001, 0002, etc.
+    }
+
+    // Metodo para consultar el último número en NubeFact
+    private Integer consultarUltimoNumeroEnNubeFact(String serie, TipoComprobantePago tipoComprobante) {
+        try {
+            // Consulta a NubeFact para obtener comprobantes de esta serie
+            String response = nubeFactClient.consultarComprobantes(
+                    tipoComprobante.getCodigoNubefact(),
+                    serie
+            );
+
+            // Parsear la respuesta para encontrar el máximo número
+            return parsearUltimoNumero(response);
+        } catch (Exception e) {
+            // Si falla la consulta, asumimos 0
+            return 0;
+        }
+    }
+
+    // Metodo para parsear la respuesta de NubeFact
+    private Integer parsearUltimoNumero(String jsonResponse) {
+        // Implementación básica - deberías adaptarla al formato real de respuesta
+        // Este es un ejemplo simplificado
+        if (jsonResponse.contains("\"numero\":")) {
+            Pattern pattern = Pattern.compile("\"numero\":\"?(\\d+)\"?");
+            Matcher matcher = pattern.matcher(jsonResponse);
+            List<Integer> numeros = new ArrayList<>();
+            while (matcher.find()) {
+                numeros.add(Integer.parseInt(matcher.group(1)));
+            }
+            return numeros.stream().max(Integer::compare).orElse(0);
+        }
+        return 0;
     }
 
     public VentaDTO convertirAVentaDTO(Venta venta) {
@@ -215,6 +343,7 @@ public class VentaService {
         ventaDTO.setTotalVenta(venta.getTotalVenta());
         ventaDTO.setFechaModificacion(venta.getFechaModificacion());
         ventaDTO.setObservaciones(venta.getObservaciones());
+        ventaDTO.setMoneda(venta.getMoneda()); // Asignar la moneda de la entidad al DTO
 
         // Asignar IDs de entidades relacionadas (con validación de null)
         ventaDTO.setIdCaja(venta.getCaja() != null ? venta.getCaja().getIdCaja() : null);
@@ -322,6 +451,10 @@ public class VentaService {
             throw new IllegalArgumentException("No se puede enviar idCaja para una venta en estado PENDIENTE");
         }
 
+        if (ventaDTO.getMoneda() == null) {
+            ventaDTO.setMoneda(Moneda.SOLES); // Establecer valor por defecto
+        }
+
         // 4. Convertir VentaDTO a Venta
         Venta venta = convertirAVenta(ventaDTO);
 
@@ -333,5 +466,102 @@ public class VentaService {
 
         // 7. Convertir la entidad Venta guardada de vuelta a VentaDTO
         return convertirAVentaDTO(venta);
+    }
+
+    // Para listado de ventas
+    public List<VentaResumenDTO> obtenerTodasVentasResumen() {
+        return ventaRepository.findAllVentasResumen();
+    }
+
+    public VentaDetalleCompletoDTO obtenerVentaDetalleCompleto(Integer idVenta) {
+        // 1. Obtener datos principales
+        VentaDetalleCompletoDTO ventaDTO = ventaRepository.findVentaDetalleCompletoById(idVenta)
+                .orElseThrow(() -> new RuntimeException("Venta no encontrada"));
+
+        // 2. Obtener detalles
+        List<DetalleVentaDTO> detalles = ventaRepository.findDetallesByVentaId(idVenta);
+
+        // 3. Combinar resultados
+        ventaDTO.setDetalles(detalles);
+
+        return ventaDTO;
+    }
+
+    private VentaDetalleCompletoDTO convertirAVentaDetalleCompletoDTO(Venta venta) {
+        // Crear una instancia del DTO con el constructor por defecto
+        VentaDetalleCompletoDTO dto = new VentaDetalleCompletoDTO();
+
+        // Establecer los valores básicos
+        dto.setIdVenta(venta.getIdVenta());
+        dto.setSerieComprobante(venta.getSerieComprobante());
+        dto.setNumeroComprobante(venta.getNumeroComprobante());
+        dto.setMoneda(venta.getMoneda());
+        dto.setTotalVenta(venta.getTotalVenta());
+        dto.setFechaVenta(venta.getFechaVenta());
+        dto.setEstadoVenta(venta.getEstadoVenta());
+
+        // Establecer valores de relaciones, manejando posibles nulos
+        if (venta.getTipoComprobantePago() != null) {
+            dto.setTipoComprobante(venta.getTipoComprobantePago().getNombre());
+        } else {
+            dto.setTipoComprobante("N/A");
+        }
+
+        if (venta.getTipoPago() != null) {
+            dto.setTipoPago(venta.getTipoPago().getNombre());
+        } else {
+            dto.setTipoPago("N/A");
+        }
+
+        // Información del cliente
+        if (venta.getCliente() != null) {
+            dto.setNombresCliente(venta.getCliente().getNombres() != null ?
+                    venta.getCliente().getNombres() : "");
+            dto.setApellidosCliente(venta.getCliente().getApellidos() != null ?
+                    venta.getCliente().getApellidos() : "");
+            dto.setRazonSocialCliente(venta.getCliente().getRazonSocial() != null ?
+                    venta.getCliente().getRazonSocial() : "");
+        }
+
+        // Información de la empresa
+        if (venta.getEmpresa() != null) {
+            dto.setRazonSocialEmpresa(venta.getEmpresa().getRazonSocial());
+        }
+
+        // Convertir y establecer los detalles
+        if (venta.getDetalles() != null && !venta.getDetalles().isEmpty()) {
+            List<DetalleVentaDTO> detallesDTO = venta.getDetalles().stream()
+                    .map(this::convertirADetalleVentaDTO)
+                    .toList();
+            dto.setDetalles(detallesDTO);
+        }
+
+        return dto;
+    }
+
+    /**
+     * Metodo para convertir una entidad DetalleVenta a DetalleVentaDTO
+     */
+    private DetalleVentaDTO convertirADetalleVentaDTO(DetalleVenta detalle) {
+        DetalleVentaDTO dto = new DetalleVentaDTO();
+
+        dto.setIdDetalleVenta(detalle.getIdDetalleVenta());
+        dto.setIdVenta(detalle.getVenta().getIdVenta());
+        dto.setIdProducto(detalle.getProducto().getIdProducto());
+        dto.setNombreProducto(detalle.getProducto().getNombreProducto());
+        // Añadir la unidad de medida (con validación de nulos)
+        dto.setUnidadMedida(
+                detalle.getProducto().getUnidadMedida() != null ?
+                        detalle.getProducto().getUnidadMedida().getNombreUnidad() :
+                        "Sin unidad"  // Valor por defecto opcional
+        );
+        dto.setCantidad(detalle.getCantidad());
+        dto.setPrecioUnitario(detalle.getPrecioUnitario());
+        dto.setDescuento(detalle.getDescuento());
+        dto.setSubtotal(detalle.getSubtotal());
+        dto.setSubtotalSinIGV(detalle.getSubtotalSinIGV());
+        dto.setIgvAplicado(detalle.getIgvAplicado());
+
+        return dto;
     }
 }

@@ -52,6 +52,7 @@ public class ProductoService {
         productoRepositorio.deleteAllById(ids);
     }
 
+    //Metodo para paginación de productos
     public Map<String, Object> obtenerProductosPaginados(int page, int pageSize) {
         // Calcular el offset (PageRequest usa índices base 0)
         Pageable pageable = PageRequest.of(page - 1, pageSize);
@@ -67,6 +68,7 @@ public class ProductoService {
         return response;
     }
 
+    //Metodo para reducir stock cuando una venta cambia a estado COMPLETADA
     @Transactional
     public void reducirStock(Integer idProducto, BigDecimal cantidadVendida) {
         // 1. Buscar el producto por ID

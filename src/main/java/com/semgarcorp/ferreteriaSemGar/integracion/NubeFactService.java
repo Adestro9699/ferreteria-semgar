@@ -112,7 +112,7 @@ public class NubeFactService {
 
         // Fechas y moneda
         request.put("fecha_de_emision", venta.getFechaVenta().toString());
-        request.put("moneda", 1); // 1 = Soles
+        request.put("moneda", Integer.parseInt(venta.getMoneda().getCodigoNubefact())); // 1 = Soles
         request.put("tipo_de_cambio", 3.75);
         request.put("porcentaje_de_igv", obtenerPorcentajeIgv());
 
@@ -120,9 +120,26 @@ public class NubeFactService {
     }
 
     private String obtenerDenominacionCliente(Cliente cliente) {
-        return cliente.getTipoDocumento() != null &&
-                "RUC".equals(cliente.getTipoDocumento().getNombre())
-                ? cliente.getRazonSocial() : cliente.getNombres() + " " + cliente.getApellidos();
+        if (cliente == null) {
+            return "N/A";
+        }
+
+        // Verificar si es RUC (por nombre o abreviatura)
+        boolean esRUC = cliente.getTipoDocumento() != null &&
+                ("RUC".equalsIgnoreCase(cliente.getTipoDocumento().getNombre()) ||
+                        "RUC".equalsIgnoreCase(cliente.getTipoDocumento().getAbreviatura()));
+
+        if (esRUC) {
+            String razonSocial = cliente.getRazonSocial();
+            return (razonSocial != null && !razonSocial.trim().isEmpty())
+                    ? razonSocial
+                    : "Sin Razón Social";
+        } else {
+            String nombres = cliente.getNombres() != null ? cliente.getNombres() : "";
+            String apellidos = cliente.getApellidos() != null ? cliente.getApellidos() : "";
+            String nombreCompleto = (nombres + " " + apellidos).trim();
+            return nombreCompleto.isEmpty() ? "Sin Nombre" : nombreCompleto;
+        }
     }
 
     private List<Map<String, Object>> construirItems(List<DetalleVentaDTO> detalles) {
@@ -272,5 +289,21 @@ public class NubeFactService {
                     }
                 })
                 .orElse(new BigDecimal("18.00")); // Valor por defecto
+    }
+
+    public String anularComprobante(String serie, String numero, String motivo, String codigoUnico) {
+        try {
+            logger.info("Iniciando anulación de comprobante {}-{}", serie, numero);
+
+            String respuesta = client.anularComprobante(serie, numero, motivo, codigoUnico);
+
+            logger.info("Respuesta de anulación de NubeFact: {}", respuesta);
+            guardarJsonEnArchivo(respuesta, "nubefact_anulacion_"+serie+"-"+numero+"_"+System.currentTimeMillis()+".json");
+
+            return respuesta;
+        } catch (Exception e) {
+            logger.error("Error al anular comprobante {}-{}", serie, numero, e);
+            throw new RuntimeException("Error al anular comprobante", e);
+        }
     }
 }

@@ -7,6 +7,8 @@ public class DetalleVentaDTO {
     private Integer idDetalleVenta;
     private Integer idVenta;
     private Integer idProducto;
+    private String nombreProducto;
+    private String unidadMedida;
     private BigDecimal cantidad;
     private BigDecimal precioUnitario;
     private BigDecimal descuento;
@@ -17,12 +19,14 @@ public class DetalleVentaDTO {
     public DetalleVentaDTO() {
     }
 
-    public DetalleVentaDTO(Integer idDetalleVenta, Integer idVenta, Integer idProducto, BigDecimal cantidad,
-                           BigDecimal precioUnitario, BigDecimal descuento, BigDecimal subtotal,
-                           BigDecimal subtotalSinIGV, BigDecimal igvAplicado) {
+    public DetalleVentaDTO(Integer idDetalleVenta, Integer idVenta, Integer idProducto, String nombreProducto,
+                           String unidadMedida, BigDecimal cantidad, BigDecimal precioUnitario, BigDecimal descuento,
+                           BigDecimal subtotal, BigDecimal subtotalSinIGV, BigDecimal igvAplicado) {
         this.idDetalleVenta = idDetalleVenta;
         this.idVenta = idVenta;
         this.idProducto = idProducto;
+        this.nombreProducto = nombreProducto;
+        this.unidadMedida = unidadMedida;
         this.cantidad = cantidad;
         this.precioUnitario = precioUnitario;
         this.descuento = descuento;
@@ -53,6 +57,22 @@ public class DetalleVentaDTO {
 
     public void setIdProducto(Integer idProducto) {
         this.idProducto = idProducto;
+    }
+
+    public String getNombreProducto() {
+        return nombreProducto;
+    }
+
+    public void setNombreProducto(String nombreProducto) {
+        this.nombreProducto = nombreProducto;
+    }
+
+    public String getUnidadMedida() {
+        return unidadMedida;
+    }
+
+    public void setUnidadMedida(String unidadMedida) {
+        this.unidadMedida = unidadMedida;
     }
 
     public BigDecimal getCantidad() {

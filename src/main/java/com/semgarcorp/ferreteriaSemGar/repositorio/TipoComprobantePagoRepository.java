@@ -10,4 +10,6 @@ import java.util.Optional;
 public interface TipoComprobantePagoRepository extends JpaRepository<TipoComprobantePago, Integer> {
 
     Optional<TipoComprobantePago> findByNombre(String nombre);
+
+
 }

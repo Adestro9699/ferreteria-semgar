@@ -1,6 +1,8 @@
 package com.semgarcorp.ferreteriaSemGar.controlador;
 
 import com.semgarcorp.ferreteriaSemGar.dto.VentaDTO;
+import com.semgarcorp.ferreteriaSemGar.dto.VentaDetalleCompletoDTO;
+import com.semgarcorp.ferreteriaSemGar.dto.VentaResumenDTO;
 import com.semgarcorp.ferreteriaSemGar.servicio.VentaService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -88,5 +90,18 @@ public class VentaController {
                     return ResponseEntity.noContent().<Void>build(); // Forzamos el tipo a Void
                 })
                 .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    // --- Nuevo endpoint para el resumen optimizado ---
+    @GetMapping("/resumen")
+    public ResponseEntity<List<VentaResumenDTO>> listarVentasResumen() {
+        return ResponseEntity.ok(ventaService.obtenerTodasVentasResumen());
+    }
+
+    // 2. Obtener detalle completo de una venta
+    @GetMapping("/{idVenta}/detalle")
+    public ResponseEntity<VentaDetalleCompletoDTO> obtenerDetalleVenta(
+            @PathVariable Integer idVenta) {
+        return ResponseEntity.ok(ventaService.obtenerVentaDetalleCompleto(idVenta));
     }
 }
