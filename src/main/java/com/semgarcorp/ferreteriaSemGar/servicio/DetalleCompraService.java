@@ -1,10 +1,11 @@
 package com.semgarcorp.ferreteriaSemGar.servicio;
-
+                
 import com.semgarcorp.ferreteriaSemGar.modelo.Compra;
 import com.semgarcorp.ferreteriaSemGar.modelo.DetalleCompra;
 import com.semgarcorp.ferreteriaSemGar.modelo.Producto;
 import com.semgarcorp.ferreteriaSemGar.repositorio.DetalleCompraRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -33,6 +34,7 @@ public class DetalleCompraService {
         return detalleCompraRepositorio.findById(id).orElse(null);
     }
 
+    @Transactional
     public DetalleCompra guardar(DetalleCompra detalleCompra) {
         // Calcular subtotal
         BigDecimal subtotal = detalleCompra.getCantidad().multiply(detalleCompra.getPrecioUnitario());
@@ -60,6 +62,13 @@ public class DetalleCompraService {
         // Recalcular el total de la compra asociada
         if (nuevoDetalleCompra.getCompra() != null) {
             compraService.recalcularTotalCompra(nuevoDetalleCompra.getCompra().getIdCompra());
+            
+            // Cambiar el estado de la compra a COMPLETADA si está en PENDIENTE
+            Compra compra = nuevoDetalleCompra.getCompra();
+            if (compra.getEstadoCompra() == Compra.EstadoCompra.PENDIENTE) {
+                compra.setEstadoCompra(Compra.EstadoCompra.COMPLETADA);
+                compraService.actualizar(compra);
+            }
         }
 
         return nuevoDetalleCompra;
@@ -119,5 +128,9 @@ public class DetalleCompraService {
         if (detalleCompra.getCompra() != null) {
             compraService.recalcularTotalCompra(detalleCompra.getCompra().getIdCompra());
         }
+    }
+    
+    public List<DetalleCompra> obtenerDetallesPorCompra(Integer idCompra) {
+        return detalleCompraRepositorio.findByCompraId(idCompra);
     }
 }

@@ -52,6 +52,15 @@ public class DetalleCompraController {
         return ResponseEntity.created(location).body(nuevoDetalleCompra);
     }
 
+    @GetMapping("/compra/{idCompra}")
+    public ResponseEntity<List<DetalleCompra>> obtenerDetallesPorCompra(@PathVariable Integer idCompra) {
+        List<DetalleCompra> detallesCompra = detalleCompraService.obtenerDetallesPorCompra(idCompra);
+        if (!detallesCompra.isEmpty()) {
+            return ResponseEntity.ok(detallesCompra);
+        }
+        return ResponseEntity.noContent().build();
+    }
+
     // Actualizar un detallecompra existente (PUT)
     @PutMapping("/{id}")
     public ResponseEntity<DetalleCompra> actualizar(@PathVariable Integer id, @RequestBody DetalleCompra detallecompra) {
