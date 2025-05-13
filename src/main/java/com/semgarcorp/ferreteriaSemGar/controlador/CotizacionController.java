@@ -1,5 +1,8 @@
 package com.semgarcorp.ferreteriaSemGar.controlador;
 
+import com.semgarcorp.ferreteriaSemGar.dto.CotizacionDTO;
+import com.semgarcorp.ferreteriaSemGar.dto.CotizacionResumenDTO;
+import com.semgarcorp.ferreteriaSemGar.dto.VentaDTO;
 import com.semgarcorp.ferreteriaSemGar.modelo.Cotizacion;
 import com.semgarcorp.ferreteriaSemGar.servicio.CotizacionService;
 import org.springframework.http.HttpStatus;
@@ -73,5 +76,17 @@ public class CotizacionController {
             return ResponseEntity.noContent().build(); // Respuesta sin contenido
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Si no se encuentra, 404
+    }
+
+    // Convertir una venta en cotización
+    @PostMapping("/convertir-venta")
+    public ResponseEntity<CotizacionDTO> convertirVentaACotizacion(@RequestBody VentaDTO ventaDTO) {
+        CotizacionDTO cotizacionDTO = cotizacionService.convertirVentaACotizacion(ventaDTO);
+        return ResponseEntity.ok(cotizacionDTO);
+    }
+
+    @GetMapping("/resumen")
+    public List<CotizacionResumenDTO> obtenerTodasCotizacionesResumen() {
+        return cotizacionService.obtenerTodasCotizacionesResumen();
     }
 }

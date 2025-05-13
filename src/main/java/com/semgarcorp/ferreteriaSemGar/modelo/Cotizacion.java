@@ -14,6 +14,7 @@ public class Cotizacion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)  // Cambiado a IDENTITY
     private Integer idCotizacion;
 
+    @Column(length = 20, nullable = true)
     private String codigoCotizacion;
 
     @NotNull(message = "La fecha de cotización no puede ser nula")

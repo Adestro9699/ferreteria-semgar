@@ -1,25 +1,36 @@
 package com.semgarcorp.ferreteriaSemGar.servicio;
 
+import com.semgarcorp.ferreteriaSemGar.dto.CotizacionDTO;
+import com.semgarcorp.ferreteriaSemGar.dto.CotizacionResumenDTO;
+import com.semgarcorp.ferreteriaSemGar.dto.VentaDTO;
 import com.semgarcorp.ferreteriaSemGar.modelo.*;
-import com.semgarcorp.ferreteriaSemGar.repositorio.CotizacionRepository;
-import com.semgarcorp.ferreteriaSemGar.repositorio.VentaRepository;
+import com.semgarcorp.ferreteriaSemGar.repositorio.*;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class CotizacionService {
 
     private final CotizacionRepository cotizacionRepositorio;
+    private final ClienteRepository clienteRepository;
+    private final TrabajadorRepository trabajadorRepository;
+    private final TipoPagoRepository tipoPagoRepository;
+    private final EmpresaRepository empresaRepository;
+    private final ProductoRepository productoRepository;
 
-    private final VentaRepository ventaRepositorio;
-
-    public CotizacionService(CotizacionRepository cotizacionRepositorio, VentaRepository ventaRepositorio) {
+    public CotizacionService(CotizacionRepository cotizacionRepositorio, ClienteRepository clienteRepository,
+                             TrabajadorRepository trabajadorRepository, TipoPagoRepository tipoPagoRepository,
+                             EmpresaRepository empresaRepository, ProductoRepository productoRepository) {
         this.cotizacionRepositorio = cotizacionRepositorio;
-        this.ventaRepositorio = ventaRepositorio;
+        this.clienteRepository = clienteRepository;
+        this.trabajadorRepository = trabajadorRepository;
+        this.tipoPagoRepository = tipoPagoRepository;
+        this.empresaRepository = empresaRepository;
+        this.productoRepository = productoRepository;
     }
 
     // Listar todas las cotizaciones
@@ -46,67 +57,58 @@ public class CotizacionService {
         cotizacionRepositorio.deleteById(id);
     }
 
-    public Cotizacion convertirVentaACotizacion(Venta venta) {
+    public CotizacionDTO convertirVentaACotizacion(VentaDTO ventaDTO) {
         // Crear una nueva cotización
         Cotizacion cotizacion = new Cotizacion();
+        cotizacion.setCodigoCotizacion(String.valueOf(cotizacionRepositorio.count() + 1));
         cotizacion.setFechaCotizacion(LocalDateTime.now());
-        cotizacion.setTotalCotizacion(venta.getTotalVenta());
-        cotizacion.setEstadoCotizacion(EstadoCotizacion.PENDIENTE); // Estado inicial
-        cotizacion.setCliente(venta.getCliente());
-        cotizacion.setTrabajador(venta.getTrabajador());
-        cotizacion.setTipoPago(venta.getTipoPago());
-        cotizacion.setEmpresa(venta.getEmpresa());
+        cotizacion.setTotalCotizacion(ventaDTO.getTotalVenta());
+        cotizacion.setEstadoCotizacion(EstadoCotizacion.PENDIENTE);
+        cotizacion.setCliente(clienteRepository.findById(ventaDTO.getIdCliente())
+                .orElseThrow(() -> new EntityNotFoundException("Cliente no encontrado")));
+        cotizacion.setTrabajador(trabajadorRepository.findById(ventaDTO.getIdTrabajador())
+                .orElseThrow(() -> new EntityNotFoundException("Trabajador no encontrado")));
+        cotizacion.setTipoPago(tipoPagoRepository.findById(ventaDTO.getIdTipoPago())
+                .orElseThrow(() -> new EntityNotFoundException("Tipo de pago no encontrado")));
+        cotizacion.setEmpresa(empresaRepository.findById(ventaDTO.getIdEmpresa())
+                .orElseThrow(() -> new EntityNotFoundException("Empresa no encontrada")));
+        cotizacion.setObservaciones(ventaDTO.getObservaciones());
 
-        // Copiar los detalles de la venta a la cotización
-        List<DetalleCotizacion> detallesCotizacion = new ArrayList<>();
-        for (DetalleVenta detalleVenta : venta.getDetalles()) {
+        // Convertir detalles de venta a detalles de cotización
+        List<DetalleCotizacion> detallesCotizacion = ventaDTO.getDetalles().stream().map(detalleDTO -> {
             DetalleCotizacion detalleCotizacion = new DetalleCotizacion();
-            detalleCotizacion.setProducto(detalleVenta.getProducto());
-            detalleCotizacion.setCantidad(detalleVenta.getCantidad());
-            detalleCotizacion.setPrecioUnitario(detalleVenta.getPrecioUnitario());
-            detalleCotizacion.setDescuento(detalleVenta.getDescuento());
-            detalleCotizacion.setSubtotal(detalleVenta.getSubtotal());
-            detalleCotizacion.setSubtotalSinIGV(detalleVenta.getSubtotalSinIGV());
-            detalleCotizacion.setIgvAplicado(detalleVenta.getIgvAplicado());
-            detalleCotizacion.setCotizacion(cotizacion); // Establecer la relación con la cotización
-            detallesCotizacion.add(detalleCotizacion);
-        }
+            detalleCotizacion.setProducto(productoRepository.findById(detalleDTO.getIdProducto())
+                    .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado")));
+            detalleCotizacion.setCantidad(detalleDTO.getCantidad());
+            detalleCotizacion.setPrecioUnitario(detalleDTO.getPrecioUnitario());
+            detalleCotizacion.setDescuento(detalleDTO.getDescuento());
+            detalleCotizacion.setSubtotal(detalleDTO.getSubtotal());
+            detalleCotizacion.setSubtotalSinIGV(detalleDTO.getSubtotalSinIGV());
+            detalleCotizacion.setIgvAplicado(detalleDTO.getIgvAplicado());
+            detalleCotizacion.setCotizacion(cotizacion);
+            return detalleCotizacion;
+        }).toList();
 
         cotizacion.setDetalles(detallesCotizacion);
 
-        // Guardar la cotización en la base de datos
-        return cotizacionRepositorio.save(cotizacion);
+        // Guardar la cotización y convertirla a DTO
+        Cotizacion cotizacionGuardada = cotizacionRepositorio.save(cotizacion);
+        return convertirACotizacionDTO(cotizacionGuardada);
     }
 
-    public Venta convertirCotizacionAVenta(Cotizacion cotizacion) {
-        // Crear una nueva venta
-        Venta venta = new Venta();
-        venta.setFechaVenta(LocalDateTime.now());
-        venta.setTotalVenta(cotizacion.getTotalCotizacion());
-        venta.setEstadoVenta(EstadoVenta.PENDIENTE); // Estado inicial
-        venta.setCliente(cotizacion.getCliente());
-        venta.setTrabajador(cotizacion.getTrabajador());
-        venta.setTipoPago(cotizacion.getTipoPago());
-        venta.setEmpresa(cotizacion.getEmpresa());
+    // Metodo auxiliar para convertir una entidad Cotizacion a CotizacionDTO
+    private CotizacionDTO convertirACotizacionDTO(Cotizacion cotizacion) {
+        // Implementar la conversión de Cotizacion a CotizacionDTO
+        // Aquí se debe implementar la lógica para convertir Cotizacion a CotizacionDTO
+        return null; // Placeholder para la implementación
+    }
 
-        // Copiar los detalles de la cotización a la venta
-        List<DetalleVenta> detallesVenta = new ArrayList<>();
-        for (DetalleCotizacion detalleCotizacion : cotizacion.getDetalles()) {
-            DetalleVenta detalleVenta = new DetalleVenta();
-            detalleVenta.setProducto(detalleCotizacion.getProducto());
-            detalleVenta.setCantidad(detalleCotizacion.getCantidad());
-            detalleVenta.setPrecioUnitario(detalleCotizacion.getPrecioUnitario());
-            detalleVenta.setDescuento(detalleCotizacion.getDescuento());
-            detalleVenta.setSubtotal(detalleCotizacion.getSubtotal());
-            detalleVenta.setSubtotalSinIGV(detalleCotizacion.getSubtotalSinIGV());
-            detalleVenta.setIgvAplicado(detalleCotizacion.getIgvAplicado());
-            detalleVenta.setVenta(venta); // Establecer la relación con la venta
-            detallesVenta.add(detalleVenta);
-        }
+    private String generarCodigoCotizacion() {
+        Long numeroSecuencial = cotizacionRepositorio.count() + 1;
+        return String.format("%04d", numeroSecuencial); // Ejemplo: "0001", "0002", ..., "0100"
+    }
 
-        venta.setDetalles(detallesVenta);
-
-        // Guardar la venta en la base de datos
-        return ventaRepositorio.save(venta);
+    public List<CotizacionResumenDTO> obtenerTodasCotizacionesResumen() {
+        return cotizacionRepositorio.findAllCotizacionesResumen();
     }
 }

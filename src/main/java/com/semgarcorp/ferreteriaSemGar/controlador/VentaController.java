@@ -104,4 +104,11 @@ public class VentaController {
             @PathVariable Integer idVenta) {
         return ResponseEntity.ok(ventaService.obtenerVentaDetalleCompleto(idVenta));
     }
+
+    @GetMapping("/precargar-venta/{codigoCotizacion}")  // Cambiado a GET (es una consulta)
+    public ResponseEntity<VentaDTO> precargarVentaDesdeCotizacion(
+            @PathVariable String codigoCotizacion) {
+        VentaDTO ventaDTO = ventaService.convertirCotizacionAVenta(codigoCotizacion);
+        return ResponseEntity.ok(ventaDTO);
+    }
 }

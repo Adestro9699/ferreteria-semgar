@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +45,8 @@ public class VentaService {
 
     private final CajaRepository cajaRepository;
 
+    private final CotizacionRepository cotizacionRepository;
+
     private final ProductoService productoService;
 
     private final CajaService cajaService;
@@ -53,12 +56,7 @@ public class VentaService {
     private final NubeFactClient nubeFactClient;
 
     public VentaService(ParametroService parametroService, VentaRepository ventaRepository,
-                        ProductoRepository productoRepository, TipoPagoRepository tipoPagoRepository,
-                        EmpresaRepository empresaRepository, ClienteRepository clienteRepository,
-                        TipoComprobantePagoRepository tipoComprobanteRepository,
-                        TrabajadorRepository trabajadorRepository, CajaRepository cajaRepository,
-                        ProductoService productoService, CajaService cajaService, NubeFactService nubeFactService,
-                        NubeFactClient nubeFactClient) {
+                        ProductoRepository productoRepository, TipoPagoRepository tipoPagoRepository, EmpresaRepository empresaRepository, ClienteRepository clienteRepository, TipoComprobantePagoRepository tipoComprobanteRepository, TrabajadorRepository trabajadorRepository, CajaRepository cajaRepository, CotizacionRepository cotizacionRepository, ProductoService productoService, CajaService cajaService, NubeFactService nubeFactService, NubeFactClient nubeFactClient) {
         this.parametroService = parametroService;
         this.ventaRepository = ventaRepository;
         this.productoRepository = productoRepository;
@@ -68,6 +66,7 @@ public class VentaService {
         this.tipoComprobanteRepository = tipoComprobanteRepository;
         this.trabajadorRepository = trabajadorRepository;
         this.cajaRepository = cajaRepository;
+        this.cotizacionRepository = cotizacionRepository;
         this.productoService = productoService;
         this.cajaService = cajaService;
         this.nubeFactService = nubeFactService;
@@ -563,5 +562,41 @@ public class VentaService {
         dto.setIgvAplicado(detalle.getIgvAplicado());
 
         return dto;
+    }
+
+    public VentaDTO convertirCotizacionAVenta(String codigoCotizacion) {
+        // Buscar la cotización por su código
+        Cotizacion cotizacion = cotizacionRepository.findByCodigoCotizacion(codigoCotizacion)
+                .orElseThrow(() -> new EntityNotFoundException("Cotización no encontrada"));
+
+        // Crear el DTO de venta (sin persistir)
+        VentaDTO ventaDTO = new VentaDTO();
+
+        // Copiar datos generales
+        ventaDTO.setIdCliente(cotizacion.getCliente().getIdCliente());
+        ventaDTO.setIdTrabajador(cotizacion.getTrabajador().getIdTrabajador());
+        ventaDTO.setIdTipoPago(cotizacion.getTipoPago().getIdTipoPago());
+        ventaDTO.setIdEmpresa(cotizacion.getEmpresa().getIdEmpresa());
+        ventaDTO.setTotalVenta(cotizacion.getTotalCotizacion());
+        ventaDTO.setObservaciones("Generado desde cotización: " + codigoCotizacion); // Opcional
+
+        // Copiar detalles (¡Ahora con todos los campos necesarios!)
+        List<DetalleVentaDTO> detallesDTO = cotizacion.getDetalles().stream().map(detalle -> {
+            DetalleVentaDTO detalleDTO = new DetalleVentaDTO();
+            detalleDTO.setIdProducto(detalle.getProducto().getIdProducto());
+            detalleDTO.setNombreProducto(detalle.getProducto().getNombreProducto()); // Nombre del producto
+            detalleDTO.setUnidadMedida(detalle.getProducto().getUnidadMedida().getNombreUnidad());
+            detalleDTO.setCantidad(detalle.getCantidad());
+            detalleDTO.setPrecioUnitario(detalle.getPrecioUnitario());
+            detalleDTO.setDescuento(detalle.getDescuento());
+            detalleDTO.setSubtotal(detalle.getSubtotal());
+            detalleDTO.setSubtotalSinIGV(detalle.getSubtotalSinIGV());
+            detalleDTO.setIgvAplicado(detalle.getIgvAplicado());
+            return detalleDTO;
+        }).toList();
+
+        ventaDTO.setDetalles(detallesDTO);
+
+        return ventaDTO;
     }
 }

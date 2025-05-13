@@ -20,6 +20,9 @@ public class Venta {
     @Column(length = 6, nullable = false)
     private String numeroComprobante; // Ejemplo: "000123"
 
+    @Column(length = 20, nullable = true)
+    private String codigoCotizacion;
+
     @NotNull(message = "La fecha de venta no puede ser nula")
     private LocalDateTime fechaVenta;
 
@@ -76,13 +79,15 @@ public class Venta {
     public Venta() {
     }
 
-    public Venta(Integer idVenta, String serieComprobante, String numeroComprobante, LocalDateTime fechaVenta,
-                 EstadoVenta estadoVenta, BigDecimal totalVenta, LocalDateTime fechaModificacion, String observaciones,
-                 Moneda moneda, Caja caja, Empresa empresa, TipoComprobantePago tipoComprobantePago,
-                 Trabajador trabajador, Cliente cliente, TipoPago tipoPago, List<DetalleVenta> detalles) {
+    public Venta(Integer idVenta, String serieComprobante, String numeroComprobante, String codigoCotizacion,
+                 LocalDateTime fechaVenta, EstadoVenta estadoVenta, BigDecimal totalVenta,
+                 LocalDateTime fechaModificacion, String observaciones, Moneda moneda, Caja caja, Empresa empresa,
+                 TipoComprobantePago tipoComprobantePago, Trabajador trabajador, Cliente cliente, TipoPago tipoPago,
+                 List<DetalleVenta> detalles) {
         this.idVenta = idVenta;
         this.serieComprobante = serieComprobante;
         this.numeroComprobante = numeroComprobante;
+        this.codigoCotizacion = codigoCotizacion;
         this.fechaVenta = fechaVenta;
         this.estadoVenta = estadoVenta;
         this.totalVenta = totalVenta;
@@ -120,6 +125,14 @@ public class Venta {
 
     public void setNumeroComprobante(String numeroComprobante) {
         this.numeroComprobante = numeroComprobante;
+    }
+
+    public String getCodigoCotizacion() {
+        return codigoCotizacion;
+    }
+
+    public void setCodigoCotizacion(String codigoCotizacion) {
+        this.codigoCotizacion = codigoCotizacion;
     }
 
     public LocalDateTime getFechaVenta() {
