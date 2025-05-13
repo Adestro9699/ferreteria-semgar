@@ -165,6 +165,16 @@
 				<artifactId>maven-war-plugin</artifactId>
 				<version>3.4.0</version>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.13.0</version>
+				<configuration>
+					<source>17</source>
+					<target>17</target>
+					<release>17</release>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
@@ -172,9 +182,6 @@
 		<!-- Perfil de Desarrollo -->
 		<profile>
 			<id>dev</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
 			<properties>
 				<java.version>23</java.version>
 				<maven.compiler.source>23</maven.compiler.source>
@@ -206,6 +213,9 @@
 		<!-- Perfil de Producción -->
 		<profile>
 			<id>prod</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
 			<properties>
 				<java.version>17</java.version>
 				<maven.compiler.source>17</maven.compiler.source>
