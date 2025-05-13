@@ -1,1 +1,1 @@
-web: JAVA_HOME=/opt/java/openjdk-17 mvn clean package -P prod && java -Xmx384m -Xms128m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UseStringDeduplication -jar target/ferreteriaSemGar-0.0.1-SNAPSHOT.jar 
+web: MAVEN_OPTS="-Dmaven.compiler.release=17" mvn -B clean package -P prod -Dmaven.compiler.release=17 && java -Xmx384m -Xms128m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UseStringDeduplication -jar target/ferreteriaSemGar-0.0.1-SNAPSHOT.jar 
