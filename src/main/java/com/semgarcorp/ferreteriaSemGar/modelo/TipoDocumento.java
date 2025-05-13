@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(uniqueConstraints = {
-        @UniqueConstraint(columnNames = "codigoSunat")  // Asegura que no haya códigos duplicados
+        @UniqueConstraint(columnNames = "codigoNubeFact")  // Asegura que no haya códigos duplicados
 })
 public class TipoDocumento {
 
