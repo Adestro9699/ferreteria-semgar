@@ -1,1 +1,1 @@
-web: java -Xmx384m -Xms128m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UseStringDeduplication -jar target/*.jar 
+web: mvn clean package -P prod && java -Xmx384m -Xms128m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UseStringDeduplication -jar target/ferreteriaSemGar-0.0.1-SNAPSHOT.jar 

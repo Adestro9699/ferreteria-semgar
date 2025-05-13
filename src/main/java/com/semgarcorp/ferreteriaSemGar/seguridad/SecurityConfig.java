@@ -1,6 +1,7 @@
 package com.semgarcorp.ferreteriaSemGar.seguridad;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -14,7 +15,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.http.HttpMethod;
+import org.springframework.core.env.Environment;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -26,6 +29,9 @@ public class SecurityConfig {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private Environment env;
 
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
@@ -46,7 +52,12 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(request -> {
                     var corsConfiguration = new org.springframework.web.cors.CorsConfiguration();
-                    corsConfiguration.setAllowedOrigins(List.of("https://ferreteria-web-five.vercel.app"));
+                    // Configurar CORS según el perfil activo
+                    if (Arrays.asList(env.getActiveProfiles()).contains("dev")) {
+                        corsConfiguration.setAllowedOrigins(List.of("http://localhost:3000"));
+                    } else {
+                        corsConfiguration.setAllowedOrigins(List.of("https://ferreteria-web-five.vercel.app"));
+                    }
                     corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                     corsConfiguration.setAllowedHeaders(List.of("*"));
                     corsConfiguration.setAllowCredentials(true);
@@ -60,11 +71,11 @@ public class SecurityConfig {
 
                         // Rutas específicas para USER
                         .requestMatchers("/productos/**", "/categorias/**", "/subcategorias/**", "/proveedores/**", "/clientes/**", "/unidades-medida/**")
-                        .hasAnyAuthority("USER", "ADMIN") // Solo USER
+                        .hasAnyAuthority("USER", "ADMIN")
 
                         // Rutas específicas para MANAGER
                         .requestMatchers("/reportes-ventas/**", "/reportes-compras/**")
-                        .hasAnyAuthority("MANAGER", "ADMIN") // Solo MANAGER
+                        .hasAnyAuthority("MANAGER", "ADMIN")
 
                         // ADMIN tiene acceso a todas las rutas y subrutas
                         .anyRequest().hasAuthority("ADMIN")
