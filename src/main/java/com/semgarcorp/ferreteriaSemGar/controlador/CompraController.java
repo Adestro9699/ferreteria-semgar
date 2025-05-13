@@ -80,4 +80,19 @@ public class CompraController {
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Si no se encuentra, 404
     }
+
+    // Eliminar múltiples compras por sus IDs
+    @DeleteMapping("/eliminar-multiples")
+    public ResponseEntity<Void> eliminarMultiples(@RequestBody List<Integer> ids) {
+        if (ids != null && !ids.isEmpty()) {
+            for (Integer id : ids) {
+                Compra compraExistente = compraService.obtenerPorId(id);
+                if (compraExistente != null) {
+                    compraService.eliminar(id);
+                }
+            }
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.badRequest().build();
+    }
 }

@@ -91,6 +91,21 @@ public class DetalleCompraController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Si no se encuentra, 404
     }
 
+    // Eliminar múltiples detalles de compra por sus IDs
+    @DeleteMapping("/eliminar-multiples")
+    public ResponseEntity<Void> eliminarMultiples(@RequestBody List<Integer> ids) {
+        if (ids != null && !ids.isEmpty()) {
+            for (Integer id : ids) {
+                DetalleCompra detalleCompraExistente = detalleCompraService.obtenerPorId(id);
+                if (detalleCompraExistente != null) {
+                    detalleCompraService.eliminar(id);
+                }
+            }
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.badRequest().build();
+    }
+
     @PostMapping("/con-utilidad-manual")
     public ResponseEntity<DetalleCompra> guardarConUtilidadManual(
             @RequestBody DetalleCompra detalleCompra,
