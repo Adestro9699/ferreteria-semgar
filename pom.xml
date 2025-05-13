@@ -13,7 +13,7 @@
 	<groupId>com.semgarcorp</groupId>
 	<artifactId>ferreteriaSemGar</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<packaging>war</packaging>
+	<packaging>jar</packaging>
 	<name>ferreteriaSemGar</name>
 	<description>Ferreteria SemGar</description>
 	<url/>
@@ -88,7 +88,7 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-tomcat</artifactId>
-			<scope>provided</scope>
+			<!-- <scope>provided</scope> -->
 		</dependency>
 
 		<dependency>
