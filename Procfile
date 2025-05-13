@@ -1,1 +1,1 @@
-web: java -Xmx256m -Xms128m -jar target/*.jar 
+web: java -Xmx192m -Xms96m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -jar target/*.jar 
