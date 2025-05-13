@@ -1,1 +1,1 @@
-web: java -Xms256m -Xmx512m -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=256m -jar target/ferreteriaSemGar-0.0.1-SNAPSHOT.jar 
+web: java -Xmx256m -Xms128m -jar target/*.jar 
