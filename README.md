@@ -36,21 +36,19 @@ SUNAT_API_DNI_URL=https://api.apis.net.pe/v2/reniec/dni?numero=
 java -jar target/ferreteriaSemGar-0.0.1-SNAPSHOT.war
 ```
 
-### Con Docker
-
-```bash
-# Construir la imagen
-docker build -t ferreteria-semgar .
-
-# Ejecutar el contenedor
-docker run -p 8080:8080 ferreteria-semgar
-```
-
 ## Despliegue en Railway
 
 1. Conectar el repositorio con Railway
-2. Configurar las variables de entorno en Railway
-3. El despliegue se realizará automáticamente al hacer push a la rama main
+2. Configurar las variables de entorno en Railway:
+   - DATABASE_URL (proporcionado por Railway)
+   - DATABASE_USERNAME (proporcionado por Railway)
+   - DATABASE_PASSWORD (proporcionado por Railway)
+   - PORT=8080
+   - SUNAT_API_TOKEN=[tu-token-sunat]
+   - SUNAT_API_RUC_URL=https://api.apis.net.pe/v2/sunat/ruc?numero=
+   - SUNAT_API_DNI_URL=https://api.apis.net.pe/v2/reniec/dni?numero=
+3. Crear servicio MariaDB en Railway
+4. El despliegue se realizará automáticamente al hacer push a la rama main
 
 ## Estructura del Proyecto
 
