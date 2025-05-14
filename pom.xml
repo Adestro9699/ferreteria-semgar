@@ -182,6 +182,9 @@
 		<!-- Perfil de Desarrollo -->
 		<profile>
 			<id>dev</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
 			<properties>
 				<java.version>23</java.version>
 				<maven.compiler.source>23</maven.compiler.source>
@@ -194,6 +197,24 @@
 					<artifactId>spring-boot-starter-tomcat</artifactId>
 					<scope>provided</scope>
 				</dependency>
+				<dependency>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-web</artifactId>
+					<exclusions>
+						<exclusion>
+							<groupId>org.slf4j</groupId>
+							<artifactId>slf4j-api</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>ch.qos.logback</groupId>
+							<artifactId>logback-core</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>ch.qos.logback</groupId>
+							<artifactId>logback-classic</artifactId>
+						</exclusion>
+					</exclusions>
+				</dependency>
 			</dependencies>
 			<build>
 				<plugins>
@@ -204,6 +225,15 @@
 							<source>23</source>
 							<target>23</target>
 							<release>23</release>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-maven-plugin</artifactId>
+						<configuration>
+							<profiles>
+								<profile>dev</profile>
+							</profiles>
 						</configuration>
 					</plugin>
 				</plugins>

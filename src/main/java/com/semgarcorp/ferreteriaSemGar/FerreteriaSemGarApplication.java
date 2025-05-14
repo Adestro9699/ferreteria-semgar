@@ -11,8 +11,8 @@ import org.springframework.web.client.RestTemplate;
 public class FerreteriaSemGarApplication extends SpringBootServletInitializer {
 
 	@Override
-	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-		return application.sources(FerreteriaSemGarApplication.class);
+	protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
+		return builder.sources(FerreteriaSemGarApplication.class);
 	}
 
 	public static void main(String[] args) {
