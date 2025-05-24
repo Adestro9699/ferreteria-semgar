@@ -3,6 +3,7 @@ package com.semgarcorp.ferreteriaSemGar.dto;
 import java.math.BigDecimal;
 
 public class DetalleCotizacionDTO {
+
     private Integer idDetalleCotizacion;
     private Integer idCotizacion;
     private Integer idProducto;

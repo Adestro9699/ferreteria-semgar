@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.data.domain.Page;
 
 import java.net.URI;
 import java.util.List;
@@ -168,5 +169,22 @@ public class ClienteController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
         }
+    }
+
+    // 1. Paginación TRADICIONAL (límite fijo de 10 registros por página)
+    @GetMapping("/paginacion-tradicional")
+    public ResponseEntity<Page<Cliente>> listarClientesConPaginacionTradicional(
+            @RequestParam(defaultValue = "0") int pagina) {
+        Page<Cliente> clientes = clienteService.listarConPaginacionTradicional(pagina);
+        return ResponseEntity.ok(clientes);
+    }
+
+    // 2. Paginación DINÁMICA (el frontend elige cuántos registros por página)
+    @GetMapping("/paginacion-dinamica")
+    public ResponseEntity<Page<Cliente>> listarClientesConPaginacionDinamica(
+            @RequestParam(defaultValue = "0") int pagina,
+            @RequestParam(defaultValue = "10") int registrosPorPagina) {
+        Page<Cliente> clientes = clienteService.listarConPaginacionDinamica(pagina, registrosPorPagina);
+        return ResponseEntity.ok(clientes);
     }
 }

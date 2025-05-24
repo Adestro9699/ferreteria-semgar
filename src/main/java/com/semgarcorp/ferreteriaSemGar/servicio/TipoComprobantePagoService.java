@@ -2,6 +2,8 @@ package com.semgarcorp.ferreteriaSemGar.servicio;
 
 import com.semgarcorp.ferreteriaSemGar.modelo.TipoComprobantePago;
 import com.semgarcorp.ferreteriaSemGar.repositorio.TipoComprobantePagoRepository;
+import jakarta.transaction.Transactional;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -31,13 +33,8 @@ public class TipoComprobantePagoService {
         return tipoComprobantePagoRepositorio.save(tipoComprobantePago);
     }
 
+    @Transactional
     public void eliminar(Integer id) {
-        tipoComprobantePagoRepositorio.deleteById(id);
-    }
-
-    public Integer getCodigoNubefact(String nombreTipo) {
-        return tipoComprobantePagoRepositorio.findByNombre(nombreTipo)
-                .orElseThrow(() -> new IllegalArgumentException("Tipo de comprobante no existe"))
-                .getCodigoNubefact();
+        tipoComprobantePagoRepositorio.deleteById(id); // Propaga DataIntegrityViolationException
     }
 }

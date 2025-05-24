@@ -1,5 +1,7 @@
 package com.semgarcorp.ferreteriaSemGar.dto;
 
+import com.semgarcorp.ferreteriaSemGar.modelo.EstadoCotizacion;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -9,7 +11,7 @@ public class CotizacionDTO {
     private String codigoCotizacion;
     private LocalDateTime fechaCotizacion;
     private BigDecimal totalCotizacion;
-    private String estadoCotizacion;
+    private EstadoCotizacion estadoCotizacion;
     private String observaciones;
     private LocalDateTime fechaModificacion;
     private Integer idTrabajador;
@@ -22,7 +24,7 @@ public class CotizacionDTO {
     }
 
     public CotizacionDTO(Integer idCotizacion, String codigoCotizacion, LocalDateTime fechaCotizacion,
-                         BigDecimal totalCotizacion, String estadoCotizacion, String observaciones,
+                         BigDecimal totalCotizacion, EstadoCotizacion estadoCotizacion, String observaciones,
                          LocalDateTime fechaModificacion, Integer idTrabajador, Integer idCliente, Integer idTipoPago,
                          Integer idEmpresa, List<DetalleCotizacionDTO> detalles) {
         this.idCotizacion = idCotizacion;
@@ -71,11 +73,11 @@ public class CotizacionDTO {
         this.totalCotizacion = totalCotizacion;
     }
 
-    public String getEstadoCotizacion() {
+    public EstadoCotizacion getEstadoCotizacion() {
         return estadoCotizacion;
     }
 
-    public void setEstadoCotizacion(String estadoCotizacion) {
+    public void setEstadoCotizacion(EstadoCotizacion estadoCotizacion) {
         this.estadoCotizacion = estadoCotizacion;
     }
 

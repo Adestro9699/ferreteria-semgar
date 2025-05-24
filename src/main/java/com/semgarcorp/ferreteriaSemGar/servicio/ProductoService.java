@@ -393,4 +393,22 @@ public class ProductoService {
         response.put("totalPages", productosPage.getTotalPages()); // Total de páginas
         return response;
     }
+
+    public void validarStock(Integer idProducto, BigDecimal cantidadRequerida) {
+        Producto producto = productoRepositorio.findById(idProducto)
+                .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado"));
+
+        if (cantidadRequerida.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("La cantidad requerida debe ser mayor a cero");
+        }
+
+        if (producto.getStock().compareTo(cantidadRequerida) < 0) {
+            throw new IllegalStateException(
+                    String.format("Stock insuficiente para %s. Stock: %s, Requerido: %s",
+                            producto.getNombreProducto(),
+                            producto.getStock().toPlainString(),
+                            cantidadRequerida.toPlainString())
+            );
+        }
+    }
 }

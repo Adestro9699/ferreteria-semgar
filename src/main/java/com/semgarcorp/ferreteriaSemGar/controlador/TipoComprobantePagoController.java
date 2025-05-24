@@ -2,8 +2,10 @@ package com.semgarcorp.ferreteriaSemGar.controlador;
 
 import com.semgarcorp.ferreteriaSemGar.modelo.TipoComprobantePago;
 import com.semgarcorp.ferreteriaSemGar.servicio.TipoComprobantePagoService;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.TransactionSystemException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -64,12 +66,30 @@ public class TipoComprobantePagoController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
-        TipoComprobantePago tipoComprobantePagoExistente = tipoComprobantePagoService.obtenerPorId(id);
-        if (tipoComprobantePagoExistente != null) {
+    public ResponseEntity<String> eliminar(@PathVariable Integer id) {
+        try {
+            TipoComprobantePago tipoExistente = tipoComprobantePagoService.obtenerPorId(id);
+            if (tipoExistente == null) {
+                return ResponseEntity.notFound().build();
+            }
+
             tipoComprobantePagoService.eliminar(id);
-            return ResponseEntity.noContent().build(); // Respuesta sin contenido
+            return ResponseEntity.noContent().build(); // 204
+
+        } catch (DataIntegrityViolationException e) {
+            // Error de FK (ventas asociadas)
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("No se puede eliminar: existen ventas asociadas a este comprobante.");
+
+        } catch (TransactionSystemException e) {
+            // Maneja errores transaccionales (timeout, etc.)
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error transaccional: la operación fue revertida. Contacte al administrador.");
+
+        } catch (Exception e) {
+            // Otros errores
+            return ResponseEntity.internalServerError()
+                    .body("Error interno: " + e.getMessage());
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Si no se encuentra, 404
     }
 }

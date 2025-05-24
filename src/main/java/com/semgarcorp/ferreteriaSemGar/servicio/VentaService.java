@@ -8,14 +8,17 @@ import com.semgarcorp.ferreteriaSemGar.integracion.NubeFactClient;
 import com.semgarcorp.ferreteriaSemGar.integracion.NubeFactService;
 import com.semgarcorp.ferreteriaSemGar.modelo.*;
 import com.semgarcorp.ferreteriaSemGar.repositorio.*;
+import com.semgarcorp.ferreteriaSemGar.util.InternetUtils;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -56,7 +59,11 @@ public class VentaService {
     private final NubeFactClient nubeFactClient;
 
     public VentaService(ParametroService parametroService, VentaRepository ventaRepository,
-                        ProductoRepository productoRepository, TipoPagoRepository tipoPagoRepository, EmpresaRepository empresaRepository, ClienteRepository clienteRepository, TipoComprobantePagoRepository tipoComprobanteRepository, TrabajadorRepository trabajadorRepository, CajaRepository cajaRepository, CotizacionRepository cotizacionRepository, ProductoService productoService, CajaService cajaService, NubeFactService nubeFactService, NubeFactClient nubeFactClient) {
+            ProductoRepository productoRepository, TipoPagoRepository tipoPagoRepository,
+            EmpresaRepository empresaRepository, ClienteRepository clienteRepository,
+            TipoComprobantePagoRepository tipoComprobanteRepository, TrabajadorRepository trabajadorRepository,
+            CajaRepository cajaRepository, CotizacionRepository cotizacionRepository, ProductoService productoService,
+            CajaService cajaService, NubeFactService nubeFactService, NubeFactClient nubeFactClient) {
         this.parametroService = parametroService;
         this.ventaRepository = ventaRepository;
         this.productoRepository = productoRepository;
@@ -97,10 +104,12 @@ public class VentaService {
 
         // 3. Validar que no se intente cambiar el estado (opcional, según negocio)
         if (ventaDTO.getEstadoVenta() != null && !ventaDTO.getEstadoVenta().equals(EstadoVenta.PENDIENTE)) {
-            throw new IllegalArgumentException("No se puede cambiar el estado de una venta PENDIENTE mediante esta operación");
+            throw new IllegalArgumentException(
+                    "No se puede cambiar el estado de una venta PENDIENTE mediante esta operación");
         }
 
-        // 4. Actualizar datos complementarios (sin validar serie/número porque es PENDIENTE)
+        // 4. Actualizar datos complementarios (sin validar serie/número porque es
+        // PENDIENTE)
         if (ventaDTO.getIdEmpresa() != null) {
             ventaExistente.setEmpresa(buscarEntidadPorId(empresaRepository, ventaDTO.getIdEmpresa(), "Empresa"));
         }
@@ -112,8 +121,8 @@ public class VentaService {
         if (ventaDTO.getIdTipoComprobantePago() != null) {
             // ¡Sin validación de serie/número porque es PENDIENTE!
             ventaExistente.setTipoComprobantePago(
-                    buscarEntidadPorId(tipoComprobanteRepository, ventaDTO.getIdTipoComprobantePago(), "TipoComprobantePago")
-            );
+                    buscarEntidadPorId(tipoComprobanteRepository, ventaDTO.getIdTipoComprobantePago(),
+                            "TipoComprobantePago"));
         }
 
         if (ventaDTO.getIdTipoPago() != null) {
@@ -121,7 +130,8 @@ public class VentaService {
         }
 
         if (ventaDTO.getIdTrabajador() != null) {
-            ventaExistente.setTrabajador(buscarEntidadPorId(trabajadorRepository, ventaDTO.getIdTrabajador(), "Trabajador"));
+            ventaExistente
+                    .setTrabajador(buscarEntidadPorId(trabajadorRepository, ventaDTO.getIdTrabajador(), "Trabajador"));
         }
 
         // 5. Actualizar campos simples
@@ -139,7 +149,8 @@ public class VentaService {
             List<DetalleVenta> nuevosDetalles = ventaDTO.getDetalles().stream()
                     .map(detalleDTO -> {
                         DetalleVenta detalle = new DetalleVenta();
-                        detalle.setProducto(buscarEntidadPorId(productoRepository, detalleDTO.getIdProducto(), "Producto"));
+                        detalle.setProducto(
+                                buscarEntidadPorId(productoRepository, detalleDTO.getIdProducto(), "Producto"));
                         detalle.setCantidad(detalleDTO.getCantidad());
                         detalle.setPrecioUnitario(detalleDTO.getPrecioUnitario());
                         detalle.setDescuento(detalleDTO.getDescuento());
@@ -166,8 +177,10 @@ public class VentaService {
         Venta venta = new Venta();
 
         // Asignar campos básicos de Venta
-        venta.setSerieComprobante(ventaDTO.getSerieComprobante() != null ? ventaDTO.getSerieComprobante() : ""); // Valor temporal
-        venta.setNumeroComprobante(ventaDTO.getNumeroComprobante() != null ? ventaDTO.getNumeroComprobante() : ""); // Valor temporal
+        venta.setSerieComprobante(ventaDTO.getSerieComprobante() != null ? ventaDTO.getSerieComprobante() : ""); // Valor
+                                                                                                                 // temporal
+        venta.setNumeroComprobante(ventaDTO.getNumeroComprobante() != null ? ventaDTO.getNumeroComprobante() : ""); // Valor
+                                                                                                                    // temporal
         venta.setFechaVenta(ventaDTO.getFechaVenta());
         venta.setEstadoVenta(ventaDTO.getEstadoVenta() != null ? ventaDTO.getEstadoVenta() : EstadoVenta.PENDIENTE);
         venta.setTotalVenta(ventaDTO.getTotalVenta());
@@ -182,28 +195,34 @@ public class VentaService {
             }
             venta.setCaja(buscarEntidadPorId(cajaRepository, ventaDTO.getIdCaja(), "Caja"));
         } else {
-            venta.setCaja(null); // Establecer caja como null si la venta está en estado PENDIENTE o idCaja es null
+            venta.setCaja(null); // Establecer caja como null si la venta está en estado PENDIENTE o idCaja es
+                                 // null
         }
 
         // Cargar entidades relacionadas de forma más eficiente
         venta.setEmpresa(buscarEntidadPorId(empresaRepository, ventaDTO.getIdEmpresa(), "Empresa"));
-        venta.setTipoComprobantePago(buscarEntidadPorId(tipoComprobanteRepository, ventaDTO.getIdTipoComprobantePago(), "TipoComprobantePago"));
+        venta.setTipoComprobantePago(buscarEntidadPorId(tipoComprobanteRepository, ventaDTO.getIdTipoComprobantePago(),
+                "TipoComprobantePago"));
         venta.setTrabajador(buscarEntidadPorId(trabajadorRepository, ventaDTO.getIdTrabajador(), "Trabajador"));
         venta.setCliente(buscarEntidadPorId(clienteRepository, ventaDTO.getIdCliente(), "Cliente"));
         venta.setTipoPago(buscarEntidadPorId(tipoPagoRepository, ventaDTO.getIdTipoPago(), "TipoPago"));
 
-        // Convertir detallesVentaDTO a DetalleVenta (validando que la lista no sea null)
-        List<DetalleVenta> detallesVenta = ventaDTO.getDetalles() == null ?
-                new ArrayList<>() :
-                ventaDTO.getDetalles().stream()
+        // Convertir detallesVentaDTO a DetalleVenta (validando que la lista no sea
+        // null)
+        List<DetalleVenta> detallesVenta = ventaDTO.getDetalles() == null ? new ArrayList<>()
+                : ventaDTO.getDetalles().stream()
                         .map(detalleDTO -> {
                             DetalleVenta detalle = new DetalleVenta();
-                            detalle.setProducto(buscarEntidadPorId(productoRepository, detalleDTO.getIdProducto(), "Producto"));
+                            detalle.setProducto(
+                                    buscarEntidadPorId(productoRepository, detalleDTO.getIdProducto(), "Producto"));
                             detalle.setCantidad(detalleDTO.getCantidad());
                             detalle.setPrecioUnitario(detalleDTO.getPrecioUnitario());
                             detalle.setDescuento(detalleDTO.getDescuento());
-                            detalle.setSubtotalSinIGV(detalleDTO.getSubtotalSinIGV() != null ? detalleDTO.getSubtotalSinIGV() : BigDecimal.ZERO);
-                            detalle.setIgvAplicado(detalleDTO.getIgvAplicado() != null ? detalleDTO.getIgvAplicado() : BigDecimal.ZERO);
+                            detalle.setSubtotalSinIGV(
+                                    detalleDTO.getSubtotalSinIGV() != null ? detalleDTO.getSubtotalSinIGV()
+                                            : BigDecimal.ZERO);
+                            detalle.setIgvAplicado(detalleDTO.getIgvAplicado() != null ? detalleDTO.getIgvAplicado()
+                                    : BigDecimal.ZERO);
                             detalle.setVenta(venta); // Establecer la relación con la venta
                             return detalle;
                         })
@@ -235,29 +254,40 @@ public class VentaService {
                 .orElseThrow(() -> new EntityNotFoundException("Caja con ID " + idCaja + " no encontrada"));
         venta.setCaja(caja);
 
-        // 4. Generar serie y número (antes de emitir el comprobante)
+        // --- VALIDACIONES ADICIONALES PRIMERO ---
+        // 4. Validar stock antes de generar número
+        for (DetalleVenta detalle : venta.getDetalles()) {
+            productoService.validarStock(detalle.getProducto().getIdProducto(), detalle.getCantidad());
+        }
+
+        // 5. Generar serie y número (antes de emitir el comprobante)
         String serie = generarSerie(venta.getTipoComprobantePago());
         String numero = generarNumero(serie, venta.getTipoComprobantePago());
         venta.setSerieComprobante(serie);
         venta.setNumeroComprobante(numero);
 
-        // 5. Convertir la venta a DTO (ahora con serie y número asignados)
+        // 6. Convertir la venta a DTO (ahora con serie y número asignados)
         VentaDTO ventaDTO = convertirAVentaDTO(venta);
 
-        // 6. Emitir el comprobante en NubeFact (con todos los datos necesarios)
+        if (!InternetUtils.hayConexion()) {
+            throw new IllegalStateException("No hay conexión a Internet. No se puede completar la venta.");
+        }
+
+        // 7. Emitir el comprobante en NubeFact (con todos los datos necesarios)
         String respuesta = nubeFactService.emitirComprobante(ventaDTO);
         System.out.println("Respuesta de NubeFact: " + respuesta);
 
-        // 7. Reducir el stock de los productos (después de asegurar que el comprobante se emitió)
+        // 8. Reducir el stock de los productos (después de asegurar que el comprobante
+        // se emitió)
         for (DetalleVenta detalle : venta.getDetalles()) {
             productoService.reducirStock(detalle.getProducto().getIdProducto(), detalle.getCantidad());
         }
 
-        // 8. Cambiar el estado a "Completada" (último paso)
+        // 9. Cambiar el estado a "Completada" (último paso)
         venta.setEstadoVenta(EstadoVenta.COMPLETADA);
         venta = ventaRepository.save(venta);
 
-        // 9. Registrar entrada en caja si es pago en efectivo
+        // 10. Registrar entrada en caja si es pago en efectivo
         if (venta.getTipoPago().getNombre().equalsIgnoreCase("EFECTIVO")) {
             cajaService.registrarEntradaPorVenta(venta.getCaja().getIdCaja(), venta.getTotalVenta());
         }
@@ -268,8 +298,7 @@ public class VentaService {
     // Mapeo de códigos NubeFact a series
     private static final Map<Integer, String> SERIES_POR_CODIGO = Map.of(
             1, "FFF1",
-            2, "BBB1"
-    );
+            2, "BBB1");
 
     private String generarSerie(TipoComprobantePago tipoComprobante) {
         Integer codigo = tipoComprobante.getCodigoNubefact();
@@ -303,8 +332,7 @@ public class VentaService {
             // Consulta a NubeFact para obtener comprobantes de esta serie
             String response = nubeFactClient.consultarComprobantes(
                     tipoComprobante.getCodigoNubefact(),
-                    serie
-            );
+                    serie);
 
             // Parsear la respuesta para encontrar el máximo número
             return parsearUltimoNumero(response);
@@ -347,35 +375,36 @@ public class VentaService {
         // Asignar IDs de entidades relacionadas (con validación de null)
         ventaDTO.setIdCaja(venta.getCaja() != null ? venta.getCaja().getIdCaja() : null);
         ventaDTO.setIdEmpresa(venta.getEmpresa() != null ? venta.getEmpresa().getIdEmpresa() : null);
-        ventaDTO.setIdTipoComprobantePago(venta.getTipoComprobantePago() != null ? venta.getTipoComprobantePago().getIdTipoComprobantePago() : null);
+        ventaDTO.setIdTipoComprobantePago(
+                venta.getTipoComprobantePago() != null ? venta.getTipoComprobantePago().getIdTipoComprobantePago()
+                        : null);
         ventaDTO.setIdTrabajador(venta.getTrabajador() != null ? venta.getTrabajador().getIdTrabajador() : null);
         ventaDTO.setIdCliente(venta.getCliente() != null ? venta.getCliente().getIdCliente() : null);
         ventaDTO.setIdTipoPago(venta.getTipoPago() != null ? venta.getTipoPago().getIdTipoPago() : null);
 
         // Convertir detallesVenta a DetalleVentaDTO (con validación de null)
-        List<DetalleVentaDTO> detallesVentaDTO = venta.getDetalles() != null ?
-                venta.getDetalles().stream()
-                        .map(detalle -> {
-                            DetalleVentaDTO detalleDTO = new DetalleVentaDTO();
-                            detalleDTO.setIdDetalleVenta(detalle.getIdDetalleVenta());
-                            detalleDTO.setIdVenta(detalle.getVenta().getIdVenta());
-                            detalleDTO.setIdProducto(detalle.getProducto().getIdProducto());
-                            detalleDTO.setCantidad(detalle.getCantidad());
-                            detalleDTO.setPrecioUnitario(detalle.getPrecioUnitario());
-                            detalleDTO.setDescuento(detalle.getDescuento());
-                            detalleDTO.setSubtotalSinIGV(detalle.getSubtotalSinIGV());
-                            detalleDTO.setIgvAplicado(detalle.getIgvAplicado());
-                            detalleDTO.setSubtotal(detalle.getSubtotal());
-                            return detalleDTO;
-                        })
-                        .collect(Collectors.toList()) :
-                new ArrayList<>(); // Si detalles es null, se asigna una lista vacía
+        List<DetalleVentaDTO> detallesVentaDTO = venta.getDetalles() != null ? venta.getDetalles().stream()
+                .map(detalle -> {
+                    DetalleVentaDTO detalleDTO = new DetalleVentaDTO();
+                    detalleDTO.setIdDetalleVenta(detalle.getIdDetalleVenta());
+                    detalleDTO.setIdVenta(detalle.getVenta().getIdVenta());
+                    detalleDTO.setIdProducto(detalle.getProducto().getIdProducto());
+                    detalleDTO.setCantidad(detalle.getCantidad());
+                    detalleDTO.setPrecioUnitario(detalle.getPrecioUnitario());
+                    detalleDTO.setDescuento(detalle.getDescuento());
+                    detalleDTO.setSubtotalSinIGV(detalle.getSubtotalSinIGV());
+                    detalleDTO.setIgvAplicado(detalle.getIgvAplicado());
+                    detalleDTO.setSubtotal(detalle.getSubtotal());
+                    return detalleDTO;
+                })
+                .collect(Collectors.toList()) : new ArrayList<>(); // Si detalles es null, se asigna una lista vacía
 
         ventaDTO.setDetalles(detallesVentaDTO);
         return ventaDTO;
     }
 
-    private BigDecimal calcularSubtotal(BigDecimal precioUnitario, BigDecimal cantidad, BigDecimal descuentoPorcentual) {
+    private BigDecimal calcularSubtotal(BigDecimal precioUnitario, BigDecimal cantidad,
+            BigDecimal descuentoPorcentual) {
         if (precioUnitario == null || cantidad == null || descuentoPorcentual == null) {
             throw new IllegalArgumentException("El precio unitario, la cantidad y el descuento no pueden ser nulos");
         }
@@ -420,7 +449,8 @@ public class VentaService {
 
     private void asignarValoresCalculados(Venta venta) {
         for (DetalleVenta detalle : venta.getDetalles()) {
-            BigDecimal subtotal = calcularSubtotal(detalle.getPrecioUnitario(), detalle.getCantidad(), detalle.getDescuento());
+            BigDecimal subtotal = calcularSubtotal(detalle.getPrecioUnitario(), detalle.getCantidad(),
+                    detalle.getDescuento());
             BigDecimal subtotalSinIGV = calcularSubtotalSinIGV(subtotal);
             BigDecimal igvAplicado = calcularIgvAplicado(subtotal, subtotalSinIGV);
 
@@ -467,9 +497,21 @@ public class VentaService {
         return convertirAVentaDTO(venta);
     }
 
-    // Para listado de ventas
-    public List<VentaResumenDTO> obtenerTodasVentasResumen() {
-        return ventaRepository.findAllVentasResumen();
+    public Page<VentaResumenDTO> listarVentasPendientes(int pagina, int size) {
+        Pageable pageable = PageRequest.of(pagina, size);
+        return ventaRepository.findAllVentasResumen(
+            EstadoVenta.PENDIENTE,  // Solo ventas pendientes
+            pageable
+        );
+    }
+
+    public Page<VentaResumenDTO> listarVentasCompletadasYAnuladas(int pagina, int size) {
+        Pageable pageable = PageRequest.of(pagina, size);
+        // Usa el nuevo método del repositorio con ambos estados
+        return ventaRepository.findAllVentasResumenByEstados(
+            List.of(EstadoVenta.COMPLETADA, EstadoVenta.ANULADA),
+            pageable
+        );
     }
 
     public VentaDetalleCompletoDTO obtenerVentaDetalleCompleto(Integer idVenta) {
@@ -514,12 +556,10 @@ public class VentaService {
 
         // Información del cliente
         if (venta.getCliente() != null) {
-            dto.setNombresCliente(venta.getCliente().getNombres() != null ?
-                    venta.getCliente().getNombres() : "");
-            dto.setApellidosCliente(venta.getCliente().getApellidos() != null ?
-                    venta.getCliente().getApellidos() : "");
-            dto.setRazonSocialCliente(venta.getCliente().getRazonSocial() != null ?
-                    venta.getCliente().getRazonSocial() : "");
+            dto.setNombresCliente(venta.getCliente().getNombres() != null ? venta.getCliente().getNombres() : "");
+            dto.setApellidosCliente(venta.getCliente().getApellidos() != null ? venta.getCliente().getApellidos() : "");
+            dto.setRazonSocialCliente(
+                    venta.getCliente().getRazonSocial() != null ? venta.getCliente().getRazonSocial() : "");
         }
 
         // Información de la empresa
@@ -550,9 +590,9 @@ public class VentaService {
         dto.setNombreProducto(detalle.getProducto().getNombreProducto());
         // Añadir la unidad de medida (con validación de nulos)
         dto.setUnidadMedida(
-                detalle.getProducto().getUnidadMedida() != null ?
-                        detalle.getProducto().getUnidadMedida().getNombreUnidad() :
-                        "Sin unidad"  // Valor por defecto opcional
+                detalle.getProducto().getUnidadMedida() != null
+                        ? detalle.getProducto().getUnidadMedida().getNombreUnidad()
+                        : "Sin unidad" // Valor por defecto opcional
         );
         dto.setCantidad(detalle.getCantidad());
         dto.setPrecioUnitario(detalle.getPrecioUnitario());

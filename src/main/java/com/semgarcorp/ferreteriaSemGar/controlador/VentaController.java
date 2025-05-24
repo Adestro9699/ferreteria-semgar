@@ -3,7 +3,10 @@ package com.semgarcorp.ferreteriaSemGar.controlador;
 import com.semgarcorp.ferreteriaSemGar.dto.VentaDTO;
 import com.semgarcorp.ferreteriaSemGar.dto.VentaDetalleCompletoDTO;
 import com.semgarcorp.ferreteriaSemGar.dto.VentaResumenDTO;
+import com.semgarcorp.ferreteriaSemGar.modelo.EstadoVenta;
 import com.semgarcorp.ferreteriaSemGar.servicio.VentaService;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,7 +37,7 @@ public class VentaController {
     @GetMapping("/{id}")
     public ResponseEntity<VentaDTO> obtenerPorId(@PathVariable Integer id) {
         return ventaService.obtenerPorId(id)
-                .map(ResponseEntity::ok)                      // Si está presente, devuelve 200 OK con el DTO
+                .map(ResponseEntity::ok) // Si está presente, devuelve 200 OK con el DTO
                 .orElseGet(() -> ResponseEntity.notFound().build()); // Si no está, devuelve 404 Not Found
     }
 
@@ -50,25 +53,41 @@ public class VentaController {
                 .path("/{id}")
                 .buildAndExpand(nuevaVentaDTO.getIdVenta()).toUri();
 
-        // 3. Devolver la respuesta con la URI en la cabecera Location y el DTO en el cuerpo
+        // 3. Devolver la respuesta con la URI en la cabecera Location y el DTO en el
+        // cuerpo
         return ResponseEntity.created(location).body(nuevaVentaDTO);
     }
 
     @PostMapping("/{idVenta}/completar")
-    public ResponseEntity<VentaDTO> completarVenta(
+    public ResponseEntity<?> completarVenta(
             @PathVariable Integer idVenta,
-            @RequestBody Map<String, Integer> requestBody // Recibir el idCaja en el cuerpo de la solicitud
-    )
-    {
+            @RequestBody Map<String, Integer> requestBody
+    ) {
         System.out.println("==== LLEGÓ AL CONTROLLER ====");
 
-        Integer idCaja = requestBody.get("idCaja"); // Obtener el idCaja del JSON
+        Integer idCaja = requestBody.get("idCaja");
         if (idCaja == null) {
-            throw new IllegalArgumentException("El idCaja es requerido para completar la venta.");
+            return ResponseEntity.badRequest().body("El idCaja es requerido para completar la venta.");
         }
 
-        VentaDTO ventaCompletada = ventaService.completarVenta(idVenta, idCaja); // Pasar el idCaja al servicio
-        return ResponseEntity.ok(ventaCompletada);
+        try {
+            VentaDTO ventaCompletada = ventaService.completarVenta(idVenta, idCaja);
+            return ResponseEntity.ok(ventaCompletada);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (IllegalStateException e) {
+            // Manejo específico para errores de stock y conexión
+            if (e.getMessage().contains("Stock insuficiente")) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage()); // HTTP 409
+            } else if (e.getMessage().contains("No hay conexión a Internet")) {
+                return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(e.getMessage()); // HTTP 503
+            }
+            return ResponseEntity.badRequest().body(e.getMessage()); // Otros IllegalStateException
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error al procesar la venta: " + e.getMessage());
+        }
     }
 
     // Actualizar una venta existente (PUT)
@@ -92,20 +111,33 @@ public class VentaController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    // --- Nuevo endpoint para el resumen optimizado ---
-    @GetMapping("/resumen")
-    public ResponseEntity<List<VentaResumenDTO>> listarVentasResumen() {
-        return ResponseEntity.ok(ventaService.obtenerTodasVentasResumen());
+    //para traer el resumen básico de la venta en estado PENDIENTE
+    @GetMapping("/pendientes")
+    public ResponseEntity<Page<VentaResumenDTO>> listarPendientes(
+            @RequestParam(defaultValue = "0") int pagina,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(
+                ventaService.listarVentasPendientes(pagina, size));
     }
 
-    // 2. Obtener detalle completo de una venta
+    //para traer el resumen básico de la venta en estado COMPLETADA + ANULADA
+    @GetMapping("/completadas-anuladas")
+    public ResponseEntity<Page<VentaResumenDTO>> listarCompletadasYAnuladas(
+            @RequestParam(defaultValue = "0") int pagina,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(
+                ventaService.listarVentasCompletadasYAnuladas(pagina, size));
+    }
+
+    // detalle completo de la venta
     @GetMapping("/{idVenta}/detalle")
     public ResponseEntity<VentaDetalleCompletoDTO> obtenerDetalleVenta(
             @PathVariable Integer idVenta) {
         return ResponseEntity.ok(ventaService.obtenerVentaDetalleCompleto(idVenta));
     }
 
-    @GetMapping("/precargar-venta/{codigoCotizacion}")  // Cambiado a GET (es una consulta)
+    // pre cargar una venta desde una cotización
+    @GetMapping("/precargar-venta/{codigoCotizacion}") // Cambiado a GET (es una consulta)
     public ResponseEntity<VentaDTO> precargarVentaDesdeCotizacion(
             @PathVariable String codigoCotizacion) {
         VentaDTO ventaDTO = ventaService.convertirCotizacionAVenta(codigoCotizacion);

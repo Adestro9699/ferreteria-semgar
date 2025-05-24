@@ -1,82 +1,48 @@
 package com.semgarcorp.ferreteriaSemGar.dto;
 
-import com.semgarcorp.ferreteriaSemGar.modelo.EstadoVenta;
-import com.semgarcorp.ferreteriaSemGar.modelo.Moneda;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
 public class CotizacionDetalleCompletoDTO {
-    private Integer idVenta;
-    private String serieComprobante;
-    private String numeroComprobante;
-    private String tipoComprobante;
+    private Integer idCotizacion;
     private String tipoPago;
-    private BigDecimal totalVenta;
-    private LocalDateTime fechaVenta;
-    private EstadoVenta estadoVenta;
-    private Moneda moneda;
+    private BigDecimal totalCotizacion;
+    private LocalDateTime fechaCotizacion;
     private String nombresCliente;
     private String apellidosCliente;
     private String razonSocialCliente;
     private String razonSocialEmpresa;
+    private String nombreTrabajador;
+    private String apellidoTrabajador;
     private List<DetalleCotizacionDTO> detalles;
 
     public CotizacionDetalleCompletoDTO() {
     }
 
-    public CotizacionDetalleCompletoDTO(Integer idVenta, String serieComprobante, String numeroComprobante,
-                                        String tipoComprobante, String tipoPago, BigDecimal totalVenta,
-                                        LocalDateTime fechaVenta, EstadoVenta estadoVenta, Moneda moneda,
-                                        String nombresCliente, String apellidosCliente, String razonSocialCliente,
-                                        String razonSocialEmpresa, List<DetalleCotizacionDTO> detalles) {
-        this.idVenta = idVenta;
-        this.serieComprobante = serieComprobante;
-        this.numeroComprobante = numeroComprobante;
-        this.tipoComprobante = tipoComprobante;
+    public CotizacionDetalleCompletoDTO(Integer idCotizacion, String tipoPago, BigDecimal totalCotizacion,
+                                        LocalDateTime fechaCotizacion, String nombresCliente, String apellidosCliente,
+                                        String razonSocialCliente, String razonSocialEmpresa, String nombreTrabajador,
+                                        String apellidoTrabajador, List<DetalleCotizacionDTO> detalles) {
+        this.idCotizacion = idCotizacion;
         this.tipoPago = tipoPago;
-        this.totalVenta = totalVenta;
-        this.fechaVenta = fechaVenta;
-        this.estadoVenta = estadoVenta;
-        this.moneda = moneda;
+        this.totalCotizacion = totalCotizacion;
+        this.fechaCotizacion = fechaCotizacion;
         this.nombresCliente = nombresCliente;
         this.apellidosCliente = apellidosCliente;
         this.razonSocialCliente = razonSocialCliente;
         this.razonSocialEmpresa = razonSocialEmpresa;
+        this.nombreTrabajador = nombreTrabajador;
+        this.apellidoTrabajador = apellidoTrabajador;
         this.detalles = detalles;
     }
 
-    public Integer getIdVenta() {
-        return idVenta;
+    public Integer getIdCotizacion() {
+        return idCotizacion;
     }
 
-    public void setIdVenta(Integer idVenta) {
-        this.idVenta = idVenta;
-    }
-
-    public String getSerieComprobante() {
-        return serieComprobante;
-    }
-
-    public void setSerieComprobante(String serieComprobante) {
-        this.serieComprobante = serieComprobante;
-    }
-
-    public String getNumeroComprobante() {
-        return numeroComprobante;
-    }
-
-    public void setNumeroComprobante(String numeroComprobante) {
-        this.numeroComprobante = numeroComprobante;
-    }
-
-    public String getTipoComprobante() {
-        return tipoComprobante;
-    }
-
-    public void setTipoComprobante(String tipoComprobante) {
-        this.tipoComprobante = tipoComprobante;
+    public void setIdCotizacion(Integer idCotizacion) {
+        this.idCotizacion = idCotizacion;
     }
 
     public String getTipoPago() {
@@ -87,36 +53,20 @@ public class CotizacionDetalleCompletoDTO {
         this.tipoPago = tipoPago;
     }
 
-    public BigDecimal getTotalVenta() {
-        return totalVenta;
+    public BigDecimal getTotalCotizacion() {
+        return totalCotizacion;
     }
 
-    public void setTotalVenta(BigDecimal totalVenta) {
-        this.totalVenta = totalVenta;
+    public void setTotalCotizacion(BigDecimal totalCotizacion) {
+        this.totalCotizacion = totalCotizacion;
     }
 
-    public LocalDateTime getFechaVenta() {
-        return fechaVenta;
+    public LocalDateTime getFechaCotizacion() {
+        return fechaCotizacion;
     }
 
-    public void setFechaVenta(LocalDateTime fechaVenta) {
-        this.fechaVenta = fechaVenta;
-    }
-
-    public EstadoVenta getEstadoVenta() {
-        return estadoVenta;
-    }
-
-    public void setEstadoVenta(EstadoVenta estadoVenta) {
-        this.estadoVenta = estadoVenta;
-    }
-
-    public Moneda getMoneda() {
-        return moneda;
-    }
-
-    public void setMoneda(Moneda moneda) {
-        this.moneda = moneda;
+    public void setFechaCotizacion(LocalDateTime fechaCotizacion) {
+        this.fechaCotizacion = fechaCotizacion;
     }
 
     public String getNombresCliente() {
@@ -149,6 +99,22 @@ public class CotizacionDetalleCompletoDTO {
 
     public void setRazonSocialEmpresa(String razonSocialEmpresa) {
         this.razonSocialEmpresa = razonSocialEmpresa;
+    }
+
+    public String getNombreTrabajador() {
+        return nombreTrabajador;
+    }
+
+    public void setNombreTrabajador(String nombreTrabajador) {
+        this.nombreTrabajador = nombreTrabajador;
+    }
+
+    public String getApellidoTrabajador() {
+        return apellidoTrabajador;
+    }
+
+    public void setApellidoTrabajador(String apellidoTrabajador) {
+        this.apellidoTrabajador = apellidoTrabajador;
     }
 
     public List<DetalleCotizacionDTO> getDetalles() {

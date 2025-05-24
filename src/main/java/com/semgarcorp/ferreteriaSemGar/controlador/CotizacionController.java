@@ -1,6 +1,7 @@
 package com.semgarcorp.ferreteriaSemGar.controlador;
 
 import com.semgarcorp.ferreteriaSemGar.dto.CotizacionDTO;
+import com.semgarcorp.ferreteriaSemGar.dto.CotizacionDetalleCompletoDTO;
 import com.semgarcorp.ferreteriaSemGar.dto.CotizacionResumenDTO;
 import com.semgarcorp.ferreteriaSemGar.dto.VentaDTO;
 import com.semgarcorp.ferreteriaSemGar.modelo.Cotizacion;
@@ -57,14 +58,12 @@ public class CotizacionController {
 
     // Actualizar una cotización existente (PUT)
     @PutMapping("/{id}")
-    public ResponseEntity<Cotizacion> actualizar(@PathVariable Integer id, @RequestBody Cotizacion cotizacion) {
-        Cotizacion cotizacionExistente = cotizacionService.obtenerPorId(id);
-        if (cotizacionExistente != null) {
-            cotizacion.setIdCotizacion(id); // Aseguramos que el ID se mantenga para la actualización
-            Cotizacion cotizacionActualizada = cotizacionService.actualizar(cotizacion);
-            return ResponseEntity.ok(cotizacionActualizada); // Usamos el metodo estático "ok" para la respuesta exitosa
-        }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Usamos "status" para construir la respuesta 404
+    public ResponseEntity<CotizacionDTO> actualizar(
+            @PathVariable Integer id,
+            @RequestBody CotizacionDTO cotizacionDTO) {
+
+        CotizacionDTO cotizacionActualizada = cotizacionService.actualizar(id, cotizacionDTO);
+        return ResponseEntity.ok(cotizacionActualizada);
     }
 
     // Eliminar una cotización por su ID
@@ -88,5 +87,11 @@ public class CotizacionController {
     @GetMapping("/resumen")
     public List<CotizacionResumenDTO> obtenerTodasCotizacionesResumen() {
         return cotizacionService.obtenerTodasCotizacionesResumen();
+    }
+
+    @GetMapping("/{idCotizacion}/detalle")
+    public ResponseEntity<CotizacionDetalleCompletoDTO> obtenerDetalleCotizacion(
+            @PathVariable Integer idCotizacion) {
+        return ResponseEntity.ok(cotizacionService.obtenerCotizacionDetalleCompleto(idCotizacion));
     }
 }

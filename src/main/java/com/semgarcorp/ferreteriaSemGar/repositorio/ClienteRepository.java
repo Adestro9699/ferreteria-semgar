@@ -3,6 +3,8 @@ package com.semgarcorp.ferreteriaSemGar.repositorio;
 import com.semgarcorp.ferreteriaSemGar.modelo.Cliente;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,4 +25,10 @@ public interface ClienteRepository extends JpaRepository<Cliente, Integer> {
     List<Cliente> findByApellidosContaining(String apellidos);
 
     boolean existsByNumeroDocumento(String numeroDocumento);
+
+    // Paginación tradicional (límite fijo)
+    Page<Cliente> findAll(Pageable pageable);
+
+    // Búsquedas paginadas (ejemplo para nombres)
+    Page<Cliente> findByNombresContainingIgnoreCase(String nombres, Pageable pageable);
 }
