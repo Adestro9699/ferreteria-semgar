@@ -639,4 +639,40 @@ public class VentaService {
 
         return ventaDTO;
     }
+
+    public VentaDTO convertirCotizacionAVentaPorId(Integer idCotizacion) {
+        // Buscar la cotización por su ID
+        Cotizacion cotizacion = cotizacionRepository.findById(idCotizacion)
+                .orElseThrow(() -> new EntityNotFoundException("Cotización no encontrada"));
+
+        // Crear el DTO de venta (sin persistir)
+        VentaDTO ventaDTO = new VentaDTO();
+
+        // Copiar datos generales
+        ventaDTO.setIdCliente(cotizacion.getCliente().getIdCliente());
+        ventaDTO.setIdTrabajador(cotizacion.getTrabajador().getIdTrabajador());
+        ventaDTO.setIdTipoPago(cotizacion.getTipoPago().getIdTipoPago());
+        ventaDTO.setIdEmpresa(cotizacion.getEmpresa().getIdEmpresa());
+        ventaDTO.setTotalVenta(cotizacion.getTotalCotizacion());
+        ventaDTO.setObservaciones("Generado desde cotización ID: " + idCotizacion); // Cambiado para reflejar ID
+
+        // Copiar detalles (idéntico al original)
+        List<DetalleVentaDTO> detallesDTO = cotizacion.getDetalles().stream().map(detalle -> {
+            DetalleVentaDTO detalleDTO = new DetalleVentaDTO();
+            detalleDTO.setIdProducto(detalle.getProducto().getIdProducto());
+            detalleDTO.setNombreProducto(detalle.getProducto().getNombreProducto());
+            detalleDTO.setUnidadMedida(detalle.getProducto().getUnidadMedida().getNombreUnidad());
+            detalleDTO.setCantidad(detalle.getCantidad());
+            detalleDTO.setPrecioUnitario(detalle.getPrecioUnitario());
+            detalleDTO.setDescuento(detalle.getDescuento());
+            detalleDTO.setSubtotal(detalle.getSubtotal());
+            detalleDTO.setSubtotalSinIGV(detalle.getSubtotalSinIGV());
+            detalleDTO.setIgvAplicado(detalle.getIgvAplicado());
+            return detalleDTO;
+        }).toList();
+
+        ventaDTO.setDetalles(detallesDTO);
+
+        return ventaDTO;
+    }
 }

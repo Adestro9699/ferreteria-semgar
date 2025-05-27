@@ -143,4 +143,11 @@ public class VentaController {
         VentaDTO ventaDTO = ventaService.convertirCotizacionAVenta(codigoCotizacion);
         return ResponseEntity.ok(ventaDTO);
     }
+
+    @GetMapping("/precargar-venta/por-id/{idCotizacion}")
+    public ResponseEntity<VentaDTO> precargarVentaPorId(
+            @PathVariable Integer idCotizacion) {
+        VentaDTO ventaDTO = ventaService.convertirCotizacionAVentaPorId(idCotizacion);
+        return ResponseEntity.ok(ventaDTO);
+    }
 }
