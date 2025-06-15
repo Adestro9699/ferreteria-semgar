@@ -1,6 +1,7 @@
 package com.semgarcorp.ferreteriaSemGar.servicio;
 
 import com.semgarcorp.ferreteriaSemGar.dto.DetalleVentaDTO;
+import com.semgarcorp.ferreteriaSemGar.dto.MovimientoCajaDTO;
 import com.semgarcorp.ferreteriaSemGar.dto.VentaDTO;
 import com.semgarcorp.ferreteriaSemGar.dto.VentaDetalleCompletoDTO;
 import com.semgarcorp.ferreteriaSemGar.dto.VentaResumenDTO;
@@ -244,17 +245,38 @@ public class VentaService {
         Venta venta = ventaRepository.findById(idVenta)
                 .orElseThrow(() -> new EntityNotFoundException("Venta con ID " + idVenta + " no encontrada"));
 
-        // 2. Verificar que la venta esté en estado "Pendiente" (lo primero que debe verificarse)
+        // 2. Verificar que la venta esté en estado "Pendiente"
         if (venta.getEstadoVenta() != EstadoVenta.PENDIENTE) {
             throw new IllegalStateException("La venta no está en estado PENDIENTE");
         }
 
-        // 3. Asignar el idCaja a la venta
+        // 3. Validar la caja y asignarla a la venta
         Caja caja = cajaRepository.findById(idCaja)
                 .orElseThrow(() -> new EntityNotFoundException("Caja con ID " + idCaja + " no encontrada"));
+
+        // Validar que la caja esté abierta
+        if (caja.getEstado() != EstadoCaja.ABIERTA) {
+            throw new IllegalStateException("La caja no está abierta");
+        }
+
+        // Validar que la caja tenga un responsable
+        if (caja.getResponsable() == null) {
+            throw new IllegalStateException("La caja no tiene un responsable asignado");
+        }
+
+        // Validar que el trabajador vinculado al usuario responsable de la caja coincida con el trabajador de la venta
+        Trabajador trabajadorResponsableCaja = caja.getResponsable().getTrabajador();
+        if (trabajadorResponsableCaja == null) {
+            throw new IllegalStateException("El responsable de la caja no tiene un trabajador vinculado");
+        }
+
+        if (!trabajadorResponsableCaja.getIdTrabajador().equals(venta.getTrabajador().getIdTrabajador())) {
+            throw new IllegalStateException("El trabajador de la venta no está autorizado para usar esta caja");
+        }
+
         venta.setCaja(caja);
 
-        // --- VALIDACIONES ADICIONALES PRIMERO ---
+        // --- VALIDACIONES ADICIONALES ---
         // 4. Validar stock antes de generar número
         for (DetalleVenta detalle : venta.getDetalles()) {
             productoService.validarStock(detalle.getProducto().getIdProducto(), detalle.getCantidad());
@@ -273,17 +295,16 @@ public class VentaService {
             throw new IllegalStateException("No hay conexión a Internet. No se puede completar la venta.");
         }
 
-        // 7. Emitir el comprobante en NubeFact (con todos los datos necesarios)
+        // 7. Emitir el comprobante en NubeFact
         String respuesta = nubeFactService.emitirComprobante(ventaDTO);
         System.out.println("Respuesta de NubeFact: " + respuesta);
 
-        // 8. Reducir el stock de los productos (después de asegurar que el comprobante
-        // se emitió)
+        // 8. Reducir el stock de los productos
         for (DetalleVenta detalle : venta.getDetalles()) {
             productoService.reducirStock(detalle.getProducto().getIdProducto(), detalle.getCantidad());
         }
 
-        // 9. Cambiar el estado a "Completada" (último paso)
+        // 9. Cambiar el estado a "Completada"
         venta.setEstadoVenta(EstadoVenta.COMPLETADA);
         venta = ventaRepository.save(venta);
 
@@ -500,18 +521,16 @@ public class VentaService {
     public Page<VentaResumenDTO> listarVentasPendientes(int pagina, int size) {
         Pageable pageable = PageRequest.of(pagina, size);
         return ventaRepository.findAllVentasResumen(
-            EstadoVenta.PENDIENTE,  // Solo ventas pendientes
-            pageable
-        );
+                EstadoVenta.PENDIENTE, // Solo ventas pendientes
+                pageable);
     }
 
     public Page<VentaResumenDTO> listarVentasCompletadasYAnuladas(int pagina, int size) {
         Pageable pageable = PageRequest.of(pagina, size);
-        // Usa el nuevo método del repositorio con ambos estados
+        // Usa el nuevo metodo del repositorio con ambos estados
         return ventaRepository.findAllVentasResumenByEstados(
-            List.of(EstadoVenta.COMPLETADA, EstadoVenta.ANULADA),
-            pageable
-        );
+                List.of(EstadoVenta.COMPLETADA, EstadoVenta.ANULADA),
+                pageable);
     }
 
     public VentaDetalleCompletoDTO obtenerVentaDetalleCompleto(Integer idVenta) {
@@ -674,5 +693,62 @@ public class VentaService {
         ventaDTO.setDetalles(detallesDTO);
 
         return ventaDTO;
+    }
+
+    @Transactional
+    public VentaDTO anularVenta(Integer idVenta) {
+        // 1. Buscar la venta por ID
+        Venta venta = ventaRepository.findById(idVenta)
+                .orElseThrow(() -> new EntityNotFoundException("Venta con ID " + idVenta + " no encontrada"));
+
+        // 2. Validar que la venta esté en estado COMPLETADA
+        if (venta.getEstadoVenta() != EstadoVenta.COMPLETADA) {
+            throw new IllegalStateException("Solo se pueden anular ventas en estado COMPLETADA");
+        }
+
+        // 3. Validar que tenga serie y número (necesario para anulación en NubeFact)
+        if (venta.getSerieComprobante() == null || venta.getNumeroComprobante() == null) {
+            throw new IllegalStateException("La venta no tiene serie o número de comprobante");
+        }
+
+        // 4. Validar conexión a internet
+        if (!InternetUtils.hayConexion()) {
+            throw new IllegalStateException("No hay conexión a Internet. No se puede anular la venta.");
+        }
+
+        try {
+            // 5. Anular en NubeFact (el servicio se encarga de construir el JSON)
+            String respuesta = nubeFactService.anularComprobante(
+                venta.getSerieComprobante(),
+                venta.getNumeroComprobante(),
+                "ERROR DEL SISTEMA", // Motivo fijo
+                "", // código único vacío por ahora
+                venta.getTipoComprobantePago().getCodigoNubefact()
+            );
+
+            // 6. Si la anulación en NubeFact fue exitosa, actualizar el estado de la venta
+            venta.setEstadoVenta(EstadoVenta.ANULADA);
+            venta = ventaRepository.save(venta);
+
+            // 7. Devolver el stock de los productos
+            for (DetalleVenta detalle : venta.getDetalles()) {
+                productoService.incrementarStock(detalle.getProducto().getIdProducto(), detalle.getCantidad());
+            }
+
+            // 8. Si la venta fue en efectivo, registrar la salida en caja
+            if (venta.getTipoPago().getNombre().equalsIgnoreCase("EFECTIVO")) {
+                MovimientoCajaDTO movimientoDTO = new MovimientoCajaDTO();
+                movimientoDTO.setMonto(venta.getTotalVenta());
+                movimientoDTO.setTipo(TipoMovimiento.SALIDA);
+                movimientoDTO.setObservaciones("Salida por anulación de venta " + venta.getSerieComprobante() + "-" + venta.getNumeroComprobante());
+                cajaService.registrarSalidaManual(venta.getCaja().getIdCaja(), movimientoDTO);
+            }
+
+            // 9. Devolver la venta actualizada
+            return convertirAVentaDTO(venta);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error al anular la venta en NubeFact: " + e.getMessage(), e);
+        }
     }
 }

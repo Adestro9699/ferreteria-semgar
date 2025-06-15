@@ -150,4 +150,30 @@ public class VentaController {
         VentaDTO ventaDTO = ventaService.convertirCotizacionAVentaPorId(idCotizacion);
         return ResponseEntity.ok(ventaDTO);
     }
+
+    @PostMapping("/{idVenta}/anular")
+    public ResponseEntity<?> anularVenta(@PathVariable Integer idVenta) {
+        try {
+            VentaDTO ventaAnulada = ventaService.anularVenta(idVenta);
+            return ResponseEntity.ok(ventaAnulada);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of(
+                    "error", "Venta no encontrada",
+                    "mensaje", e.getMessage()
+                ));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest()
+                .body(Map.of(
+                    "error", "Operación no permitida",
+                    "mensaje", e.getMessage()
+                ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of(
+                    "error", "Error interno del servidor",
+                    "mensaje", e.getMessage()
+                ));
+        }
+    }
 }

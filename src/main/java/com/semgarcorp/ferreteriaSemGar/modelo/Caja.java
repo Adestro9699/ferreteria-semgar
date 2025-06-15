@@ -4,66 +4,61 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 public class Caja {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Integer idCaja;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer idCaja; //identificador único de la caja
 
     @NotNull(message = "El nombre de caja no puede estar vacío")
-    @Column(unique = true) // Asegura que no haya duplicados
-    private String nombreCaja; // Identificador único de la caja física
+    @Column(unique = true, length = 100) // Asegura que no haya duplicados
+    private String nombreCaja; //nombre de la caja, unique para que mas de una caja no tengan nombres similares
 
-    private LocalDateTime fechaApertura;
-
-    private LocalDateTime fechaClausura;
-
-    @Column(precision = 10, scale = 2)
-    private BigDecimal saldoInicial;
-
-    @Column(precision = 10, scale = 2)
-    private BigDecimal entradas;
-
-    @Column(precision = 10, scale = 2)
-    private BigDecimal salidas;
-
-    @Column(precision = 10, scale = 2)
-    private BigDecimal saldoFinal;
-
-    @Column(length = 255)
-    private String observaciones;
+    @Column (length = 255)
+    private String descripcion;
 
     @NotNull(message = "El estado no puede estar vacío")
     @Enumerated(EnumType.STRING)
-    private EstadoCaja estado;
+    private EstadoCaja estado; //ABIERTA, CERRADA, EN_CIERRE
 
-    @ManyToOne(optional = true) // Permite valores nulos
-    @JoinColumn(name = "idUsuario", nullable = true) // Asegura que la columna en la base de datos permita nulos
-    private Usuario usuario;
+    @ManyToOne(fetch = FetchType.LAZY) // Permite valores nulos
+    @JoinColumn(name = "id_usuario", nullable = true) // Asegura que la columna en la base de datos permita nulos
+    private Usuario responsable; // Usuario a cargo
+
+    @Column(name = "fecha_apertura")
+    private LocalDateTime fechaApertura; //fecha en la que se abre la caja
+
+    @Column(name = "fecha_cierre")
+    private LocalDateTime fechaCierre; //fecha en la que se cierra la caja
+
+    @JoinColumn(name = "saldo_inicial")
+    @Column(precision = 10, scale = 2)
+    private BigDecimal saldoInicial; //saldo con el que inicia a operar una caja
+
+    @Version
+    private Long version; //para manejar problemas de concurrencia
 
     @OneToMany(mappedBy = "caja", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<MovimientoCaja> movimientos;
+    private List<MovimientoCaja> movimientos = new ArrayList<>(); //relacionamos los movimientos a la caja activa
 
     public Caja() {
     }
 
-    public Caja(Integer idCaja, String nombreCaja, LocalDateTime fechaApertura, LocalDateTime fechaClausura,
-                BigDecimal saldoInicial, BigDecimal entradas, BigDecimal salidas, BigDecimal saldoFinal,
-                String observaciones, EstadoCaja estado, Usuario usuario, List<MovimientoCaja> movimientos) {
+    public Caja(Integer idCaja, String nombreCaja, String descripcion, EstadoCaja estado, Usuario responsable,
+                LocalDateTime fechaApertura, LocalDateTime fechaCierre, BigDecimal saldoInicial,
+                List<MovimientoCaja> movimientos) {
         this.idCaja = idCaja;
         this.nombreCaja = nombreCaja;
-        this.fechaApertura = fechaApertura;
-        this.fechaClausura = fechaClausura;
-        this.saldoInicial = saldoInicial;
-        this.entradas = entradas;
-        this.salidas = salidas;
-        this.saldoFinal = saldoFinal;
-        this.observaciones = observaciones;
+        this.descripcion = descripcion;
         this.estado = estado;
-        this.usuario = usuario;
+        this.responsable = responsable;
+        this.fechaApertura = fechaApertura;
+        this.fechaCierre = fechaCierre;
+        this.saldoInicial = saldoInicial;
         this.movimientos = movimientos;
     }
 
@@ -83,60 +78,12 @@ public class Caja {
         this.nombreCaja = nombreCaja;
     }
 
-    public LocalDateTime getFechaApertura() {
-        return fechaApertura;
+    public String getDescripcion() {
+        return descripcion;
     }
 
-    public void setFechaApertura(LocalDateTime fechaApertura) {
-        this.fechaApertura = fechaApertura;
-    }
-
-    public LocalDateTime getFechaClausura() {
-        return fechaClausura;
-    }
-
-    public void setFechaClausura(LocalDateTime fechaClausura) {
-        this.fechaClausura = fechaClausura;
-    }
-
-    public BigDecimal getSaldoInicial() {
-        return saldoInicial;
-    }
-
-    public void setSaldoInicial(BigDecimal saldoInicial) {
-        this.saldoInicial = saldoInicial;
-    }
-
-    public BigDecimal getEntradas() {
-        return entradas;
-    }
-
-    public void setEntradas(BigDecimal entradas) {
-        this.entradas = entradas;
-    }
-
-    public BigDecimal getSalidas() {
-        return salidas;
-    }
-
-    public void setSalidas(BigDecimal salidas) {
-        this.salidas = salidas;
-    }
-
-    public BigDecimal getSaldoFinal() {
-        return saldoFinal;
-    }
-
-    public void setSaldoFinal(BigDecimal saldoFinal) {
-        this.saldoFinal = saldoFinal;
-    }
-
-    public String getObservaciones() {
-        return observaciones;
-    }
-
-    public void setObservaciones(String observaciones) {
-        this.observaciones = observaciones;
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
     }
 
     public EstadoCaja getEstado() {
@@ -147,12 +94,36 @@ public class Caja {
         this.estado = estado;
     }
 
-    public Usuario getUsuario() {
-        return usuario;
+    public Usuario getResponsable() {
+        return responsable;
     }
 
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
+    public void setResponsable(Usuario responsable) {
+        this.responsable = responsable;
+    }
+
+    public LocalDateTime getFechaApertura() {
+        return fechaApertura;
+    }
+
+    public void setFechaApertura(LocalDateTime fechaApertura) {
+        this.fechaApertura = fechaApertura;
+    }
+
+    public LocalDateTime getFechaCierre() {
+        return fechaCierre;
+    }
+
+    public void setFechaCierre(LocalDateTime fechaCierre) {
+        this.fechaCierre = fechaCierre;
+    }
+
+    public BigDecimal getSaldoInicial() {
+        return saldoInicial;
+    }
+
+    public void setSaldoInicial(BigDecimal saldoInicial) {
+        this.saldoInicial = saldoInicial;
     }
 
     public List<MovimientoCaja> getMovimientos() {
@@ -161,5 +132,14 @@ public class Caja {
 
     public void setMovimientos(List<MovimientoCaja> movimientos) {
         this.movimientos = movimientos;
+    }
+
+    //es un atributo dinámico que combina el estado de la caja y el nombre del usuario responsable de la caja
+    //para poder mostrar en una caja abierta Caja en uso por: +nombreUsuario
+    @Transient // No se persiste en BD, se calcula dinámicamente
+    public String getEstadoUso() {
+        return this.estado == EstadoCaja.ABIERTA
+                ? "Caja en uso por: " + this.responsable.getNombreUsuario()
+                : "Caja cerrada";
     }
 }

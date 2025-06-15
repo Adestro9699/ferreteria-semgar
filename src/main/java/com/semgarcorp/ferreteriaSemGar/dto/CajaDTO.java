@@ -10,6 +10,7 @@ public class CajaDTO {
 
     private Integer idCaja; // Solo para operaciones que requieran identificar la caja
     private String nombreCaja; // Solo para creación de cajas nuevas (si es necesario)
+    private String descripcion;
     private LocalDateTime fechaApertura;
     private LocalDateTime fechaClausura;
     private BigDecimal saldoInicial;
@@ -24,11 +25,13 @@ public class CajaDTO {
     public CajaDTO() {
     }
 
-    public CajaDTO(Integer idCaja, String nombreCaja, LocalDateTime fechaApertura, LocalDateTime fechaClausura,
-                   BigDecimal saldoInicial, BigDecimal entradas, BigDecimal salidas, BigDecimal saldoFinal,
-                   EstadoCaja estado, Integer idUsuario, String observaciones, List<MovimientoCajaDTO> movimientos) {
+    public CajaDTO(Integer idCaja, String nombreCaja, String descripcion, LocalDateTime fechaApertura,
+                   LocalDateTime fechaClausura, BigDecimal saldoInicial, BigDecimal entradas,
+                   BigDecimal salidas, BigDecimal saldoFinal, EstadoCaja estado, Integer idUsuario,
+                   String observaciones, List<MovimientoCajaDTO> movimientos) {
         this.idCaja = idCaja;
         this.nombreCaja = nombreCaja;
+        this.descripcion = descripcion;
         this.fechaApertura = fechaApertura;
         this.fechaClausura = fechaClausura;
         this.saldoInicial = saldoInicial;
@@ -55,6 +58,14 @@ public class CajaDTO {
 
     public void setNombreCaja(String nombreCaja) {
         this.nombreCaja = nombreCaja;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
     }
 
     public LocalDateTime getFechaApertura() {

@@ -2,5 +2,6 @@ package com.semgarcorp.ferreteriaSemGar.modelo;
 
 public enum EstadoCaja {
     ABIERTA,
-    CERRADA
+    CERRADA,
+    EN_CIERRE
 }

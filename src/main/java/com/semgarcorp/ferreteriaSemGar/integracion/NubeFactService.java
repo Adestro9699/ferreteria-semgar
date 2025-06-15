@@ -9,7 +9,11 @@ import com.semgarcorp.ferreteriaSemGar.repositorio.ClienteRepository;
 import com.semgarcorp.ferreteriaSemGar.repositorio.ProductoRepository;
 import com.semgarcorp.ferreteriaSemGar.repositorio.ParametroRepository;
 import com.semgarcorp.ferreteriaSemGar.repositorio.TipoComprobantePagoRepository;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -35,18 +39,21 @@ public class NubeFactService {
     private final ClienteRepository clienteRepositorio;
     private final ProductoRepository productoRepositorio;
     private final TipoComprobantePagoRepository tipoComprobantePagoRepositorio;
+    private final RestTemplate restTemplate;
 
     public NubeFactService(NubeFactClient client, ObjectMapper objectMapper,
                            ParametroRepository parametroRepositorio,
                            ClienteRepository clienteRepositorio,
                            ProductoRepository productoRepositorio,
-                           TipoComprobantePagoRepository tipoComprobantePagoRepositorio) {
+                           TipoComprobantePagoRepository tipoComprobantePagoRepositorio,
+                           RestTemplate restTemplate) {
         this.client = client;
         this.objectMapper = objectMapper;
         this.parametroRepositorio = parametroRepositorio;
         this.clienteRepositorio = clienteRepositorio;
         this.productoRepositorio = productoRepositorio;
         this.tipoComprobantePagoRepositorio = tipoComprobantePagoRepositorio;
+        this.restTemplate = restTemplate;
     }
 
     public String emitirComprobante(VentaDTO venta) {
@@ -291,14 +298,25 @@ public class NubeFactService {
                 .orElse(new BigDecimal("18.00")); // Valor por defecto
     }
 
-    public String anularComprobante(String serie, String numero, String motivo, String codigoUnico) {
+    public String anularComprobante(String serie, String numero, String motivo, String codigoUnico, Integer tipoComprobante) {
         try {
             logger.info("Iniciando anulación de comprobante {}-{}", serie, numero);
 
-            String respuesta = client.anularComprobante(serie, numero, motivo, codigoUnico);
+            // Construir el JSON de anulación
+            Map<String, Object> request = new HashMap<>();
+            request.put("operacion", "generar_anulacion");
+            request.put("tipo_de_comprobante", tipoComprobante);
+            request.put("serie", serie);
+            request.put("numero", numero);
+            request.put("motivo", motivo);
+            request.put("codigo_unico", codigoUnico);
 
+            String jsonRequest = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(request);
+            logger.info("JSON para anulación en NubeFact:\n{}", jsonRequest);
+            guardarJsonEnArchivo(jsonRequest, "nubefact_anulacion_"+serie+"-"+numero+"_"+System.currentTimeMillis()+".json");
+
+            String respuesta = client.anularComprobante(jsonRequest);
             logger.info("Respuesta de anulación de NubeFact: {}", respuesta);
-            guardarJsonEnArchivo(respuesta, "nubefact_anulacion_"+serie+"-"+numero+"_"+System.currentTimeMillis()+".json");
 
             return respuesta;
         } catch (Exception e) {

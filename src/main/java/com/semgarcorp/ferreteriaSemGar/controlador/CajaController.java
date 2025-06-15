@@ -2,6 +2,9 @@ package com.semgarcorp.ferreteriaSemGar.controlador;
 
 import com.semgarcorp.ferreteriaSemGar.dto.CajaDTO;
 import com.semgarcorp.ferreteriaSemGar.dto.MovimientoCajaDTO;
+import com.semgarcorp.ferreteriaSemGar.dto.ReporteCierreCajaDTO;
+import com.semgarcorp.ferreteriaSemGar.excepciones.CajaNoEncontradaException;
+import com.semgarcorp.ferreteriaSemGar.excepciones.OperacionNoPermitidaException;
 import com.semgarcorp.ferreteriaSemGar.modelo.Caja;
 import com.semgarcorp.ferreteriaSemGar.servicio.CajaService;
 import jakarta.persistence.EntityNotFoundException;
@@ -206,6 +209,32 @@ public class CajaController {
             return ResponseEntity.badRequest().body(null);
         } catch (EntityNotFoundException e) {
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/{idCaja}/reporte-cierre")
+    public ResponseEntity<?> obtenerReporteCierreCaja(@PathVariable Integer idCaja) {
+        try {
+            ReporteCierreCajaDTO reporte = cajaService.generarReporteCierreCaja(idCaja);
+            return ResponseEntity.ok(reporte);
+        } catch (OperacionNoPermitidaException e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of(
+                        "error", "Operación no permitida",
+                        "mensaje", e.getMessage()
+                    ));
+        } catch (CajaNoEncontradaException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of(
+                        "error", "Caja no encontrada",
+                        "mensaje", e.getMessage()
+                    ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of(
+                        "error", "Error interno del servidor",
+                        "mensaje", e.getMessage()
+                    ));
         }
     }
 }

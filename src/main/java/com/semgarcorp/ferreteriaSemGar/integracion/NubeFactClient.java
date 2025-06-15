@@ -22,25 +22,16 @@ public class NubeFactClient {
         return response.getBody();
     }
 
-    public String anularComprobante(String serie, String numero, String motivo, String codigoUnico) {
-        try {
-            // Construir el JSON de anulación
-            String jsonRequest = String.format(
-                    "{\"operacion\":\"generar_anulacion\",\"tipo_de_comprobante\":1,\"serie\":\"%s\",\"numero\":%s,\"motivo\":\"%s\",\"codigo_unico\":\"%s\"}",
-                    serie, numero, motivo, codigoUnico);
+    public String anularComprobante(String jsonRequest) {
+        HttpHeaders headers = crearHeaders();
+        HttpEntity<String> request = new HttpEntity<>(jsonRequest, headers);
 
-            HttpHeaders headers = crearHeaders();
-            HttpEntity<String> request = new HttpEntity<>(jsonRequest, headers);
-
-            ResponseEntity<String> response = restTemplate.postForEntity(
-                    API_URL,
-                    request,
-                    String.class);
-
-            return response.getBody();
-        } catch (Exception e) {
-            throw new RuntimeException("Error al anular comprobante en NubeFact", e);
-        }
+        ResponseEntity<String> response = restTemplate.postForEntity(
+                API_URL,
+                request,
+                String.class
+        );
+        return response.getBody();
     }
 
     private HttpHeaders crearHeaders() {

@@ -4,52 +4,53 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
-public class CierreCaja {
+public class CierreCaja { //entidad que resume el cierre de una caja (tomamos información de Caja y movimientoCaja)
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer idCierreCaja;
 
     @NotNull(message = "La fecha de apertura no puede ser nula")
     @Column
-    private LocalDateTime fechaApertura;
+    private LocalDateTime fechaApertura; //fecha en que se abrió la caja
 
     @NotNull(message = "La fecha de cierre no puede ser nula")
     @Column
-    private LocalDateTime fechaCierre;
+    private LocalDateTime fechaCierre; //fecha en que se cerró la caja
 
     @NotNull(message = "El saldo inicial no puede ser nulo")
     @Column(precision = 10, scale = 2)
-    private BigDecimal saldoInicial;
+    private BigDecimal saldoInicial; //indicativo del saldo inicial que se ingresó
 
-    @NotNull(message = "El total de entradas no puede ser nulo")
     @Column(precision = 10, scale = 2)
-    private BigDecimal totalEntradas;
+    private BigDecimal totalEntradas; //resumen del total de entradas
 
-    @NotNull(message = "El total de salidas no puede ser nulo")
     @Column(precision = 10, scale = 2)
-    private BigDecimal totalSalidas;
+    private BigDecimal totalSalidas; //resumen del total de salidas
 
-    @NotNull(message = "El saldo final no puede ser nulo")
     @Column(precision = 10, scale = 2)
-    private BigDecimal saldoFinal;
+    private BigDecimal saldoFinal; //saldo final que quedó al cerrar la caja
 
     @Column(columnDefinition = "text")
     private String observaciones;
 
     @ManyToOne
     @JoinColumn(name = "idUsuario")
-    private Usuario usuario;
+    private Usuario usuario; //quien hizo el cierre de caja
 
     @ManyToOne
     @JoinColumn(name = "idCaja")
-    private Caja caja;
+    private Caja caja; //qué caja fue la que se cerró
 
-    @OneToMany(mappedBy = "cierreCaja", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<MovimientoCaja> movimientos;
+    @PrePersist
+    @PreUpdate
+    private void validarFechas() {
+        if (fechaCierre != null && fechaCierre.isBefore(fechaApertura)) {
+            throw new IllegalStateException("Fecha de cierre debe ser posterior a apertura");
+        }
+    }
 
     // Constructor vacío
     public CierreCaja() {
@@ -57,7 +58,7 @@ public class CierreCaja {
 
     public CierreCaja(Integer idCierreCaja, LocalDateTime fechaApertura, LocalDateTime fechaCierre,
                       BigDecimal saldoInicial, BigDecimal totalEntradas, BigDecimal totalSalidas, BigDecimal saldoFinal,
-                      String observaciones, Usuario usuario, Caja caja, List<MovimientoCaja> movimientos) {
+                      String observaciones, Usuario usuario, Caja caja) {
         this.idCierreCaja = idCierreCaja;
         this.fechaApertura = fechaApertura;
         this.fechaCierre = fechaCierre;
@@ -68,7 +69,6 @@ public class CierreCaja {
         this.observaciones = observaciones;
         this.usuario = usuario;
         this.caja = caja;
-        this.movimientos = movimientos;
     }
 
     public Integer getIdCierreCaja() {
@@ -149,13 +149,5 @@ public class CierreCaja {
 
     public void setCaja(Caja caja) {
         this.caja = caja;
-    }
-
-    public List<MovimientoCaja> getMovimientos() {
-        return movimientos;
-    }
-
-    public void setMovimientos(List<MovimientoCaja> movimientos) {
-        this.movimientos = movimientos;
     }
 }

@@ -44,7 +44,7 @@ public class Trabajador {
     private String cargoTrabajador;
 
     @Enumerated(EnumType.STRING) // Relaciona el enum con esta columna
-    private EstadoTrabajador estadoTrabajador;
+    private EstadoTrabajador estadoTrabajador; //ACTIVO - INACTIVO
 
     @PastOrPresent(message = "La fecha de ingreso no puede ser futura")
     private LocalDate fechaIngresoTrabajador;
