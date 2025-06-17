@@ -99,4 +99,50 @@ public interface VentaRepository extends JpaRepository<Venta, Integer> {
                 WHERE d.venta.idVenta = :idVenta
             """)
     List<DetalleVentaDTO> findDetallesByVentaId(Integer idVenta);
+
+    Optional<Venta> findBySerieComprobanteAndNumeroComprobante(String serieComprobante, String numeroComprobante);
+
+    @Query("SELECT v FROM Venta v JOIN v.cliente c WHERE " +
+           "LOWER(CONCAT(c.nombres, ' ', c.apellidos)) LIKE LOWER(CONCAT('%', :nombre, '%')) OR " +
+           "LOWER(c.razonSocial) LIKE LOWER(CONCAT('%', :nombre, '%'))")
+    List<Venta> findByNombreCliente(@Param("nombre") String nombre);
+
+    @Query("SELECT new com.semgarcorp.ferreteriaSemGar.dto.VentaResumenDTO(" +
+           "v.idVenta, v.serieComprobante, v.numeroComprobante, " +
+           "v.tipoComprobantePago.nombre, v.tipoPago.nombre, " +
+           "v.totalVenta, v.fechaVenta, v.estadoVenta, " +
+           "c.nombres, c.apellidos, c.razonSocial, e.razonSocial) " +
+           "FROM Venta v " +
+           "LEFT JOIN v.cliente c " +
+           "LEFT JOIN v.empresa e " +
+           "WHERE v.estadoVenta IN :estados " +
+           "AND v.serieComprobante = :serie " +
+           "AND v.numeroComprobante = :numero " +
+           "ORDER BY v.fechaVenta DESC")
+    Page<VentaResumenDTO> findVentasResumenBySerieNumeroAndEstados(
+        @Param("serie") String serie,
+        @Param("numero") String numero,
+        @Param("estados") List<EstadoVenta> estados,
+        Pageable pageable
+    );
+
+    @Query("SELECT new com.semgarcorp.ferreteriaSemGar.dto.VentaResumenDTO(" +
+           "v.idVenta, v.serieComprobante, v.numeroComprobante, " +
+           "v.tipoComprobantePago.nombre, v.tipoPago.nombre, " +
+           "v.totalVenta, v.fechaVenta, v.estadoVenta, " +
+           "c.nombres, c.apellidos, c.razonSocial, e.razonSocial) " +
+           "FROM Venta v " +
+           "LEFT JOIN v.cliente c " +
+           "LEFT JOIN v.empresa e " +
+           "LEFT JOIN v.tipoComprobantePago " +
+           "LEFT JOIN v.tipoPago " +
+           "WHERE v.estadoVenta IN :estados " +
+           "AND (LOWER(CONCAT(c.nombres, ' ', c.apellidos)) LIKE LOWER(CONCAT('%', :nombre, '%')) OR " +
+           "LOWER(c.razonSocial) LIKE LOWER(CONCAT('%', :nombre, '%'))) " +
+           "ORDER BY v.fechaVenta DESC")
+    Page<VentaResumenDTO> findVentasResumenByNombreClienteAndEstados(
+        @Param("nombre") String nombre,
+        @Param("estados") List<EstadoVenta> estados,
+        Pageable pageable
+    );
 }

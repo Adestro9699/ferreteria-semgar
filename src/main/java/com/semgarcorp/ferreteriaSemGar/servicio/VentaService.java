@@ -751,4 +751,51 @@ public class VentaService {
             throw new RuntimeException("Error al anular la venta en NubeFact: " + e.getMessage(), e);
         }
     }
+
+    public VentaDTO buscarPorSerieYNumero(String serieComprobante, String numeroComprobante) {
+        if (serieComprobante == null || numeroComprobante == null) {
+            throw new IllegalArgumentException("La serie y número de comprobante son obligatorios");
+        }
+
+        Venta venta = ventaRepository.findBySerieComprobanteAndNumeroComprobante(serieComprobante, numeroComprobante)
+                .orElseThrow(() -> new EntityNotFoundException(
+                    String.format("No se encontró venta con serie %s y número %s", serieComprobante, numeroComprobante)
+                ));
+
+        return convertirAVentaDTO(venta);
+    }
+
+    public Page<VentaResumenDTO> buscarVentasCompletadasYAnuladas(String criterio, int pagina, int size) {
+        Pageable pageable = PageRequest.of(pagina, size);
+        
+        // Si no hay criterio, usamos el método existente
+        if (criterio == null || criterio.trim().isEmpty()) {
+            return listarVentasCompletadasYAnuladas(pagina, size);
+        }
+
+        criterio = criterio.trim();
+        List<EstadoVenta> estados = List.of(EstadoVenta.COMPLETADA, EstadoVenta.ANULADA);
+
+        // Si el criterio contiene un guión, asumimos que es una búsqueda por serie-número
+        if (criterio.contains("-")) {
+            String[] partes = criterio.split("-");
+            if (partes.length == 2) {
+                return ventaRepository.findVentasResumenBySerieNumeroAndEstados(
+                    partes[0], 
+                    partes[1],
+                    estados,
+                    pageable
+                );
+            } else {
+                throw new IllegalArgumentException("Formato de serie-número inválido. Use el formato: SERIE-NUMERO");
+            }
+        } else {
+            // Si no contiene guión, asumimos que es una búsqueda por nombre/apellido
+            return ventaRepository.findVentasResumenByNombreClienteAndEstados(
+                criterio,
+                estados,
+                pageable
+            );
+        }
+    }
 }

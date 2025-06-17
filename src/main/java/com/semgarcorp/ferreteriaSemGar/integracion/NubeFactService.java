@@ -9,9 +9,6 @@ import com.semgarcorp.ferreteriaSemGar.repositorio.ClienteRepository;
 import com.semgarcorp.ferreteriaSemGar.repositorio.ProductoRepository;
 import com.semgarcorp.ferreteriaSemGar.repositorio.ParametroRepository;
 import com.semgarcorp.ferreteriaSemGar.repositorio.TipoComprobantePagoRepository;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -163,14 +160,23 @@ public class NubeFactService {
             // Datos básicos
             item.put("unidad_de_medida", "NIU");
             item.put("codigo", obtenerCodigoProducto(producto));
-            item.put("descripcion", obtenerDescripcionProducto(producto));
+            item.put("descripcion", producto.getNombreProducto());
             item.put("cantidad", detalle.getCantidad());
 
             // Cálculos con máxima precisión
             BigDecimal valorUnitarioSinIgv = calcularValorUnitarioSinIgv(detalle.getPrecioUnitario(), factorIgv);
-            BigDecimal subtotalSinIgv = calcularSubtotalSinIgv(valorUnitarioSinIgv, detalle.getCantidad(), detalle.getDescuento());
+            BigDecimal subtotalSinDescuento = valorUnitarioSinIgv.multiply(detalle.getCantidad());
+            
+            // Calcular descuento como porcentaje
+            BigDecimal montoDescuento = BigDecimal.ZERO;
+            if (detalle.getDescuento() != null && detalle.getDescuento().compareTo(BigDecimal.ZERO) > 0) {
+                montoDescuento = subtotalSinDescuento.multiply(detalle.getDescuento())
+                    .divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP);
+            }
+            
+            BigDecimal subtotalSinIgv = subtotalSinDescuento.subtract(montoDescuento);
             BigDecimal igv = calcularIgv(subtotalSinIgv);
-            BigDecimal total = calcularTotal(subtotalSinIgv, igv);
+            BigDecimal total = subtotalSinIgv.add(igv);
 
             // Asignar valores redondeados
             item.put("valor_unitario", valorUnitarioSinIgv.setScale(2, RoundingMode.HALF_UP));
@@ -178,7 +184,7 @@ public class NubeFactService {
             item.put("subtotal", subtotalSinIgv.setScale(2, RoundingMode.HALF_UP));
             item.put("tipo_de_igv", 1);
             item.put("igv", igv.setScale(2, RoundingMode.HALF_UP));
-            item.put("total", total);
+            item.put("total", total.setScale(2, RoundingMode.HALF_UP));
 
             return item;
         }).collect(Collectors.toList());
@@ -188,49 +194,15 @@ public class NubeFactService {
         return precioConIgv.divide(factorIgv, 4, RoundingMode.HALF_UP);
     }
 
-    private BigDecimal calcularSubtotalSinIgv(BigDecimal valorUnitario, BigDecimal cantidad, BigDecimal descuento) {
-        BigDecimal subtotal = valorUnitario.multiply(cantidad);
-        return subtotal.subtract(descuento != null ? descuento : BigDecimal.ZERO);
-    }
-
     private BigDecimal calcularIgv(BigDecimal subtotalSinIgv) {
-        // Obtener IGV con máxima precisión
-        BigDecimal porcentajeIgv = obtenerPorcentajeIgv();
-        return subtotalSinIgv.multiply(porcentajeIgv)
+        return subtotalSinIgv.multiply(obtenerPorcentajeIgv())
                 .divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP);
-    }
-
-    private BigDecimal calcularTotal(BigDecimal subtotalSinIgv, BigDecimal igv) {
-        // Sumar con máxima precisión y redondear solo al final
-        BigDecimal total = subtotalSinIgv.add(igv);
-
-        // Ajuste especial para casos como 149.995 que deberían ser 150.00
-        BigDecimal scaled = total.setScale(2, RoundingMode.HALF_UP);
-
-        // Verificar si la diferencia es mínima (debido a errores de punto flotante)
-        if (total.subtract(scaled).abs().compareTo(new BigDecimal("0.005")) == 0) {
-            return scaled.add(total.compareTo(scaled) > 0 ?
-                    new BigDecimal("0.01") :
-                    new BigDecimal("-0.01"));
-        }
-
-        return scaled;
     }
 
     private String obtenerCodigoProducto(Producto producto) {
         return Optional.ofNullable(producto.getCodigoBarra())
                 .filter(cb -> !cb.isEmpty())
                 .orElse(producto.getCodigoSKU());
-    }
-
-    private String obtenerDescripcionProducto(Producto producto) {
-        return Optional.ofNullable(producto.getDescripcion())
-                .filter(d -> !d.isEmpty())
-                .orElseGet(() -> String.format("%s %s %s",
-                                producto.getNombreProducto(),
-                                Optional.ofNullable(producto.getMarca()).orElse(""),
-                                Optional.ofNullable(producto.getMaterial()).orElse(""))
-                        .trim());
     }
 
     private String enviarANubefact(Map<String, Object> request) {

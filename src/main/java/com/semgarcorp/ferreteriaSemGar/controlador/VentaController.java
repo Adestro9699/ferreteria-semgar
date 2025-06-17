@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -172,6 +173,33 @@ public class VentaController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of(
                     "error", "Error interno del servidor",
+                    "mensaje", e.getMessage()
+                ));
+        }
+    }
+
+    @GetMapping("/buscar")
+    public ResponseEntity<?> buscarVentas(
+            @RequestParam String criterio,
+            @RequestParam(defaultValue = "0") int pagina,
+            @RequestParam(defaultValue = "10") int size) {
+        try {
+            Page<VentaResumenDTO> ventas = ventaService.buscarVentasCompletadasYAnuladas(criterio, pagina, size);
+            
+            return ResponseEntity.ok(Map.of(
+                "mensaje", ventas.isEmpty() ? 
+                    "No se encontraron ventas completadas o anuladas para el criterio: " + criterio : 
+                    "Búsqueda exitosa",
+                "ventas", ventas.getContent(),
+                "totalElementos", ventas.getTotalElements(),
+                "totalPaginas", ventas.getTotalPages(),
+                "paginaActual", ventas.getNumber(),
+                "tamanoPagina", ventas.getSize()
+            ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                .body(Map.of(
+                    "error", "Criterio de búsqueda inválido",
                     "mensaje", e.getMessage()
                 ));
         }
