@@ -59,6 +59,7 @@ public class VentaController {
         return ResponseEntity.created(location).body(nuevaVentaDTO);
     }
 
+    //en el body únicamente hay que mandar el idCaja { "idCaja": 1 }
     @PostMapping("/{idVenta}/completar")
     public ResponseEntity<?> completarVenta(
             @PathVariable Integer idVenta,
@@ -137,6 +138,13 @@ public class VentaController {
         return ResponseEntity.ok(ventaService.obtenerVentaDetalleCompleto(idVenta));
     }
 
+    // detalle completo de la venta usando método alternativo
+    @GetMapping("/{idVenta}/detalle-alternativo")
+    public ResponseEntity<VentaDetalleCompletoDTO> obtenerDetalleVentaAlternativo(
+            @PathVariable Integer idVenta) {
+        return ResponseEntity.ok(ventaService.obtenerVentaDetalleCompletoAlternativo(idVenta));
+    }
+
     // pre cargar una venta desde una cotización
     @GetMapping("/precargar-venta/{codigoCotizacion}") // Cambiado a GET (es una consulta)
     public ResponseEntity<VentaDTO> precargarVentaDesdeCotizacion(
@@ -178,6 +186,8 @@ public class VentaController {
         }
     }
 
+    //para buscar una venta por criterio numero de comprobante + serie de comprobante o nombre del cliente
+    //http://localhost:8080/fs/ventas/buscar?criterio=BBB1-0002 (por ejemplo, sin el prefijo fs)
     @GetMapping("/buscar")
     public ResponseEntity<?> buscarVentas(
             @RequestParam String criterio,

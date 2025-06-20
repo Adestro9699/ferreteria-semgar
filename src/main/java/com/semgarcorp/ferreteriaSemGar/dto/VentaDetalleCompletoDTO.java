@@ -19,10 +19,17 @@ public class VentaDetalleCompletoDTO {
     private LocalDateTime fechaVenta;
     private EstadoVenta estadoVenta;
     private Moneda moneda;
+    private BigDecimal valorIgvActual; // Porcentaje del IGV en el momento de la venta
     private String nombresCliente;
     private String apellidosCliente;
     private String razonSocialCliente;
     private String razonSocialEmpresa;
+    private String rucEmpresa;
+    private String numeroDocumentoCliente;
+    private String tipoDocumentoCliente;
+    private String direccionCliente;
+    private String vendedorNombreCompleto;
+    private String cajeroNombreUsuario;
     private List<DetalleVentaDTO> detalles;
 
     // Constructor vacío (necesario para JPA/Jackson)
@@ -32,9 +39,10 @@ public class VentaDetalleCompletoDTO {
     // Constructor para la consulta JPQL (sin detalles)
     public VentaDetalleCompletoDTO(Integer idVenta, String serieComprobante, String numeroComprobante,
                                    String tipoComprobante, String tipoPago, BigDecimal totalVenta,
-                                   LocalDateTime fechaVenta, EstadoVenta estadoVenta, Moneda moneda,
+                                   LocalDateTime fechaVenta, EstadoVenta estadoVenta, Moneda moneda, BigDecimal valorIgvActual,
                                    String nombresCliente, String apellidosCliente, String razonSocialCliente,
-                                   String razonSocialEmpresa) {
+                                   String razonSocialEmpresa, String rucEmpresa, String numeroDocumentoCliente, String tipoDocumentoCliente, String direccionCliente,
+                                   String vendedorNombreCompleto, String cajeroNombreUsuario) {
         this.idVenta = idVenta;
         this.serieComprobante = serieComprobante;
         this.numeroComprobante = numeroComprobante;
@@ -44,11 +52,18 @@ public class VentaDetalleCompletoDTO {
         this.fechaVenta = fechaVenta;
         this.estadoVenta = estadoVenta;
         this.moneda = moneda;
+        this.valorIgvActual = valorIgvActual;
         this.nombresCliente = nombresCliente;
         this.apellidosCliente = apellidosCliente;
         this.razonSocialCliente = razonSocialCliente;
         this.razonSocialEmpresa = razonSocialEmpresa;
-        this.detalles = new ArrayList<>(); // Lista vacía
+        this.rucEmpresa = rucEmpresa;
+        this.numeroDocumentoCliente = numeroDocumentoCliente;
+        this.tipoDocumentoCliente = tipoDocumentoCliente;
+        this.direccionCliente = direccionCliente;
+        this.vendedorNombreCompleto = vendedorNombreCompleto;
+        this.cajeroNombreUsuario = cajeroNombreUsuario;
+        this.detalles = new ArrayList<>();
     }
 
     // Constructor completo (opcional, para otros usos)
@@ -56,10 +71,12 @@ public class VentaDetalleCompletoDTO {
                                    String tipoComprobante, String tipoPago, BigDecimal totalVenta,
                                    LocalDateTime fechaVenta, EstadoVenta estadoVenta, Moneda moneda,
                                    String nombresCliente, String apellidosCliente, String razonSocialCliente,
-                                   String razonSocialEmpresa, List<DetalleVentaDTO> detalles) {
+                                   String razonSocialEmpresa, String rucEmpresa, String numeroDocumentoCliente, String tipoDocumentoCliente, String direccionCliente,
+                                   List<DetalleVentaDTO> detalles) {
         this(idVenta, serieComprobante, numeroComprobante, tipoComprobante, tipoPago, totalVenta,
-                fechaVenta, estadoVenta, moneda, nombresCliente, apellidosCliente,
-                razonSocialCliente, razonSocialEmpresa);
+                fechaVenta, estadoVenta, moneda, BigDecimal.ZERO, nombresCliente, apellidosCliente,
+                razonSocialCliente, razonSocialEmpresa, rucEmpresa, numeroDocumentoCliente, tipoDocumentoCliente, direccionCliente,
+                "", "");
         this.detalles = detalles;
     }
 
@@ -135,6 +152,14 @@ public class VentaDetalleCompletoDTO {
         this.moneda = moneda;
     }
 
+    public BigDecimal getValorIgvActual() {
+        return valorIgvActual;
+    }
+
+    public void setValorIgvActual(BigDecimal valorIgvActual) {
+        this.valorIgvActual = valorIgvActual;
+    }
+
     public String getNombresCliente() {
         return nombresCliente;
     }
@@ -167,12 +192,60 @@ public class VentaDetalleCompletoDTO {
         this.razonSocialEmpresa = razonSocialEmpresa;
     }
 
+    public String getRucEmpresa() {
+        return rucEmpresa;
+    }
+
+    public void setRucEmpresa(String rucEmpresa) {
+        this.rucEmpresa = rucEmpresa;
+    }
+
+    public String getNumeroDocumentoCliente() {
+        return numeroDocumentoCliente;
+    }
+
+    public void setNumeroDocumentoCliente(String numeroDocumentoCliente) {
+        this.numeroDocumentoCliente = numeroDocumentoCliente;
+    }
+
+    public String getTipoDocumentoCliente() {
+        return tipoDocumentoCliente;
+    }
+
+    public void setTipoDocumentoCliente(String tipoDocumentoCliente) {
+        this.tipoDocumentoCliente = tipoDocumentoCliente;
+    }
+
+    public String getDireccionCliente() {
+        return direccionCliente;
+    }
+
+    public void setDireccionCliente(String direccionCliente) {
+        this.direccionCliente = direccionCliente;
+    }
+
     public List<DetalleVentaDTO> getDetalles() {
         return detalles;
     }
 
     public void setDetalles(List<DetalleVentaDTO> detalles) {
         this.detalles = detalles;
+    }
+
+    public String getVendedorNombreCompleto() {
+        return vendedorNombreCompleto;
+    }
+
+    public void setVendedorNombreCompleto(String vendedorNombreCompleto) {
+        this.vendedorNombreCompleto = vendedorNombreCompleto;
+    }
+
+    public String getCajeroNombreUsuario() {
+        return cajeroNombreUsuario;
+    }
+
+    public void setCajeroNombreUsuario(String cajeroNombreUsuario) {
+        this.cajeroNombreUsuario = cajeroNombreUsuario;
     }
 
     // Método para agregar un detalle individual

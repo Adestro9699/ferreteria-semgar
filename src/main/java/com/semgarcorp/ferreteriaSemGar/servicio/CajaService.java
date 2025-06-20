@@ -251,7 +251,7 @@ public class CajaService {
 
         BigDecimal saldoActual = caja.getSaldoInicial().add(totalEntradas).subtract(totalSalidas);
         System.out.println("Saldo actual calculado: " + saldoActual);
-        
+
         return saldoActual;
     }
 
@@ -349,38 +349,38 @@ public class CajaService {
     @Transactional
     public Caja registrarSalidaManual(Integer idCaja, MovimientoCajaDTO movimientoDTO) {
         try {
-            // Validar que la caja exista y esté abierta
-            Caja caja = obtenerCajaPorId(idCaja);
-            if (caja.getEstado() != EstadoCaja.ABIERTA) {
-                throw new CajaCerradaException("No se pueden registrar movimientos en una caja cerrada");
-            }
+        // Validar que la caja exista y esté abierta
+        Caja caja = obtenerCajaPorId(idCaja);
+        if (caja.getEstado() != EstadoCaja.ABIERTA) {
+            throw new CajaCerradaException("No se pueden registrar movimientos en una caja cerrada");
+        }
 
-            // Validar el monto
-            if (movimientoDTO.getMonto() == null || movimientoDTO.getMonto().compareTo(BigDecimal.ZERO) <= 0) {
-                throw new ValorNoValidoException("El monto debe ser mayor que cero");
-            }
+        // Validar el monto
+        if (movimientoDTO.getMonto() == null || movimientoDTO.getMonto().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new ValorNoValidoException("El monto debe ser mayor que cero");
+        }
 
-            // Verificar saldo suficiente
-            BigDecimal saldoActual = calcularSaldoActual(idCaja);
+        // Verificar saldo suficiente
+        BigDecimal saldoActual = calcularSaldoActual(idCaja);
             System.out.println("Intentando realizar salida de: " + movimientoDTO.getMonto());
             System.out.println("Saldo actual antes de la salida: " + saldoActual);
             
-            if (saldoActual.compareTo(movimientoDTO.getMonto()) < 0) {
+        if (saldoActual.compareTo(movimientoDTO.getMonto()) < 0) {
                 System.out.println("Salida rechazada: Saldo insuficiente");
                 throw new SaldoInsuficienteException("Saldo insuficiente para realizar esta operación. Saldo actual: " + saldoActual);
-            }
+        }
 
-            // Crear el movimiento
-            MovimientoCaja movimiento = new MovimientoCaja();
-            movimiento.setCaja(caja);
-            movimiento.setMonto(movimientoDTO.getMonto());
-            movimiento.setTipo(TipoMovimiento.SALIDA);
-            movimiento.setObservaciones(movimientoDTO.getObservaciones());
-            movimiento.setFecha(LocalDateTime.now());
+        // Crear el movimiento
+        MovimientoCaja movimiento = new MovimientoCaja();
+        movimiento.setCaja(caja);
+        movimiento.setMonto(movimientoDTO.getMonto());
+        movimiento.setTipo(TipoMovimiento.SALIDA);
+        movimiento.setObservaciones(movimientoDTO.getObservaciones());
+        movimiento.setFecha(LocalDateTime.now());
 
-            // Guardar el movimiento
-            movimientoCajaRepositorio.save(movimiento);
-            return caja;
+        // Guardar el movimiento
+        movimientoCajaRepositorio.save(movimiento);
+        return caja;
         } catch (OptimisticLockingFailureException e) {
             throw new ConcurrenciaException("La caja fue modificada por otro usuario. Por favor, intente nuevamente.");
         }

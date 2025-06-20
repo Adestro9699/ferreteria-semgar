@@ -64,19 +64,73 @@ public interface VentaRepository extends JpaRepository<Venta, Integer> {
                     v.fechaVenta,
                     v.estadoVenta,
                     v.moneda,
+                    COALESCE(v.valorIgvActual, 0),
                     COALESCE(cli.nombres, ''),
                     COALESCE(cli.apellidos, ''),
                     COALESCE(cli.razonSocial, ''),
-                    COALESCE(emp.razonSocial, 'N/A')
+                    COALESCE(emp.razonSocial, 'N/A'),
+                    COALESCE(emp.ruc, ''),
+                    COALESCE(cli.numeroDocumento, ''),
+                    COALESCE(td.abreviatura, ''),
+                    COALESCE(cli.direccion, ''),
+                    CONCAT(trab.apellidoTrabajador, ' ', trab.nombreTrabajador),
+                    CONCAT(caj.responsable.trabajador.apellidoTrabajador, ' ', caj.responsable.trabajador.nombreTrabajador)
                 )
                 FROM Venta v
                 LEFT JOIN v.cliente cli
+                LEFT JOIN cli.tipoDocumento td
                 LEFT JOIN v.empresa emp
                 LEFT JOIN v.tipoComprobantePago tcp
                 LEFT JOIN v.tipoPago tp
+                LEFT JOIN v.trabajador trab
+                LEFT JOIN v.caja caj
                 WHERE v.idVenta = :idVenta
             """)
     Optional<VentaDetalleCompletoDTO> findVentaDetalleCompletoById(Integer idVenta);
+
+    // Consulta alternativa para ventas PENDIENTES que maneja mejor los valores nulos
+    @Query("""
+                SELECT NEW com.semgarcorp.ferreteriaSemGar.dto.VentaDetalleCompletoDTO(
+                    v.idVenta,
+                    COALESCE(v.serieComprobante, ''),
+                    COALESCE(v.numeroComprobante, ''),
+                    COALESCE(tcp.nombre, 'N/A'),
+                    COALESCE(tp.nombre, 'N/A'),
+                    v.totalVenta,
+                    v.fechaVenta,
+                    v.estadoVenta,
+                    v.moneda,
+                    COALESCE(v.valorIgvActual, 0),
+                    COALESCE(cli.nombres, ''),
+                    COALESCE(cli.apellidos, ''),
+                    COALESCE(cli.razonSocial, ''),
+                    COALESCE(emp.razonSocial, 'N/A'),
+                    COALESCE(emp.ruc, ''),
+                    COALESCE(cli.numeroDocumento, ''),
+                    COALESCE(td.abreviatura, ''),
+                    COALESCE(cli.direccion, ''),
+                    CASE 
+                        WHEN trab IS NOT NULL 
+                        THEN CONCAT(COALESCE(trab.apellidoTrabajador, ''), ' ', COALESCE(trab.nombreTrabajador, ''))
+                        ELSE 'N/A'
+                    END,
+                    CASE 
+                        WHEN caj IS NOT NULL AND caj.responsable IS NOT NULL AND caj.responsable.trabajador IS NOT NULL 
+                        THEN CONCAT(COALESCE(caj.responsable.trabajador.apellidoTrabajador, ''), ' ', COALESCE(caj.responsable.trabajador.nombreTrabajador, ''))
+                        ELSE 'N/A'
+                    END
+                )
+                FROM Venta v
+                LEFT JOIN v.cliente cli
+                LEFT JOIN cli.tipoDocumento td
+                LEFT JOIN v.empresa emp
+                LEFT JOIN v.tipoComprobantePago tcp
+                LEFT JOIN v.tipoPago tp
+                LEFT JOIN v.trabajador trab
+                LEFT JOIN v.caja caj
+                WHERE v.idVenta = :idVenta
+            """)
+    Optional<VentaDetalleCompletoDTO> findVentaDetalleCompletoByIdOptimized(Integer idVenta);
 
     // Consulta para detalles
     @Query("""
@@ -99,6 +153,28 @@ public interface VentaRepository extends JpaRepository<Venta, Integer> {
                 WHERE d.venta.idVenta = :idVenta
             """)
     List<DetalleVentaDTO> findDetallesByVentaId(Integer idVenta);
+
+    // Consulta optimizada para detalles que maneja mejor los valores nulos
+    @Query("""
+                SELECT NEW com.semgarcorp.ferreteriaSemGar.dto.DetalleVentaDTO(
+                    d.idDetalleVenta,
+                    d.venta.idVenta,
+                    d.producto.idProducto,
+                    COALESCE(p.nombreProducto, 'Producto sin nombre'),
+                    COALESCE(um.nombreUnidad, 'Sin unidad'),
+                    d.cantidad,
+                    d.precioUnitario,
+                    d.descuento,
+                    d.subtotal,
+                    d.subtotalSinIGV,
+                    d.igvAplicado
+                )
+                FROM DetalleVenta d
+                JOIN d.producto p
+                LEFT JOIN p.unidadMedida um
+                WHERE d.venta.idVenta = :idVenta
+            """)
+    List<DetalleVentaDTO> findDetallesByVentaIdOptimized(Integer idVenta);
 
     Optional<Venta> findBySerieComprobanteAndNumeroComprobante(String serieComprobante, String numeroComprobante);
 

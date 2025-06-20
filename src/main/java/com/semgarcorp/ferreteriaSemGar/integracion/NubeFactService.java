@@ -9,6 +9,7 @@ import com.semgarcorp.ferreteriaSemGar.repositorio.ClienteRepository;
 import com.semgarcorp.ferreteriaSemGar.repositorio.ProductoRepository;
 import com.semgarcorp.ferreteriaSemGar.repositorio.ParametroRepository;
 import com.semgarcorp.ferreteriaSemGar.repositorio.TipoComprobantePagoRepository;
+import com.semgarcorp.ferreteriaSemGar.repositorio.ComprobanteNubeFactRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -36,6 +37,7 @@ public class NubeFactService {
     private final ClienteRepository clienteRepositorio;
     private final ProductoRepository productoRepositorio;
     private final TipoComprobantePagoRepository tipoComprobantePagoRepositorio;
+    private final ComprobanteNubeFactRepository comprobanteNubeFactRepository;
     private final RestTemplate restTemplate;
 
     public NubeFactService(NubeFactClient client, ObjectMapper objectMapper,
@@ -43,6 +45,7 @@ public class NubeFactService {
                            ClienteRepository clienteRepositorio,
                            ProductoRepository productoRepositorio,
                            TipoComprobantePagoRepository tipoComprobantePagoRepositorio,
+                           ComprobanteNubeFactRepository comprobanteNubeFactRepository,
                            RestTemplate restTemplate) {
         this.client = client;
         this.objectMapper = objectMapper;
@@ -50,25 +53,26 @@ public class NubeFactService {
         this.clienteRepositorio = clienteRepositorio;
         this.productoRepositorio = productoRepositorio;
         this.tipoComprobantePagoRepositorio = tipoComprobantePagoRepositorio;
+        this.comprobanteNubeFactRepository = comprobanteNubeFactRepository;
         this.restTemplate = restTemplate;
     }
 
-    public String emitirComprobante(VentaDTO venta) {
+    public String emitirComprobante(Venta venta) {
         validarDatosVenta(venta);
 
-        Cliente cliente = obtenerCliente(venta.getIdCliente());
-        TipoComprobantePago tipoComprobante = obtenerTipoComprobante(venta.getIdTipoComprobantePago());
+        Cliente cliente = obtenerCliente(venta.getCliente().getIdCliente());
+        TipoComprobantePago tipoComprobante = obtenerTipoComprobante(venta.getTipoComprobantePago().getIdTipoComprobantePago());
 
         Map<String, Object> request = construirRequestBase(venta, cliente, tipoComprobante.getCodigoNubefact());
         request.put("cliente_tipo_de_documento", determinarTipoDocumento(cliente, tipoComprobante.getCodigoNubefact()));
         request.put("items", construirItems(venta.getDetalles()));
 
-        return enviarANubefact(request);
+        return enviarANubefact(request, venta);
     }
 
-    private void validarDatosVenta(VentaDTO venta) {
+    private void validarDatosVenta(Venta venta) {
         if (venta == null || venta.getDetalles() == null ||
-                venta.getIdCliente() == null || venta.getIdTipoComprobantePago() == null) {
+                venta.getCliente() == null || venta.getTipoComprobantePago() == null) {
             throw new IllegalArgumentException("Datos de venta incompletos");
         }
     }
@@ -97,7 +101,7 @@ public class NubeFactService {
         return "RUC".equalsIgnoreCase(cliente.getTipoDocumento().getAbreviatura()) ? 6 : 1;
     }
 
-    private Map<String, Object> construirRequestBase(VentaDTO venta, Cliente cliente, int codigoNubefact) {
+    private Map<String, Object> construirRequestBase(Venta venta, Cliente cliente, int codigoNubefact) {
         Map<String, Object> request = new HashMap<>();
 
         // Datos básicos del comprobante
@@ -146,14 +150,13 @@ public class NubeFactService {
         }
     }
 
-    private List<Map<String, Object>> construirItems(List<DetalleVentaDTO> detalles) {
+    private List<Map<String, Object>> construirItems(List<DetalleVenta> detalles) {
         BigDecimal factorIgv = BigDecimal.ONE.add(
                 obtenerPorcentajeIgv().divide(BigDecimal.valueOf(100), 10, RoundingMode.HALF_UP)
         );
 
         return detalles.stream().map(detalle -> {
-            Producto producto = productoRepositorio.findById(detalle.getIdProducto())
-                    .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado"));
+            Producto producto = detalle.getProducto();
 
             Map<String, Object> item = new HashMap<>();
 
@@ -205,7 +208,7 @@ public class NubeFactService {
                 .orElse(producto.getCodigoSKU());
     }
 
-    private String enviarANubefact(Map<String, Object> request) {
+    private String enviarANubefact(Map<String, Object> request, Venta venta) {
         try {
             // Calcular totales generales
             calcularTotalesGenerales(request);
@@ -216,6 +219,35 @@ public class NubeFactService {
 
             String respuesta = client.emitirComprobante(jsonRequest);
             logger.info("Respuesta de NubeFact: {}", respuesta);
+            
+            // Procesar la respuesta
+            Map<String, Object> respuestaMap = objectMapper.readValue(respuesta, Map.class);
+            
+            // Verificar si hay errores
+            if (respuestaMap.containsKey("errors")) {
+                String mensajeError = "Error al emitir comprobante en NubeFact: " + respuestaMap.get("errors");
+                logger.error(mensajeError);
+                throw new RuntimeException(mensajeError);
+            }
+            
+            // Guardar la información del comprobante
+            ComprobanteNubeFact comprobante = new ComprobanteNubeFact();
+            comprobante.setVenta(venta);
+            comprobante.setEnlace((String) respuestaMap.get("enlace"));
+            comprobante.setCadenaParaCodigoQr((String) respuestaMap.get("cadena_para_codigo_qr"));
+            comprobante.setCodigoDeBarras((String) respuestaMap.get("codigo_de_barras"));
+            comprobante.setEnlaceDelPdf((String) respuestaMap.get("enlace_del_pdf"));
+            comprobante.setEnlaceDelXml((String) respuestaMap.get("enlace_del_xml"));
+            comprobante.setAceptadaPorSunat((Boolean) respuestaMap.get("aceptada_por_sunat"));
+            comprobante.setSunatDescription((String) respuestaMap.get("sunat_description"));
+            comprobante.setSunatNote((String) respuestaMap.get("sunat_note"));
+            comprobante.setSunatResponsecode((String) respuestaMap.get("sunat_responsecode"));
+            comprobante.setCodigoHash((String) respuestaMap.get("codigo_hash"));
+            comprobante.setDigestValue((String) respuestaMap.get("digest_value"));
+            comprobante.setKey((String) respuestaMap.get("key"));
+
+            comprobanteNubeFactRepository.save(comprobante);
+
             return respuesta;
         } catch (JsonProcessingException e) {
             logger.error("Error al generar JSON para NubeFact", e);

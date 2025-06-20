@@ -185,6 +185,7 @@ public class VentaService {
         venta.setFechaVenta(ventaDTO.getFechaVenta());
         venta.setEstadoVenta(ventaDTO.getEstadoVenta() != null ? ventaDTO.getEstadoVenta() : EstadoVenta.PENDIENTE);
         venta.setTotalVenta(ventaDTO.getTotalVenta());
+        venta.setValorIgvActual(ventaDTO.getValorIgvActual() != null ? ventaDTO.getValorIgvActual() : BigDecimal.ZERO);
         venta.setFechaModificacion(ventaDTO.getFechaModificacion());
         venta.setObservaciones(ventaDTO.getObservaciones());
         venta.setMoneda(ventaDTO.getMoneda() != null ? ventaDTO.getMoneda() : Moneda.SOLES); // Valor por defecto SOLES
@@ -288,15 +289,12 @@ public class VentaService {
         venta.setSerieComprobante(serie);
         venta.setNumeroComprobante(numero);
 
-        // 6. Convertir la venta a DTO (ahora con serie y número asignados)
-        VentaDTO ventaDTO = convertirAVentaDTO(venta);
-
         if (!InternetUtils.hayConexion()) {
             throw new IllegalStateException("No hay conexión a Internet. No se puede completar la venta.");
         }
 
         // 7. Emitir el comprobante en NubeFact
-        String respuesta = nubeFactService.emitirComprobante(ventaDTO);
+        String respuesta = nubeFactService.emitirComprobante(venta);
         System.out.println("Respuesta de NubeFact: " + respuesta);
 
         // 8. Reducir el stock de los productos
@@ -389,6 +387,7 @@ public class VentaService {
         ventaDTO.setFechaVenta(venta.getFechaVenta());
         ventaDTO.setEstadoVenta(venta.getEstadoVenta()); // Usa la enumeración común
         ventaDTO.setTotalVenta(venta.getTotalVenta());
+        ventaDTO.setValorIgvActual(venta.getValorIgvActual() != null ? venta.getValorIgvActual() : BigDecimal.ZERO);
         ventaDTO.setFechaModificacion(venta.getFechaModificacion());
         ventaDTO.setObservaciones(venta.getObservaciones());
         ventaDTO.setMoneda(venta.getMoneda()); // Asignar la moneda de la entidad al DTO
@@ -469,6 +468,10 @@ public class VentaService {
     }
 
     private void asignarValoresCalculados(Venta venta) {
+        // Capturar el valor del IGV actual del sistema
+        BigDecimal valorIgvActual = parametroService.obtenerValorIGV().multiply(BigDecimal.valueOf(100));
+        venta.setValorIgvActual(valorIgvActual);
+        
         for (DetalleVenta detalle : venta.getDetalles()) {
             BigDecimal subtotal = calcularSubtotal(detalle.getPrecioUnitario(), detalle.getCantidad(),
                     detalle.getDescuento());
@@ -534,93 +537,117 @@ public class VentaService {
     }
 
     public VentaDetalleCompletoDTO obtenerVentaDetalleCompleto(Integer idVenta) {
-        // 1. Obtener datos principales
-        VentaDetalleCompletoDTO ventaDTO = ventaRepository.findVentaDetalleCompletoById(idVenta)
+        try {
+            // 1. Intentar obtener datos principales usando la consulta optimizada
+            VentaDetalleCompletoDTO ventaDTO = ventaRepository.findVentaDetalleCompletoByIdOptimized(idVenta)
+                    .orElseThrow(() -> new RuntimeException("Venta no encontrada"));
+
+            // 2. Obtener detalles usando la consulta optimizada
+            List<DetalleVentaDTO> detalles = ventaRepository.findDetallesByVentaIdOptimized(idVenta);
+
+            // 3. Combinar resultados
+            ventaDTO.setDetalles(detalles);
+
+            return ventaDTO;
+        } catch (Exception e) {
+            // Si la consulta JPQL falla, usar el método alternativo
+            System.out.println("Error en consulta JPQL, usando método alternativo: " + e.getMessage());
+            return obtenerVentaDetalleCompletoAlternativo(idVenta);
+        }
+    }
+
+    // Método alternativo para ventas PENDIENTES que construye el DTO manualmente
+    public VentaDetalleCompletoDTO obtenerVentaDetalleCompletoAlternativo(Integer idVenta) {
+        // 1. Obtener la venta completa con todas sus relaciones
+        Venta venta = ventaRepository.findById(idVenta)
                 .orElseThrow(() -> new RuntimeException("Venta no encontrada"));
 
-        // 2. Obtener detalles
-        List<DetalleVentaDTO> detalles = ventaRepository.findDetallesByVentaId(idVenta);
+        // 2. Construir el DTO manualmente
+        VentaDetalleCompletoDTO ventaDTO = new VentaDetalleCompletoDTO();
+        
+        // Datos básicos de la venta
+        ventaDTO.setIdVenta(venta.getIdVenta());
+        ventaDTO.setSerieComprobante(venta.getSerieComprobante() != null ? venta.getSerieComprobante() : "");
+        ventaDTO.setNumeroComprobante(venta.getNumeroComprobante() != null ? venta.getNumeroComprobante() : "");
+        ventaDTO.setTotalVenta(venta.getTotalVenta());
+        ventaDTO.setFechaVenta(venta.getFechaVenta());
+        ventaDTO.setEstadoVenta(venta.getEstadoVenta());
+        ventaDTO.setMoneda(venta.getMoneda());
+        ventaDTO.setValorIgvActual(venta.getValorIgvActual() != null ? venta.getValorIgvActual() : BigDecimal.ZERO);
 
-        // 3. Combinar resultados
+        // Datos del tipo de comprobante
+        if (venta.getTipoComprobantePago() != null) {
+            ventaDTO.setTipoComprobante(venta.getTipoComprobantePago().getNombre());
+        } else {
+            ventaDTO.setTipoComprobante("N/A");
+        }
+
+        // Datos del tipo de pago
+        if (venta.getTipoPago() != null) {
+            ventaDTO.setTipoPago(venta.getTipoPago().getNombre());
+        } else {
+            ventaDTO.setTipoPago("N/A");
+        }
+
+        // Datos del cliente
+        if (venta.getCliente() != null) {
+            ventaDTO.setNombresCliente(venta.getCliente().getNombres() != null ? venta.getCliente().getNombres() : "");
+            ventaDTO.setApellidosCliente(venta.getCliente().getApellidos() != null ? venta.getCliente().getApellidos() : "");
+            ventaDTO.setRazonSocialCliente(venta.getCliente().getRazonSocial() != null ? venta.getCliente().getRazonSocial() : "");
+            ventaDTO.setNumeroDocumentoCliente(venta.getCliente().getNumeroDocumento() != null ? venta.getCliente().getNumeroDocumento() : "");
+            ventaDTO.setDireccionCliente(venta.getCliente().getDireccion() != null ? venta.getCliente().getDireccion() : "");
+            
+            if (venta.getCliente().getTipoDocumento() != null) {
+                ventaDTO.setTipoDocumentoCliente(venta.getCliente().getTipoDocumento().getAbreviatura());
+            } else {
+                ventaDTO.setTipoDocumentoCliente("");
+            }
+        } else {
+            ventaDTO.setNombresCliente("");
+            ventaDTO.setApellidosCliente("");
+            ventaDTO.setRazonSocialCliente("");
+            ventaDTO.setNumeroDocumentoCliente("");
+            ventaDTO.setTipoDocumentoCliente("");
+            ventaDTO.setDireccionCliente("");
+        }
+
+        // Datos de la empresa
+        if (venta.getEmpresa() != null) {
+            ventaDTO.setRazonSocialEmpresa(venta.getEmpresa().getRazonSocial());
+            ventaDTO.setRucEmpresa(venta.getEmpresa().getRuc() != null ? venta.getEmpresa().getRuc() : "");
+        } else {
+            ventaDTO.setRazonSocialEmpresa("N/A");
+            ventaDTO.setRucEmpresa("");
+        }
+
+        // Datos del trabajador (vendedor)
+        if (venta.getTrabajador() != null) {
+            String nombreCompleto = (venta.getTrabajador().getApellidoTrabajador() != null ? venta.getTrabajador().getApellidoTrabajador() : "") + 
+                                   " " + 
+                                   (venta.getTrabajador().getNombreTrabajador() != null ? venta.getTrabajador().getNombreTrabajador() : "");
+            ventaDTO.setVendedorNombreCompleto(nombreCompleto.trim());
+        } else {
+            ventaDTO.setVendedorNombreCompleto("N/A");
+        }
+
+        // Datos del cajero (solo para ventas completadas)
+        if (venta.getCaja() != null && venta.getCaja().getResponsable() != null && 
+            venta.getCaja().getResponsable().getTrabajador() != null) {
+            String nombreCompleto = (venta.getCaja().getResponsable().getTrabajador().getApellidoTrabajador() != null ? 
+                                   venta.getCaja().getResponsable().getTrabajador().getApellidoTrabajador() : "") + 
+                                   " " + 
+                                   (venta.getCaja().getResponsable().getTrabajador().getNombreTrabajador() != null ? 
+                                   venta.getCaja().getResponsable().getTrabajador().getNombreTrabajador() : "");
+            ventaDTO.setCajeroNombreUsuario(nombreCompleto.trim());
+        } else {
+            ventaDTO.setCajeroNombreUsuario("N/A");
+        }
+
+        // 3. Obtener y establecer los detalles
+        List<DetalleVentaDTO> detalles = ventaRepository.findDetallesByVentaIdOptimized(idVenta);
         ventaDTO.setDetalles(detalles);
 
         return ventaDTO;
-    }
-
-    private VentaDetalleCompletoDTO convertirAVentaDetalleCompletoDTO(Venta venta) {
-        // Crear una instancia del DTO con el constructor por defecto
-        VentaDetalleCompletoDTO dto = new VentaDetalleCompletoDTO();
-
-        // Establecer los valores básicos
-        dto.setIdVenta(venta.getIdVenta());
-        dto.setSerieComprobante(venta.getSerieComprobante());
-        dto.setNumeroComprobante(venta.getNumeroComprobante());
-        dto.setMoneda(venta.getMoneda());
-        dto.setTotalVenta(venta.getTotalVenta());
-        dto.setFechaVenta(venta.getFechaVenta());
-        dto.setEstadoVenta(venta.getEstadoVenta());
-
-        // Establecer valores de relaciones, manejando posibles nulos
-        if (venta.getTipoComprobantePago() != null) {
-            dto.setTipoComprobante(venta.getTipoComprobantePago().getNombre());
-        } else {
-            dto.setTipoComprobante("N/A");
-        }
-
-        if (venta.getTipoPago() != null) {
-            dto.setTipoPago(venta.getTipoPago().getNombre());
-        } else {
-            dto.setTipoPago("N/A");
-        }
-
-        // Información del cliente
-        if (venta.getCliente() != null) {
-            dto.setNombresCliente(venta.getCliente().getNombres() != null ? venta.getCliente().getNombres() : "");
-            dto.setApellidosCliente(venta.getCliente().getApellidos() != null ? venta.getCliente().getApellidos() : "");
-            dto.setRazonSocialCliente(
-                    venta.getCliente().getRazonSocial() != null ? venta.getCliente().getRazonSocial() : "");
-        }
-
-        // Información de la empresa
-        if (venta.getEmpresa() != null) {
-            dto.setRazonSocialEmpresa(venta.getEmpresa().getRazonSocial());
-        }
-
-        // Convertir y establecer los detalles
-        if (venta.getDetalles() != null && !venta.getDetalles().isEmpty()) {
-            List<DetalleVentaDTO> detallesDTO = venta.getDetalles().stream()
-                    .map(this::convertirADetalleVentaDTO)
-                    .toList();
-            dto.setDetalles(detallesDTO);
-        }
-
-        return dto;
-    }
-
-    /**
-     * Metodo para convertir una entidad DetalleVenta a DetalleVentaDTO
-     */
-    private DetalleVentaDTO convertirADetalleVentaDTO(DetalleVenta detalle) {
-        DetalleVentaDTO dto = new DetalleVentaDTO();
-
-        dto.setIdDetalleVenta(detalle.getIdDetalleVenta());
-        dto.setIdVenta(detalle.getVenta().getIdVenta());
-        dto.setIdProducto(detalle.getProducto().getIdProducto());
-        dto.setNombreProducto(detalle.getProducto().getNombreProducto());
-        // Añadir la unidad de medida (con validación de nulos)
-        dto.setUnidadMedida(
-                detalle.getProducto().getUnidadMedida() != null
-                        ? detalle.getProducto().getUnidadMedida().getNombreUnidad()
-                        : "Sin unidad" // Valor por defecto opcional
-        );
-        dto.setCantidad(detalle.getCantidad());
-        dto.setPrecioUnitario(detalle.getPrecioUnitario());
-        dto.setDescuento(detalle.getDescuento());
-        dto.setSubtotal(detalle.getSubtotal());
-        dto.setSubtotalSinIGV(detalle.getSubtotalSinIGV());
-        dto.setIgvAplicado(detalle.getIgvAplicado());
-
-        return dto;
     }
 
     public VentaDTO convertirCotizacionAVenta(String codigoCotizacion) {

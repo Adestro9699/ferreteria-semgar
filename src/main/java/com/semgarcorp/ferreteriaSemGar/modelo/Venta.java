@@ -33,6 +33,9 @@ public class Venta {
     @Column(precision = 10, scale = 2)
     private BigDecimal totalVenta;
 
+    @Column(precision = 5, scale = 2)
+    private BigDecimal valorIgvActual; // Porcentaje del IGV en el momento de la venta (ej: 18.00, 17.00)
+
     @Column(name = "fecha_modificacion")
     private LocalDateTime fechaModificacion;
 
@@ -157,6 +160,14 @@ public class Venta {
 
     public void setTotalVenta(BigDecimal totalVenta) {
         this.totalVenta = totalVenta;
+    }
+
+    public BigDecimal getValorIgvActual() {
+        return valorIgvActual;
+    }
+
+    public void setValorIgvActual(BigDecimal valorIgvActual) {
+        this.valorIgvActual = valorIgvActual;
     }
 
     public LocalDateTime getFechaModificacion() {

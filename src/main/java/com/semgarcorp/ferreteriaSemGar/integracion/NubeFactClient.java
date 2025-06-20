@@ -23,15 +23,15 @@ public class NubeFactClient {
     }
 
     public String anularComprobante(String jsonRequest) {
-        HttpHeaders headers = crearHeaders();
-        HttpEntity<String> request = new HttpEntity<>(jsonRequest, headers);
+            HttpHeaders headers = crearHeaders();
+            HttpEntity<String> request = new HttpEntity<>(jsonRequest, headers);
 
-        ResponseEntity<String> response = restTemplate.postForEntity(
-                API_URL,
-                request,
+            ResponseEntity<String> response = restTemplate.postForEntity(
+                    API_URL,
+                    request,
                 String.class
         );
-        return response.getBody();
+            return response.getBody();
     }
 
     private HttpHeaders crearHeaders() {

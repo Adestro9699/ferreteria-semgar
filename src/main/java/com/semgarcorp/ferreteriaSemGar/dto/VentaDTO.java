@@ -17,6 +17,7 @@ public class VentaDTO {
     private BigDecimal totalVenta;
     private LocalDateTime fechaModificacion;
     private Moneda moneda;
+    private BigDecimal valorIgvActual; // Porcentaje del IGV en el momento de la venta
     private String observaciones;
     private Integer idCaja;
     private Integer idEmpresa;
@@ -31,8 +32,9 @@ public class VentaDTO {
 
     public VentaDTO(Integer idVenta, String serieComprobante, String numeroComprobante, LocalDateTime fechaVenta,
                     EstadoVenta estadoVenta, BigDecimal totalVenta, LocalDateTime fechaModificacion, Moneda moneda,
-                    String observaciones, Integer idCaja, Integer idEmpresa, Integer idTipoComprobantePago,
-                    Integer idTrabajador, Integer idCliente, Integer idTipoPago, List<DetalleVentaDTO> detalles) {
+                    BigDecimal valorIgvActual, String observaciones, Integer idCaja, Integer idEmpresa,
+                    Integer idTipoComprobantePago, Integer idTrabajador, Integer idCliente, Integer idTipoPago,
+                    List<DetalleVentaDTO> detalles) {
         this.idVenta = idVenta;
         this.serieComprobante = serieComprobante;
         this.numeroComprobante = numeroComprobante;
@@ -41,6 +43,7 @@ public class VentaDTO {
         this.totalVenta = totalVenta;
         this.fechaModificacion = fechaModificacion;
         this.moneda = moneda;
+        this.valorIgvActual = valorIgvActual;
         this.observaciones = observaciones;
         this.idCaja = idCaja;
         this.idEmpresa = idEmpresa;
@@ -113,6 +116,14 @@ public class VentaDTO {
 
     public void setMoneda(Moneda moneda) {
         this.moneda = moneda;
+    }
+
+    public BigDecimal getValorIgvActual() {
+        return valorIgvActual;
+    }
+
+    public void setValorIgvActual(BigDecimal valorIgvActual) {
+        this.valorIgvActual = valorIgvActual;
     }
 
     public String getObservaciones() {
