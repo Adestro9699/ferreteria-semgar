@@ -89,6 +89,7 @@ public interface VentaRepository extends JpaRepository<Venta, Integer> {
     Optional<VentaDetalleCompletoDTO> findVentaDetalleCompletoById(Integer idVenta);
 
     // Consulta alternativa para ventas PENDIENTES que maneja mejor los valores nulos
+    // Usado en VentaService.obtenerVentaDetalleCompleto()
     @Query("""
                 SELECT NEW com.semgarcorp.ferreteriaSemGar.dto.VentaDetalleCompletoDTO(
                     v.idVenta,
@@ -145,7 +146,8 @@ public interface VentaRepository extends JpaRepository<Venta, Integer> {
                     d.descuento,
                     d.subtotal,
                     d.subtotalSinIGV,
-                    d.igvAplicado
+                    d.igvAplicado,
+                    p.codigoBarra
                 )
                 FROM DetalleVenta d
                 JOIN d.producto p
@@ -155,6 +157,7 @@ public interface VentaRepository extends JpaRepository<Venta, Integer> {
     List<DetalleVentaDTO> findDetallesByVentaId(Integer idVenta);
 
     // Consulta optimizada para detalles que maneja mejor los valores nulos
+    // Usado en VentaService.obtenerVentaDetalleCompleto()
     @Query("""
                 SELECT NEW com.semgarcorp.ferreteriaSemGar.dto.DetalleVentaDTO(
                     d.idDetalleVenta,
@@ -167,7 +170,8 @@ public interface VentaRepository extends JpaRepository<Venta, Integer> {
                     d.descuento,
                     d.subtotal,
                     d.subtotalSinIGV,
-                    d.igvAplicado
+                    d.igvAplicado,
+                    COALESCE(p.codigoBarra, '')
                 )
                 FROM DetalleVenta d
                 JOIN d.producto p

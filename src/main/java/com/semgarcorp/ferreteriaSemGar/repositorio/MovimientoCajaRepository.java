@@ -1,6 +1,5 @@
 package com.semgarcorp.ferreteriaSemGar.repositorio;
 
-import com.semgarcorp.ferreteriaSemGar.modelo.Caja;
 import com.semgarcorp.ferreteriaSemGar.modelo.MovimientoCaja;
 import com.semgarcorp.ferreteriaSemGar.modelo.TipoMovimiento;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,7 +8,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository

@@ -32,6 +32,7 @@ public class ComprobanteNubeFactService {
         dto.setCodigoDeBarras(comprobante.getCodigoDeBarras());
         dto.setEnlaceDelPdf(comprobante.getEnlaceDelPdf());
         dto.setEnlaceDelXml(comprobante.getEnlaceDelXml());
+        dto.setEnlaceDelCdr(comprobante.getEnlaceDelCdr());
         dto.setAceptadaPorSunat(comprobante.getAceptadaPorSunat());
         dto.setSunatDescription(comprobante.getSunatDescription());
         return dto;

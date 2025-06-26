@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "comprobantes_nubefact")
 public class ComprobanteNubeFact {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer idComprobanteNubeFact;
@@ -29,6 +29,9 @@ public class ComprobanteNubeFact {
     @Column(name = "enlace_xml")
     private String enlaceDelXml;
 
+    @Column(name = "enlace_cdr")
+    private String enlaceDelCdr;
+
     @Column(name = "aceptada_por_sunat")
     private Boolean aceptadaPorSunat;
 
@@ -51,6 +54,7 @@ public class ComprobanteNubeFact {
     private String key;
 
     // Getters y Setters
+
     public Integer getIdComprobanteNubeFact() {
         return idComprobanteNubeFact;
     }
@@ -105,6 +109,14 @@ public class ComprobanteNubeFact {
 
     public void setEnlaceDelXml(String enlaceDelXml) {
         this.enlaceDelXml = enlaceDelXml;
+    }
+
+    public String getEnlaceDelCdr() {
+        return enlaceDelCdr;
+    }
+
+    public void setEnlaceDelCdr(String enlaceDelCdr) {
+        this.enlaceDelCdr = enlaceDelCdr;
     }
 
     public Boolean getAceptadaPorSunat() {
@@ -162,4 +174,4 @@ public class ComprobanteNubeFact {
     public void setKey(String key) {
         this.key = key;
     }
-} 
+}

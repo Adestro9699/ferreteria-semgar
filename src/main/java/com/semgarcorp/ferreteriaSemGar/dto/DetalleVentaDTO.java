@@ -15,13 +15,14 @@ public class DetalleVentaDTO {
     private BigDecimal subtotal;
     private BigDecimal subtotalSinIGV;
     private BigDecimal igvAplicado;
+    private String codigoBarra;
 
     public DetalleVentaDTO() {
     }
 
     public DetalleVentaDTO(Integer idDetalleVenta, Integer idVenta, Integer idProducto, String nombreProducto,
                            String unidadMedida, BigDecimal cantidad, BigDecimal precioUnitario, BigDecimal descuento,
-                           BigDecimal subtotal, BigDecimal subtotalSinIGV, BigDecimal igvAplicado) {
+                           BigDecimal subtotal, BigDecimal subtotalSinIGV, BigDecimal igvAplicado, String codigoBarra) {
         this.idDetalleVenta = idDetalleVenta;
         this.idVenta = idVenta;
         this.idProducto = idProducto;
@@ -33,6 +34,7 @@ public class DetalleVentaDTO {
         this.subtotal = subtotal;
         this.subtotalSinIGV = subtotalSinIGV;
         this.igvAplicado = igvAplicado;
+        this.codigoBarra = codigoBarra;
     }
 
     public Integer getIdDetalleVenta() {
@@ -121,5 +123,13 @@ public class DetalleVentaDTO {
 
     public void setIgvAplicado(BigDecimal igvAplicado) {
         this.igvAplicado = igvAplicado;
+    }
+
+    public String getCodigoBarra() {
+        return codigoBarra;
+    }
+
+    public void setCodigoBarra(String codigoBarra) {
+        this.codigoBarra = codigoBarra;
     }
 }

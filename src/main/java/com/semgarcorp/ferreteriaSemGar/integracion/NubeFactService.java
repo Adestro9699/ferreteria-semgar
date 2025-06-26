@@ -2,8 +2,6 @@ package com.semgarcorp.ferreteriaSemGar.integracion;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.semgarcorp.ferreteriaSemGar.dto.VentaDTO;
-import com.semgarcorp.ferreteriaSemGar.dto.DetalleVentaDTO;
 import com.semgarcorp.ferreteriaSemGar.modelo.*;
 import com.semgarcorp.ferreteriaSemGar.repositorio.ClienteRepository;
 import com.semgarcorp.ferreteriaSemGar.repositorio.ProductoRepository;
@@ -35,10 +33,8 @@ public class NubeFactService {
     private final ObjectMapper objectMapper;
     private final ParametroRepository parametroRepositorio;
     private final ClienteRepository clienteRepositorio;
-    private final ProductoRepository productoRepositorio;
     private final TipoComprobantePagoRepository tipoComprobantePagoRepositorio;
     private final ComprobanteNubeFactRepository comprobanteNubeFactRepository;
-    private final RestTemplate restTemplate;
 
     public NubeFactService(NubeFactClient client, ObjectMapper objectMapper,
                            ParametroRepository parametroRepositorio,
@@ -51,10 +47,8 @@ public class NubeFactService {
         this.objectMapper = objectMapper;
         this.parametroRepositorio = parametroRepositorio;
         this.clienteRepositorio = clienteRepositorio;
-        this.productoRepositorio = productoRepositorio;
         this.tipoComprobantePagoRepositorio = tipoComprobantePagoRepositorio;
         this.comprobanteNubeFactRepository = comprobanteNubeFactRepository;
-        this.restTemplate = restTemplate;
     }
 
     public String emitirComprobante(Venta venta) {
@@ -123,6 +117,13 @@ public class NubeFactService {
         request.put("moneda", Integer.parseInt(venta.getMoneda().getCodigoNubefact())); // 1 = Soles
         request.put("tipo_de_cambio", 3.75);
         request.put("porcentaje_de_igv", obtenerPorcentajeIgv());
+        
+        // Campos adicionales requeridos por NubeFact
+        request.put("enviar_automaticamente_a_la_sunat", "true");
+        request.put("enviar_automaticamente_al_cliente", "true");
+        request.put("codigo_unico", "");
+        request.put("condiciones_de_pago", "");
+        request.put("medio_de_pago", "");
 
         return request;
     }
@@ -151,10 +152,6 @@ public class NubeFactService {
     }
 
     private List<Map<String, Object>> construirItems(List<DetalleVenta> detalles) {
-        BigDecimal factorIgv = BigDecimal.ONE.add(
-                obtenerPorcentajeIgv().divide(BigDecimal.valueOf(100), 10, RoundingMode.HALF_UP)
-        );
-
         return detalles.stream().map(detalle -> {
             Producto producto = detalle.getProducto();
 
@@ -166,40 +163,61 @@ public class NubeFactService {
             item.put("descripcion", producto.getNombreProducto());
             item.put("cantidad", detalle.getCantidad());
 
-            // Cálculos con máxima precisión
-            BigDecimal valorUnitarioSinIgv = calcularValorUnitarioSinIgv(detalle.getPrecioUnitario(), factorIgv);
-            BigDecimal subtotalSinDescuento = valorUnitarioSinIgv.multiply(detalle.getCantidad());
+            // Cálculos consistentes con NubeFact
+            BigDecimal precioUnitarioConIgv = detalle.getPrecioUnitario();
+            BigDecimal cantidad = detalle.getCantidad();
+            BigDecimal descuento = detalle.getDescuento() != null ? detalle.getDescuento() : BigDecimal.ZERO;
             
-            // Calcular descuento como porcentaje
+            // 1. Calcular valor unitario sin IGV
+            BigDecimal factorIgv = BigDecimal.ONE.add(
+                obtenerPorcentajeIgv().divide(BigDecimal.valueOf(100), 10, RoundingMode.HALF_UP)
+            );
+            BigDecimal valorUnitarioSinIgv = precioUnitarioConIgv.divide(factorIgv, 4, RoundingMode.HALF_UP);
+            
+            // 2. Calcular subtotal sin descuento
+            BigDecimal subtotalSinDescuentoSinIgv = valorUnitarioSinIgv.multiply(cantidad);
+            
+            // 3. Aplicar descuento (como monto directo, no porcentaje)
             BigDecimal montoDescuento = BigDecimal.ZERO;
-            if (detalle.getDescuento() != null && detalle.getDescuento().compareTo(BigDecimal.ZERO) > 0) {
-                montoDescuento = subtotalSinDescuento.multiply(detalle.getDescuento())
+            if (descuento.compareTo(BigDecimal.ZERO) > 0) {
+                // Convertir porcentaje de descuento a monto
+                montoDescuento = subtotalSinDescuentoSinIgv.multiply(descuento)
                     .divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP);
             }
             
-            BigDecimal subtotalSinIgv = subtotalSinDescuento.subtract(montoDescuento);
-            BigDecimal igv = calcularIgv(subtotalSinIgv);
+            // 4. Calcular subtotal con descuento
+            BigDecimal subtotalSinIgv = subtotalSinDescuentoSinIgv.subtract(montoDescuento);
+            
+            // 5. Calcular IGV sobre el subtotal con descuento
+            BigDecimal igv = subtotalSinIgv.multiply(obtenerPorcentajeIgv())
+                .divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP);
+            
+            // 6. Calcular total (subtotal sin IGV + IGV)
             BigDecimal total = subtotalSinIgv.add(igv);
 
             // Asignar valores redondeados
             item.put("valor_unitario", valorUnitarioSinIgv.setScale(2, RoundingMode.HALF_UP));
-            item.put("precio_unitario", detalle.getPrecioUnitario().setScale(2, RoundingMode.HALF_UP));
+            item.put("precio_unitario", precioUnitarioConIgv.setScale(2, RoundingMode.HALF_UP));
             item.put("subtotal", subtotalSinIgv.setScale(2, RoundingMode.HALF_UP));
-            item.put("tipo_de_igv", 1);
+            item.put("tipo_de_igv", 1); // Gravado
             item.put("igv", igv.setScale(2, RoundingMode.HALF_UP));
             item.put("total", total.setScale(2, RoundingMode.HALF_UP));
+            
+            // Campos adicionales requeridos por NubeFact
+            item.put("anticipo_regularizacion", "false");
+            item.put("anticipo_documento_serie", "");
+            item.put("anticipo_documento_numero", "");
+            item.put("codigo_producto_sunat", "10000000"); // Código genérico para productos
+            
+            // Si hay descuento, agregarlo como monto
+            if (descuento.compareTo(BigDecimal.ZERO) > 0) {
+                item.put("descuento", montoDescuento.setScale(2, RoundingMode.HALF_UP));
+            } else {
+                item.put("descuento", "");
+            }
 
             return item;
         }).collect(Collectors.toList());
-    }
-
-    private BigDecimal calcularValorUnitarioSinIgv(BigDecimal precioConIgv, BigDecimal factorIgv) {
-        return precioConIgv.divide(factorIgv, 4, RoundingMode.HALF_UP);
-    }
-
-    private BigDecimal calcularIgv(BigDecimal subtotalSinIgv) {
-        return subtotalSinIgv.multiply(obtenerPorcentajeIgv())
-                .divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP);
     }
 
     private String obtenerCodigoProducto(Producto producto) {
@@ -300,6 +318,37 @@ public class NubeFactService {
                     }
                 })
                 .orElse(new BigDecimal("18.00")); // Valor por defecto
+    }
+
+    /**
+     * Método de validación para verificar cálculos
+     * Usado para debugging y validación de cálculos
+     */
+    public void validarCalculos(BigDecimal precioUnitario, BigDecimal cantidad, BigDecimal descuento) {
+        logger.info("=== VALIDACIÓN DE CÁLCULOS ===");
+        logger.info("Precio unitario: {}", precioUnitario);
+        logger.info("Cantidad: {}", cantidad);
+        logger.info("Descuento: {}%", descuento);
+        
+        // Cálculos del sistema interno
+        BigDecimal subtotalSinDescuento = precioUnitario.multiply(cantidad);
+        BigDecimal montoDescuento = subtotalSinDescuento.multiply(descuento)
+            .divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP);
+        BigDecimal subtotalConDescuento = subtotalSinDescuento.subtract(montoDescuento);
+        
+        BigDecimal factorIgv = BigDecimal.ONE.add(
+            obtenerPorcentajeIgv().divide(BigDecimal.valueOf(100), 10, RoundingMode.HALF_UP)
+        );
+        BigDecimal subtotalSinIgv = subtotalConDescuento.divide(factorIgv, 4, RoundingMode.HALF_UP);
+        BigDecimal igv = subtotalConDescuento.subtract(subtotalSinIgv);
+        
+        logger.info("Subtotal sin descuento: {}", subtotalSinDescuento);
+        logger.info("Monto descuento: {}", montoDescuento);
+        logger.info("Subtotal con descuento: {}", subtotalConDescuento);
+        logger.info("Subtotal sin IGV: {}", subtotalSinIgv);
+        logger.info("IGV: {}", igv);
+        logger.info("Total: {}", subtotalConDescuento);
+        logger.info("=== FIN VALIDACIÓN ===");
     }
 
     public String anularComprobante(String serie, String numero, String motivo, String codigoUnico, Integer tipoComprobante) {

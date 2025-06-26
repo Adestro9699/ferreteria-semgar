@@ -6,6 +6,7 @@ public class ComprobanteNubeFactDTO {
     private String codigoDeBarras;
     private String enlaceDelPdf;
     private String enlaceDelXml;
+    private String enlaceDelCdr;
     private Boolean aceptadaPorSunat;
     private String sunatDescription;
 
@@ -48,6 +49,14 @@ public class ComprobanteNubeFactDTO {
 
     public void setEnlaceDelXml(String enlaceDelXml) {
         this.enlaceDelXml = enlaceDelXml;
+    }
+
+    public String getEnlaceDelCdr() {
+        return enlaceDelCdr;
+    }
+
+    public void setEnlaceDelCdr(String enlaceDelCdr) {
+        this.enlaceDelCdr = enlaceDelCdr;
     }
 
     public Boolean getAceptadaPorSunat() {

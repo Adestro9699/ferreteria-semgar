@@ -4,10 +4,7 @@ import com.semgarcorp.ferreteriaSemGar.modelo.DetalleVenta;
 import com.semgarcorp.ferreteriaSemGar.repositorio.DetalleVentaRepository;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class DetalleVentaService {
