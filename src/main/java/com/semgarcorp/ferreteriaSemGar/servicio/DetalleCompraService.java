@@ -3,6 +3,7 @@ package com.semgarcorp.ferreteriaSemGar.servicio;
 import com.semgarcorp.ferreteriaSemGar.modelo.Compra;
 import com.semgarcorp.ferreteriaSemGar.modelo.DetalleCompra;
 import com.semgarcorp.ferreteriaSemGar.modelo.Producto;
+import com.semgarcorp.ferreteriaSemGar.modelo.Almacen;
 import com.semgarcorp.ferreteriaSemGar.repositorio.DetalleCompraRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,14 +17,17 @@ public class DetalleCompraService {
     private final DetalleCompraRepository detalleCompraRepositorio;
     private final ProductoService productoService;
     private final CompraService compraService;
+    private final AlmacenService almacenService;
 
     // Constructor
     public DetalleCompraService(DetalleCompraRepository detalleCompraRepositorio,
                                 ProductoService productoService,
-                                CompraService compraService) {
+                                CompraService compraService,
+                                AlmacenService almacenService) {
         this.detalleCompraRepositorio = detalleCompraRepositorio;
         this.productoService = productoService;
         this.compraService = compraService;
+        this.almacenService = almacenService;
     }
 
     public List<DetalleCompra> listar() {
@@ -50,10 +54,24 @@ public class DetalleCompraService {
             );
         }
 
-        // Incrementar el stock del producto con la cantidad comprada
+        // Incrementar el stock del producto en el almacén principal
         if (producto != null && detalleCompra.getCantidad() != null) {
             BigDecimal cantidadComprada = detalleCompra.getCantidad();
-            productoService.incrementarStock(producto.getIdProducto(), cantidadComprada);
+            
+            // Obtener el almacén principal (por defecto, el primero que encuentre)
+            Almacen almacenPrincipal = obtenerAlmacenPrincipal();
+            
+            if (almacenPrincipal != null) {
+                productoService.incrementarStockEnAlmacen(
+                    producto.getIdProducto(), 
+                    almacenPrincipal.getIdAlmacen(), 
+                    cantidadComprada, 
+                    "Compra - " + detalleCompra.getCompra().getNumeroFactura()
+                );
+            } else {
+                // Fallback al método deprecado si no hay almacén principal
+                productoService.incrementarStock(producto.getIdProducto(), cantidadComprada);
+            }
         }
 
         // Guardar el detalle de compra en la base de datos
@@ -89,14 +107,28 @@ public class DetalleCompraService {
             productoService.actualizarPrecioVenta(
                     producto.getIdProducto(),
                     detalleCompra.getPrecioUnitario(),
-                    detalleCompra.getPorcentajeUtilidadManual() // <- Nuevo tercer parámetro
+                    detalleCompra.getPorcentajeUtilidadManual()
             );
         }
 
-        // Incrementar el stock del producto con la cantidad comprada
+        // Incrementar el stock del producto en el almacén principal
         if (producto != null && detalleCompra.getCantidad() != null) {
             BigDecimal cantidadComprada = detalleCompra.getCantidad();
-            productoService.incrementarStock(producto.getIdProducto(), cantidadComprada);
+            
+            // Obtener el almacén principal
+            Almacen almacenPrincipal = obtenerAlmacenPrincipal();
+            
+            if (almacenPrincipal != null) {
+                productoService.incrementarStockEnAlmacen(
+                    producto.getIdProducto(), 
+                    almacenPrincipal.getIdAlmacen(), 
+                    cantidadComprada, 
+                    "Actualización Compra - " + detalleCompra.getCompra().getNumeroFactura()
+                );
+            } else {
+                // Fallback al método deprecado
+                productoService.incrementarStock(producto.getIdProducto(), cantidadComprada);
+            }
         }
 
         // Actualizar el detalle de compra en la base de datos
@@ -115,10 +147,22 @@ public class DetalleCompraService {
         DetalleCompra detalleCompra = detalleCompraRepositorio.findById(id)
                 .orElseThrow(() -> new RuntimeException("Detalle de compra no encontrado"));
 
-        // Reducir el stock del producto asociado
+        // Reducir el stock del producto asociado desde el almacén principal
         Producto producto = detalleCompra.getProducto();
         if (producto != null && detalleCompra.getCantidad() != null) {
-            productoService.reducirStock(producto.getIdProducto(), detalleCompra.getCantidad());
+            Almacen almacenPrincipal = obtenerAlmacenPrincipal();
+            
+            if (almacenPrincipal != null) {
+                productoService.reducirStockEnAlmacen(
+                    producto.getIdProducto(), 
+                    almacenPrincipal.getIdAlmacen(), 
+                    detalleCompra.getCantidad(), 
+                    "Eliminación Compra - " + detalleCompra.getCompra().getNumeroFactura()
+                );
+            } else {
+                // Fallback al método deprecado
+                productoService.reducirStock(producto.getIdProducto(), detalleCompra.getCantidad());
+            }
         }
 
         // Eliminar el detalle de compra
@@ -132,5 +176,16 @@ public class DetalleCompraService {
     
     public List<DetalleCompra> obtenerDetallesPorCompra(Integer idCompra) {
         return detalleCompraRepositorio.findByCompraId(idCompra);
+    }
+
+    /**
+     * Obtiene el almacén principal para recibir las compras.
+     * Por defecto, busca el primer almacén principal disponible.
+     *
+     * @return El almacén principal, o null si no existe ninguno.
+     */
+    private Almacen obtenerAlmacenPrincipal() {
+        List<Almacen> almacenesPrincipales = almacenService.buscarAlmacenesPrincipales();
+        return almacenesPrincipales.isEmpty() ? null : almacenesPrincipales.get(0);
     }
 }

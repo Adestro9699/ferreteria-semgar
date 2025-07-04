@@ -7,6 +7,7 @@ import com.semgarcorp.ferreteriaSemGar.repositorio.AccesoRepository;
 import com.semgarcorp.ferreteriaSemGar.repositorio.UsuarioRepository;
 import com.semgarcorp.ferreteriaSemGar.seguridad.JwtResponse;
 import com.semgarcorp.ferreteriaSemGar.seguridad.JwtUtil;
+import com.semgarcorp.ferreteriaSemGar.dto.UsuarioDTO;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -111,7 +112,8 @@ public class UsuarioService {
         // Generar el token JWT
         String token = jwtUtil.generarToken(usuario.getNombreUsuario(), rol, permisos);
 
-        // Devolver la respuesta
-        return new JwtResponse(token, usuario, rol, permisos);
+        // Devolver la respuesta usando UsuarioDTO
+        UsuarioDTO usuarioDTO = new UsuarioDTO(usuario);
+        return new JwtResponse(token, usuarioDTO, rol, permisos);
     }
 }

@@ -2,61 +2,71 @@ package com.semgarcorp.ferreteriaSemGar.modelo;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Table(name = "inventarios")
 public class Inventario {
 
-    // Enum para los estados de inventario
     public enum EstadoInventario {
-        ACTIVO,
-        INACTIVO
+        EN_PROCESO,    // Conteo en curso
+        FINALIZADO,    // Conteo completado
+        APROBADO,      // Conteo revisado y aprobado
+        RECHAZADO      // Conteo con discrepancias
     }
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer idInventario;
 
-    @NotNull(message = "El nombre del inventario no puede ser nulo")
-    @Size(min = 3, max = 255, message = "El nombre del inventario debe tener entre 3 y 255 caracteres")
-    @Column(length = 255)
-    private String nombreInventario; //nombre del Inventario
+    @NotNull(message = "La fecha de conteo no puede ser nula")
+    @Column(name = "fecha_conteo", nullable = false)
+    private LocalDate fechaConteo;
 
-    @NotNull(message = "La ubicación no puede ser nula")
-    @Size(min = 3, max = 255, message = "La ubicación debe tener entre 3 y 255 caracteres")
-    @Column(length = 255)
-    private String ubicacion; //ubicacion del inventario
+    @NotNull(message = "El responsable no puede ser nulo")
+    @Column(name = "responsable", length = 100, nullable = false)
+    private String responsable;
 
-    @NotNull(message = "La fecha de creación no puede ser nula")
-    private LocalDate fechaCreacion; //fecha en la que se creó el inventario
+    @Column(name = "observaciones", length = 500)
+    private String observaciones;
 
     @Enumerated(EnumType.STRING)
     @NotNull(message = "El estado del inventario no puede ser nulo")
-    @Column(length = 10)
-    private EstadoInventario estadoInventario; //estado ACTIVO o INACTIVO del inventario
+    @Column(name = "estado", length = 20, nullable = false)
+    private EstadoInventario estadoInventario;
 
-    @Column(columnDefinition = "TEXT")
-    private String observaciones; //campo TEXT para observaciones
+    @Column(name = "fecha_creacion", nullable = false)
+    private LocalDate fechaCreacion;
 
-    @OneToMany(mappedBy = "inventario")
-    private List<InventarioProducto> inventarioProductos = new ArrayList<>();
+    @Column(name = "fecha_modificacion")
+    private LocalDate fechaModificacion;
 
-    // Constructor vacío
+    // Relación con Almacen (en qué almacén se realiza el conteo)
+    @ManyToOne
+    @JoinColumn(name = "idAlmacen", nullable = false)
+    private Almacen almacen;
+
+    // Relación con DetalleInventario (detalles del conteo)
+    @OneToMany(mappedBy = "inventario", cascade = CascadeType.ALL)
+    private List<DetalleInventario> detalles = new ArrayList<>();
+
     public Inventario() {
     }
 
-    public Inventario(Integer idInventario, String nombreInventario, String ubicacion, LocalDate fechaCreacion,
-                      EstadoInventario estadoInventario, String observaciones, List<InventarioProducto> inventarioProductos) {
+    public Inventario(Integer idInventario, LocalDate fechaConteo, String responsable, 
+                     String observaciones, EstadoInventario estadoInventario,
+                     LocalDate fechaCreacion, LocalDate fechaModificacion, 
+                     Almacen almacen) {
         this.idInventario = idInventario;
-        this.nombreInventario = nombreInventario;
-        this.ubicacion = ubicacion;
-        this.fechaCreacion = fechaCreacion;
-        this.estadoInventario = estadoInventario;
+        this.fechaConteo = fechaConteo;
+        this.responsable = responsable;
         this.observaciones = observaciones;
-        this.inventarioProductos = inventarioProductos;
+        this.estadoInventario = estadoInventario;
+        this.fechaCreacion = fechaCreacion;
+        this.fechaModificacion = fechaModificacion;
+        this.almacen = almacen;
     }
 
     public Integer getIdInventario() {
@@ -67,36 +77,20 @@ public class Inventario {
         this.idInventario = idInventario;
     }
 
-    public String getNombreInventario() {
-        return nombreInventario;
+    public LocalDate getFechaConteo() {
+        return fechaConteo;
     }
 
-    public void setNombreInventario(String nombreInventario) {
-        this.nombreInventario = nombreInventario;
+    public void setFechaConteo(LocalDate fechaConteo) {
+        this.fechaConteo = fechaConteo;
     }
 
-    public String getUbicacion() {
-        return ubicacion;
+    public String getResponsable() {
+        return responsable;
     }
 
-    public void setUbicacion(String ubicacion) {
-        this.ubicacion = ubicacion;
-    }
-
-    public LocalDate getFechaCreacion() {
-        return fechaCreacion;
-    }
-
-    public void setFechaCreacion(LocalDate fechaCreacion) {
-        this.fechaCreacion = fechaCreacion;
-    }
-
-    public EstadoInventario getEstadoInventario() {
-        return estadoInventario;
-    }
-
-    public void setEstadoInventario(EstadoInventario estadoInventario) {
-        this.estadoInventario = estadoInventario;
+    public void setResponsable(String responsable) {
+        this.responsable = responsable;
     }
 
     public String getObservaciones() {
@@ -107,11 +101,43 @@ public class Inventario {
         this.observaciones = observaciones;
     }
 
-    public List<InventarioProducto> getInventarioProductos() {
-        return inventarioProductos;
+    public EstadoInventario getEstadoInventario() {
+        return estadoInventario;
     }
 
-    public void setInventarioProductos(List<InventarioProducto> inventarioProductos) {
-        this.inventarioProductos = inventarioProductos;
+    public void setEstadoInventario(EstadoInventario estadoInventario) {
+        this.estadoInventario = estadoInventario;
     }
-}
+
+    public LocalDate getFechaCreacion() {
+        return fechaCreacion;
+    }
+
+    public void setFechaCreacion(LocalDate fechaCreacion) {
+        this.fechaCreacion = fechaCreacion;
+    }
+
+    public LocalDate getFechaModificacion() {
+        return fechaModificacion;
+    }
+
+    public void setFechaModificacion(LocalDate fechaModificacion) {
+        this.fechaModificacion = fechaModificacion;
+    }
+
+    public Almacen getAlmacen() {
+        return almacen;
+    }
+
+    public void setAlmacen(Almacen almacen) {
+        this.almacen = almacen;
+    }
+
+    public List<DetalleInventario> getDetalles() {
+        return detalles;
+    }
+
+    public void setDetalles(List<DetalleInventario> detalles) {
+        this.detalles = detalles;
+    }
+} 

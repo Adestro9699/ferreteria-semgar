@@ -51,6 +51,10 @@ public class Trabajador {
 
     private LocalDate fechaSalidaTrabajador;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "idSucursal")
+    private Sucursal sucursal;
+
     public Trabajador() {
     }
 
@@ -157,5 +161,13 @@ public class Trabajador {
 
     public void setFechaSalidaTrabajador(LocalDate fechaSalidaTrabajador) {
         this.fechaSalidaTrabajador = fechaSalidaTrabajador;
+    }
+
+    public Sucursal getSucursal() {
+        return sucursal;
+    }
+
+    public void setSucursal(Sucursal sucursal) {
+        this.sucursal = sucursal;
     }
 }

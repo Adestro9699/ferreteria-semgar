@@ -1,12 +1,12 @@
 package com.semgarcorp.ferreteriaSemGar.seguridad;
 
-import com.semgarcorp.ferreteriaSemGar.modelo.Usuario;
+import com.semgarcorp.ferreteriaSemGar.dto.UsuarioDTO;
 
 import java.util.Map;
 
 public class JwtResponse {
     private String token;
-    private Usuario usuario;
+    private UsuarioDTO usuario;
     private String rol;
     private Map<String, Boolean> permisos;
 
@@ -14,7 +14,7 @@ public class JwtResponse {
     public JwtResponse() {
     }
 
-    public JwtResponse(String token, Usuario usuario, String rol, Map<String, Boolean> permisos) {
+    public JwtResponse(String token, UsuarioDTO usuario, String rol, Map<String, Boolean> permisos) {
         this.token = token;
         this.usuario = usuario;
         this.rol = rol;
@@ -29,11 +29,11 @@ public class JwtResponse {
         this.token = token;
     }
 
-    public Usuario getUsuario() {
+    public UsuarioDTO getUsuario() {
         return usuario;
     }
 
-    public void setUsuario(Usuario usuario) {
+    public void setUsuario(UsuarioDTO usuario) {
         this.usuario = usuario;
     }
 

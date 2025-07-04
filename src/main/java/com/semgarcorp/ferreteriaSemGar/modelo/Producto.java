@@ -30,7 +30,8 @@ public class Producto {
     private BigDecimal precio; //precio de venta al cliente
 
     @Column(length = 11)
-    private BigDecimal stock; //stock global del producto en todos los inventarios
+    @Transient // No se persiste en BD, se calcula dinámicamente
+    private BigDecimal stock; // Stock global calculado sumando todos los ProductoAlmacen.stock
 
     private LocalDate fechaModificacion;
 
@@ -65,8 +66,16 @@ public class Producto {
     @JoinColumn(name = "idUnidadMedida") // Nombre de la columna en la tabla Producto
     private UnidadMedida unidadMedida; // Relación con la tabla UnidadMedida
 
+    @OneToMany(mappedBy = "producto") //único atributo agregado para éste flujo de transferencia
+    private List<ProductoAlmacen> productoAlmacenes = new ArrayList<>();
+
+    // Relación con DetalleTransferencia
     @OneToMany(mappedBy = "producto")
-    private List<InventarioProducto> inventarioProductos = new ArrayList<>();
+    private List<DetalleTransferencia> detallesTransferencia = new ArrayList<>();
+
+    // Relación con DetalleInventario
+    @OneToMany(mappedBy = "producto")
+    private List<DetalleInventario> detallesInventario = new ArrayList<>();
 
     public Producto() {
     }
@@ -74,7 +83,7 @@ public class Producto {
     public Producto(Integer idProducto, String nombreProducto, String descripcion, BigDecimal precio, BigDecimal stock,
                     LocalDate fechaModificacion, String imagenURL, EstadoProducto estadoProducto, String codigoSKU,
                     String marca, String material, String codigoBarra, Proveedor proveedor, Subcategoria subcategoria,
-                    UnidadMedida unidadMedida, List<InventarioProducto> inventarioProductos) {
+                    UnidadMedida unidadMedida) {
         this.idProducto = idProducto;
         this.nombreProducto = nombreProducto;
         this.descripcion = descripcion;
@@ -90,7 +99,6 @@ public class Producto {
         this.proveedor = proveedor;
         this.subcategoria = subcategoria;
         this.unidadMedida = unidadMedida;
-        this.inventarioProductos = inventarioProductos;
     }
 
     public Integer getIdProducto() {
@@ -126,11 +134,19 @@ public class Producto {
     }
 
     public BigDecimal getStock() {
-        return stock;
+        // Calcular stock total sumando todos los ProductoAlmacen
+        if (productoAlmacenes != null && !productoAlmacenes.isEmpty()) {
+            int stockTotal = productoAlmacenes.stream()
+                .mapToInt(pa -> pa.getStock() != null ? pa.getStock() : 0)
+                .sum();
+            return new BigDecimal(stockTotal);
+        }
+        return BigDecimal.ZERO;
     }
 
     public void setStock(BigDecimal stock) {
-        this.stock = stock;
+        // No se permite setear el stock directamente, se calcula desde ProductoAlmacen
+        // Este método se mantiene por compatibilidad pero no hace nada
     }
 
     public LocalDate getFechaModificacion() {
@@ -213,11 +229,27 @@ public class Producto {
         this.unidadMedida = unidadMedida;
     }
 
-    public List<InventarioProducto> getInventarioProductos() {
-        return inventarioProductos;
+    public List<ProductoAlmacen> getProductoAlmacenes() {
+        return productoAlmacenes;
     }
 
-    public void setInventarioProductos(List<InventarioProducto> inventarioProductos) {
-        this.inventarioProductos = inventarioProductos;
+    public void setProductoAlmacenes(List<ProductoAlmacen> productoAlmacenes) {
+        this.productoAlmacenes = productoAlmacenes;
+    }
+
+    public List<DetalleTransferencia> getDetallesTransferencia() {
+        return detallesTransferencia;
+    }
+
+    public void setDetallesTransferencia(List<DetalleTransferencia> detallesTransferencia) {
+        this.detallesTransferencia = detallesTransferencia;
+    }
+
+    public List<DetalleInventario> getDetallesInventario() {
+        return detallesInventario;
+    }
+
+    public void setDetallesInventario(List<DetalleInventario> detallesInventario) {
+        this.detallesInventario = detallesInventario;
     }
 }

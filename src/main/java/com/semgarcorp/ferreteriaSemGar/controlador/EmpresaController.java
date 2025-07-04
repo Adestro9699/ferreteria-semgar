@@ -1,5 +1,6 @@
 package com.semgarcorp.ferreteriaSemGar.controlador;
 
+import com.semgarcorp.ferreteriaSemGar.dto.EmpresaDTO;
 import com.semgarcorp.ferreteriaSemGar.modelo.Empresa;
 import com.semgarcorp.ferreteriaSemGar.servicio.EmpresaService;
 import org.springframework.http.HttpStatus;
@@ -9,6 +10,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/empresas")
@@ -20,65 +22,57 @@ public class EmpresaController {
         this.empresaService = empresaService;
     }
 
-    // Obtener la lista de todas las empresas
+    // Obtener la lista de todas las empresas (como DTO)
     @GetMapping
-    public List<Empresa> listar() {
-        return empresaService.listar();
+    public List<EmpresaDTO> listar() {
+        return empresaService.listar().stream().map(EmpresaDTO::new).collect(Collectors.toList());
     }
 
-    // Obtener una empresa por su ID
+    // Obtener una empresa por su ID (como DTO)
     @GetMapping("/{id}")
-    public ResponseEntity<Empresa> obtenerPorId(@PathVariable Integer id) {
+    public ResponseEntity<EmpresaDTO> obtenerPorId(@PathVariable Integer id) {
         Empresa empresa = empresaService.obtenerPorId(id);
         if (empresa != null) {
-            return ResponseEntity.ok(empresa); // Respuesta simplificada con 200 OK
+            return ResponseEntity.ok(new EmpresaDTO(empresa));
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Respuesta con 404 Not Found
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
-    // Crear una nueva empresa
+    // Crear una nueva empresa (recibe y devuelve DTO)
     @PostMapping
-    public ResponseEntity<Empresa> guardar(@RequestBody Empresa empresa) {
-        // Guardar la empresa usando el servicio
+    public ResponseEntity<EmpresaDTO> guardar(@RequestBody EmpresaDTO empresaDTO) {
+        Empresa empresa = empresaDTO.toEntity();
         Empresa nuevaEmpresa = empresaService.guardar(empresa);
-
-        // Crear la URI del recurso recién creado
+        EmpresaDTO nuevaEmpresaDTO = new EmpresaDTO(nuevaEmpresa);
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
                 .path("/{id}")
                 .buildAndExpand(nuevaEmpresa.getIdEmpresa()).toUri();
-
-        // Devolver la respuesta con la URI en la cabecera Location y el objeto creado en el cuerpo
-        return ResponseEntity.created(location).body(nuevaEmpresa);
+        return ResponseEntity.created(location).body(nuevaEmpresaDTO);
     }
 
-    // Actualizar una empresa existente (PUT)
+    // Actualizar una empresa existente (PUT, recibe y devuelve DTO)
     @PutMapping("/{id}")
-    public ResponseEntity<Empresa> actualizar(@PathVariable Integer id, @RequestBody Empresa empresa) {
-        // Obtener la empresa existente
+    public ResponseEntity<EmpresaDTO> actualizar(@PathVariable Integer id, @RequestBody EmpresaDTO empresaDTO) {
         Empresa empresaExistente = empresaService.obtenerPorId(id);
-
         if (empresaExistente != null) {
-            // Asegurarse de que el ID se mantenga y reemplazar la empresa
-            empresa.setIdEmpresa(id);
-
-            // Aquí reemplazamos completamente la empresa con la información que viene en el cuerpo
-            Empresa empresaActualizada = empresaService.actualizar(empresa);
-
-            return ResponseEntity.ok(empresaActualizada); // Usamos el metodo estático "ok" para la respuesta exitosa
+            empresaDTO.setIdEmpresa(id);
+            Empresa empresaActualizada = empresaService.actualizar(empresaDTO.toEntity());
+            EmpresaDTO empresaActualizadaDTO = new EmpresaDTO(empresaActualizada);
+            return ResponseEntity.ok(empresaActualizadaDTO);
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Usamos "status" para construir la respuesta 404
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
 
-    // Eliminar una empresa por su ID
+    // Eliminar una empresa por su ID (sin DTO)
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
         Empresa empresaExistente = empresaService.obtenerPorId(id);
         if (empresaExistente != null) {
             empresaService.eliminar(id);
-            return ResponseEntity.noContent().build(); // Respuesta sin contenido
+            return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Si no se encuentra, 404
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 }

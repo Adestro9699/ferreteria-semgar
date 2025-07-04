@@ -1,6 +1,7 @@
 package com.semgarcorp.ferreteriaSemGar.controlador;
 
 import com.semgarcorp.ferreteriaSemGar.modelo.Producto;
+import com.semgarcorp.ferreteriaSemGar.dto.ProductoDTO;
 import com.semgarcorp.ferreteriaSemGar.servicio.ProductoService;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpStatus;
@@ -32,14 +33,14 @@ public class ProductoController {
 
     // Obtener la lista de todos los productos
     @GetMapping
-    public List<Producto> listar() {
-        return productoService.listar();
+    public List<ProductoDTO> listar() {
+        return productoService.listarComoDTO();
     }
 
     // Obtener un producto por su ID
     @GetMapping("/{id}")
-    public ResponseEntity<Producto> obtenerPorId(@PathVariable Integer id) {
-        Producto producto = productoService.obtenerPorId(id);
+    public ResponseEntity<ProductoDTO> obtenerPorId(@PathVariable Integer id) {
+        ProductoDTO producto = productoService.obtenerPorIdComoDTO(id);
         if (producto != null) {
             return ResponseEntity.ok(producto); // Respuesta simplificada con 200 OK
         }
@@ -48,36 +49,29 @@ public class ProductoController {
 
     // Crear un nuevo producto
     @PostMapping
-    public ResponseEntity<Producto> guardar(@RequestBody Producto producto) {
-        // Guardar el producto usando el servicio
+    public ResponseEntity<ProductoDTO> guardar(@RequestBody ProductoDTO productoDTO) {
+        Producto producto = productoDTO.toEntity();
         Producto nuevoProducto = productoService.guardar(producto);
-
-        // Crear la URI del recurso recién creado
+        ProductoDTO nuevoProductoDTO = new ProductoDTO(nuevoProducto);
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
                 .path("/{id}")
                 .buildAndExpand(nuevoProducto.getIdProducto()).toUri();
-
-        // Devolver la respuesta con la URI en la cabecera Location y el objeto creado en el cuerpo
-        return ResponseEntity.created(location).body(nuevoProducto);
+        return ResponseEntity.created(location).body(nuevoProductoDTO);
     }
 
     // Actualizar un producto existente (PUT)
     @PutMapping("/{id}")
-    public ResponseEntity<Producto> actualizar(@PathVariable Integer id, @RequestBody Producto producto) {
-        // Obtener el producto existente
+    public ResponseEntity<ProductoDTO> actualizar(@PathVariable Integer id, @RequestBody ProductoDTO productoDTO) {
         Producto productoExistente = productoService.obtenerPorId(id);
-
         if (productoExistente != null) {
-            // Asegurarse de que el ID se mantenga y reemplazar el producto
-            producto.setIdProducto(id);
-
-            // Aquí reemplazas completamente el producto con la información que viene en el cuerpo
-            Producto productoActualizado = productoService.actualizar(producto);
-
-            return ResponseEntity.ok(productoActualizado); // Usamos el metodo estático "ok" para la respuesta exitosa
+            productoDTO.setIdProducto(id);
+            productoDTO.updateEntity(productoExistente);
+            Producto productoActualizado = productoService.actualizar(productoExistente);
+            ProductoDTO productoActualizadoDTO = new ProductoDTO(productoActualizado);
+            return ResponseEntity.ok(productoActualizadoDTO);
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Usamos "status" para construir la respuesta 404
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
 
@@ -87,9 +81,9 @@ public class ProductoController {
         Producto productoExistente = productoService.obtenerPorId(id);
         if (productoExistente != null) {
             productoService.eliminar(id);
-            return ResponseEntity.noContent().build(); // Respuesta sin contenido
+            return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Si no se encuentra, 404
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
     // Eliminar múltiples productos por su ID
@@ -97,18 +91,14 @@ public class ProductoController {
     public ResponseEntity<Void> eliminarProductos(@RequestBody List<Integer> ids) {
         try {
             if (ids == null || ids.isEmpty()) {
-                return ResponseEntity.badRequest().build(); // Respuesta 400 Bad Request si la lista está vacía
+                return ResponseEntity.badRequest().build();
             }
-            System.out.println("IDs recibidos: " + ids); // Log para depuración
             productoService.eliminarProductosPorIds(ids);
-
-            return ResponseEntity.noContent().build(); // Respuesta 204 No Content si la operación fue exitosa
+            return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException e) {
-            System.err.println("Error en la solicitud: " + e.getMessage());
-            return ResponseEntity.badRequest().build(); // Respuesta 400 Bad Request si hay argumentos inválidos
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
-            System.err.println("Error al eliminar productos: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // Respuesta 500 si ocurre un error interno
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -116,7 +106,7 @@ public class ProductoController {
     //productos/buscarPorNombre?nombre=nombreDelProducto
     //http://localhost:8080/fs/productos/buscarPorNombre?nombre=Taladro
     @GetMapping("/buscarPorNombre")
-    public ResponseEntity<List<Producto>> buscarProductos(@RequestParam String nombre) {
+    public ResponseEntity<List<ProductoDTO>> buscarProductos(@RequestParam String nombre) {
         // Verificar si el nombre es nulo o está vacío
         if (nombre == null || nombre.trim().isEmpty()) {
             // Devolver una respuesta 400 Bad Request sin body
@@ -125,7 +115,7 @@ public class ProductoController {
 
         try {
             // Buscar productos por nombre
-            List<Producto> productos = productoService.buscarProductosPorNombre(nombre);
+            List<ProductoDTO> productos = productoService.buscarProductosPorNombreComoDTO(nombre);
 
             // Devolver la lista de productos con un código 200 OK, incluso si está vacía
             return ResponseEntity.ok(productos);
@@ -148,7 +138,7 @@ public class ProductoController {
 
         try {
             // Buscar productos por marca
-            List<Producto> productos = productoService.buscarProductosPorMarca(marca);
+            List<ProductoDTO> productos = productoService.buscarProductosPorMarcaComoDTO(marca);
 
             // Devolver 200 OK sin body si no hay productos
             if (productos.isEmpty()) {
@@ -176,7 +166,7 @@ public class ProductoController {
 
         try {
             // Buscar productos por categoría
-            List<Producto> productos = productoService.buscarProductosPorCategoria(categoria);
+            List<ProductoDTO> productos = productoService.buscarProductosPorCategoriaComoDTO(categoria);
 
             // Devolver 200 OK sin body si no hay productos
             if (productos.isEmpty()) {
@@ -191,51 +181,33 @@ public class ProductoController {
         }
     }
 
-    // endpoint para buscar productos por estado
-    // productos/buscarPorEstado?estado=ACTIVO
-    // http://localhost:8080/fs/productos/buscarPorEstado?estado=ACTIVO
+    //endpoint para buscar productos por estado (devuelve DTO)
+    //http://localhost:8080/fs/productos/buscarPorEstado?estado=ACTIVO
     @GetMapping("/buscarPorEstado")
-    public ResponseEntity<List<Producto>> buscarProductosPorEstado(@RequestParam String estado) {
-        // Verificar si el estado es nulo o está vacío
+    public ResponseEntity<List<ProductoDTO>> buscarProductosPorEstado(@RequestParam String estado) {
         if (estado == null || estado.trim().isEmpty()) {
-            return ResponseEntity.badRequest().build(); // 400 Bad Request si el parámetro es inválido
+            return ResponseEntity.badRequest().build();
         }
-
         try {
-            List<Producto> productos = productoService.buscarProductosPorEstado(estado);
-
-            // Devolver 200 OK sin body si no se encuentran productos
-            if (productos.isEmpty()) {
-                return ResponseEntity.ok().build();
-            }
-
+            List<ProductoDTO> productos = productoService.buscarProductosPorEstadoComoDTO(estado);
             return ResponseEntity.ok(productos);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    // endpoint para buscar productos por material
-    // productos/buscarPorMaterial?material=Acero
-    // http://localhost:8080/fs/productos/buscarPorMaterial?material=Acero
+    //endpoint para buscar productos por material (devuelve DTO)
+    //http://localhost:8080/fs/productos/buscarPorMaterial?material=valorMaterial
     @GetMapping("/buscarPorMaterial")
-    public ResponseEntity<List<Producto>> buscarProductosPorMaterial(@RequestParam String material) {
-        // Verificar si el material es nulo o está vacío
+    public ResponseEntity<List<ProductoDTO>> buscarProductosPorMaterial(@RequestParam String material) {
         if (material == null || material.trim().isEmpty()) {
-            return ResponseEntity.badRequest().build(); // 400 Bad Request si el parámetro es inválido
+            return ResponseEntity.badRequest().build();
         }
-
         try {
-            List<Producto> productos = productoService.buscarProductosPorMaterial(material);
-
-            // Devolver 200 OK sin body si no se encuentran productos
-            if (productos.isEmpty()) {
-                return ResponseEntity.ok().build();
-            }
-
+            List<ProductoDTO> productos = productoService.buscarProductosPorMaterialComoDTO(material);
             return ResponseEntity.ok(productos);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -243,98 +215,67 @@ public class ProductoController {
     // productos/buscarPorCodigoBarra?codigoBarra=VALOR_CODIGO_BARRA
     // http://localhost:8080/fs/productos/buscarPorCodigoBarra?codigoBarra=VALOR_CODIGO_BARRA
     @GetMapping("/buscarPorCodigoBarra")
-    public ResponseEntity<List<Producto>> buscarProductosPorCodigoBarra(@RequestParam String codigoBarra) {
-        // Verificar si el código de barra es nulo o está vacío
+    public ResponseEntity<List<ProductoDTO>> buscarProductosPorCodigoBarra(@RequestParam String codigoBarra) {
+        // Verificar si el código de barras es nulo o está vacío
         if (codigoBarra == null || codigoBarra.trim().isEmpty()) {
-            return ResponseEntity.badRequest().build(); // 400 Bad Request si el parámetro es inválido
+            // Devolver una respuesta 400 Bad Request sin body
+            return ResponseEntity.badRequest().build();
         }
 
         try {
-            List<Producto> productos = productoService.buscarProductosPorCodigoBarra(codigoBarra);
+            // Buscar productos por código de barras
+            List<ProductoDTO> productos = productoService.buscarProductosPorCodigoBarraComoDTO(codigoBarra);
 
-            // Devolver 200 OK sin body si no se encuentran productos
-            if (productos.isEmpty()) {
-                return ResponseEntity.ok().build();
-            }
-
+            // Devolver la lista de productos con un código 200 OK, incluso si está vacía
             return ResponseEntity.ok(productos);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
+            // Manejar otros errores y devolver una respuesta 500 Internal Server Error sin body
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    // endpoint para buscar por nombre de proveedor
-    // productos/buscarPorProveedor?idProveedor=VALOR_ID_PROVEEDOR
-    // http://localhost:8080/fs/productos/buscarPorNombreProveedor?nombreProveedor=VALOR_NOMBRE_PROVEEDOR
+    //endpoint para buscar productos por nombre de proveedor (devuelve DTO)
+    //http://localhost:8080/fs/productos/buscarPorNombreProveedor?nombreProveedor=la estrella
     @GetMapping("/buscarPorNombreProveedor")
-    public ResponseEntity<List<Producto>> buscarProductosPorNombreProveedor(@RequestParam String nombreProveedor) {
-        // Verificar si el nombre del proveedor es nulo o está vacío
+    public ResponseEntity<List<ProductoDTO>> buscarProductosPorNombreProveedor(@RequestParam String nombreProveedor) {
         if (nombreProveedor == null || nombreProveedor.trim().isEmpty()) {
-            return ResponseEntity.badRequest().build(); // 400 Bad Request
+            return ResponseEntity.badRequest().build();
         }
-
         try {
-            // Buscar productos por nombre del proveedor
-            List<Producto> productos = productoService.buscarProductosPorNombreProveedor(nombreProveedor);
-
-            // Devolver 200 OK sin body si no se encuentran productos
-            if (productos.isEmpty()) {
-                return ResponseEntity.ok().build();
-            }
-
+            List<ProductoDTO> productos = productoService.buscarProductosPorNombreProveedorComoDTO(nombreProveedor);
             return ResponseEntity.ok(productos);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    // endpoint para buscar por nombre de subcategoria
-    // productos/buscarPorNombreSubcategoria?nombreSubcategoria=VALOR_NOMBRE_SUBCATEGORIA
-    // http://localhost:8080/fs/productos/buscarPorNombreSubcategoria?nombreSubcategoria=VALOR_NOMBRE_SUBCATEGORIA
+    //endpoint para buscar productos por nombre de subcategoria (devuelve DTO)
+    //http://localhost:8080/fs/productos/buscarPorNombreSubcategoria?nombreSubcategoria=Manzanas
     @GetMapping("/buscarPorNombreSubcategoria")
-    public ResponseEntity<List<Producto>> buscarProductosPorNombreSubcategoria(@RequestParam String nombreSubcategoria) {
-        // Verificar si el nombre de la subcategoría es nulo o está vacío
+    public ResponseEntity<List<ProductoDTO>> buscarProductosPorNombreSubcategoria(@RequestParam String nombreSubcategoria) {
         if (nombreSubcategoria == null || nombreSubcategoria.trim().isEmpty()) {
-            return ResponseEntity.badRequest().build(); // 400 Bad Request
+            return ResponseEntity.badRequest().build();
         }
-
         try {
-            // Buscar productos por nombre de la subcategoría
-            List<Producto> productos = productoService.buscarProductosPorNombreSubcategoria(nombreSubcategoria);
-
-            // Verificar si se encontraron productos
-            if (productos.isEmpty()) {
-                return ResponseEntity.ok().build(); // 200 OK sin cuerpo
-            }
-
-            // Devolver la lista de productos con un código 200 OK
+            List<ProductoDTO> productos = productoService.buscarProductosPorNombreSubcategoriaComoDTO(nombreSubcategoria);
             return ResponseEntity.ok(productos);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    // http://localhost:8080/fs/productos/buscarPorCodigoSKU?codigoSKU=VALOR_CODIGOSKU
+    //endpoint para buscar productos por codigoSKU (devuelve DTO)
+    //http://localhost:8080/fs/productos/buscarPorCodigoSKU?codigoSKU=MART-16OZ
     @GetMapping("/buscarPorCodigoSKU")
-    public ResponseEntity<List<Producto>> buscarProductosPorCodigoSKU(@RequestParam String codigoSKU) {
-        // Verificar si el código SKU es nulo o está vacío
+    public ResponseEntity<List<ProductoDTO>> buscarProductosPorCodigoSKU(@RequestParam String codigoSKU) {
         if (codigoSKU == null || codigoSKU.trim().isEmpty()) {
-            return ResponseEntity.badRequest().build(); // 400 Bad Request
+            return ResponseEntity.badRequest().build();
         }
-
         try {
-            // Buscar productos por código SKU
-            List<Producto> productos = productoService.buscarProductosPorCodigoSKU(codigoSKU);
-
-            // Verificar si se encontraron productos
-            if (productos.isEmpty()) {
-                return ResponseEntity.ok().build(); // 200 OK sin cuerpo
-            }
-
-            // Devolver la lista de productos con un código 200 OK
+            List<ProductoDTO> productos = productoService.buscarProductosPorCodigoSKUComoDTO(codigoSKU);
             return ResponseEntity.ok(productos);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -395,22 +336,170 @@ public class ProductoController {
     @DeleteMapping("/imagen/{fileName:.+}")
     public ResponseEntity<String> eliminarImagen(@PathVariable String fileName) {
         try {
-            // Construir la ruta completa del archivo
-            Path path = Paths.get(UPLOAD_DIR + fileName);
-
-            // Verificar si el archivo existe
-            if (!Files.exists(path)) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("La imagen no existe");
+            Path filePath = Paths.get(UPLOAD_DIR + fileName);
+            if (Files.exists(filePath)) {
+                Files.delete(filePath);
+                return ResponseEntity.ok("Imagen eliminada exitosamente");
+            } else {
+                return ResponseEntity.notFound().build();
             }
-
-            // Eliminar el archivo
-            Files.delete(path);
-
-            // Devolver una respuesta exitosa
-            return ResponseEntity.ok("Imagen eliminada correctamente");
         } catch (IOException e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar la imagen");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al eliminar la imagen: " + e.getMessage());
         }
+    }
+
+    // ========== ENDPOINTS PARA FILTRAR PRODUCTOS POR ALMACÉN Y SUCURSAL ==========
+
+    /**
+     * Obtiene todos los productos que tienen stock en un almacén específico.
+     * 
+     * @param idAlmacen El ID del almacén.
+     * @return Lista de productos con stock en el almacén especificado.
+     */
+    @GetMapping("/almacen/{idAlmacen}")
+    public ResponseEntity<List<ProductoDTO>> obtenerProductosPorAlmacen(@PathVariable Integer idAlmacen) {
+        try {
+            List<ProductoDTO> productos = productoService.obtenerProductosPorAlmacenComoDTO(idAlmacen);
+            return ResponseEntity.ok(productos);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Obtiene todos los productos que tienen stock en una sucursal específica.
+     * 
+     * @param idSucursal El ID de la sucursal.
+     * @return Lista de productos con stock en la sucursal especificada.
+     */
+    @GetMapping("/sucursal/{idSucursal}")
+    public ResponseEntity<List<ProductoDTO>> obtenerProductosPorSucursal(@PathVariable Integer idSucursal) {
+        try {
+            List<ProductoDTO> productos = productoService.obtenerProductosPorSucursalComoDTO(idSucursal);
+            return ResponseEntity.ok(productos);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Obtiene el stock de un producto específico en un almacén específico.
+     * 
+     * @param idProducto El ID del producto.
+     * @param idAlmacen El ID del almacén.
+     * @return El stock del producto en el almacén especificado.
+     */
+    @GetMapping("/{idProducto}/almacen/{idAlmacen}/stock")
+    public ResponseEntity<Map<String, Object>> obtenerStockProductoEnAlmacen(
+            @PathVariable Integer idProducto, 
+            @PathVariable Integer idAlmacen) {
+        try {
+            Integer stock = productoService.getStockEnAlmacen(idProducto, idAlmacen);
+            
+            Map<String, Object> respuesta = Map.of(
+                "idProducto", idProducto,
+                "idAlmacen", idAlmacen,
+                "stock", stock
+            );
+            
+            return ResponseEntity.ok(respuesta);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Obtiene el stock total de un producto en una sucursal específica.
+     * 
+     * @param idProducto El ID del producto.
+     * @param idSucursal El ID de la sucursal.
+     * @return El stock total del producto en la sucursal especificada.
+     */
+    @GetMapping("/{idProducto}/sucursal/{idSucursal}/stock")
+    public ResponseEntity<Map<String, Object>> obtenerStockProductoEnSucursal(
+            @PathVariable Integer idProducto, 
+            @PathVariable Integer idSucursal) {
+        try {
+            Integer stockTotal = productoService.getStockTotalEnSucursal(idProducto, idSucursal);
+            
+            Map<String, Object> respuesta = Map.of(
+                "idProducto", idProducto,
+                "idSucursal", idSucursal,
+                "stockTotal", stockTotal
+            );
+            
+            return ResponseEntity.ok(respuesta);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Obtiene un resumen del stock de un producto en todos los almacenes.
+     * 
+     * @param idProducto El ID del producto.
+     * @return Resumen del stock del producto en cada almacén.
+     */
+    @GetMapping("/{idProducto}/stock/resumen")
+    public ResponseEntity<Map<String, Object>> obtenerResumenStockProducto(@PathVariable Integer idProducto) {
+        try {
+            Map<String, Integer> resumenStock = productoService.getResumenStockPorAlmacen(idProducto);
+            Integer stockTotal = productoService.getStockTotal(idProducto);
+            
+            Map<String, Object> respuesta = Map.of(
+                "idProducto", idProducto,
+                "stockTotal", stockTotal,
+                "stockPorAlmacen", resumenStock
+            );
+            
+            return ResponseEntity.ok(respuesta);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Obtiene el stock total de un producto en todos los almacenes.
+     * 
+     * @param idProducto El ID del producto.
+     * @return El stock total del producto.
+     */
+    @GetMapping("/{idProducto}/stock/total")
+    public ResponseEntity<Map<String, Object>> obtenerStockTotalProducto(@PathVariable Integer idProducto) {
+        try {
+            Integer stockTotal = productoService.getStockTotal(idProducto);
+            
+            Map<String, Object> respuesta = Map.of(
+                "idProducto", idProducto,
+                "stockTotal", stockTotal
+            );
+            
+            return ResponseEntity.ok(respuesta);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Endpoint para obtener los productos con el stock correspondiente al almacén de la sucursal
+     * del usuario autenticado. Úsalo para mostrar productos en la vista de ventas.
+     * Solo muestra el stock que el usuario puede vender.
+     */
+    @GetMapping("/venta")
+    public ResponseEntity<List<ProductoDTO>> listarProductosParaVenta() {
+        List<ProductoDTO> productos = productoService.listarProductosParaUsuarioAutenticado();
+        return ResponseEntity.ok(productos);
+    }
+
+    /**
+     * Endpoint para obtener los productos del almacén del usuario autenticado para transferencias.
+     * Úsalo para mostrar productos en el modal de transferencias.
+     * Solo muestra productos que tienen stock en el almacén del usuario.
+     */
+    @GetMapping("/transferencia")
+    public ResponseEntity<List<ProductoDTO>> listarProductosParaTransferencia() {
+        List<ProductoDTO> productos = productoService.listarProductosParaTransferencia();
+        return ResponseEntity.ok(productos);
     }
 }

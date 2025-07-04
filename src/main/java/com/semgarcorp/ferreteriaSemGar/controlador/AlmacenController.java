@@ -1,17 +1,18 @@
 package com.semgarcorp.ferreteriaSemGar.controlador;
 
 import com.semgarcorp.ferreteriaSemGar.modelo.Almacen;
+import com.semgarcorp.ferreteriaSemGar.dto.AlmacenDTO;
 import com.semgarcorp.ferreteriaSemGar.servicio.AlmacenService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.net.URI;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping ("/almacenes")
+@RequestMapping("/almacenes")
+@CrossOrigin(origins = "*")
 public class AlmacenController {
 
     private final AlmacenService almacenService;
@@ -20,65 +21,170 @@ public class AlmacenController {
         this.almacenService = almacenService;
     }
 
-    // Obtener la lista de todos los almacenes
+    /**
+     * Obtener la lista de todos los almacenes como DTOs
+     */
     @GetMapping
-    public List<Almacen> listar() {
-        return almacenService.listar();
+    public List<AlmacenDTO> listar() {
+        List<Almacen> almacenes = almacenService.listar();
+        return almacenes.stream()
+                .map(AlmacenDTO::new)
+                .collect(Collectors.toList());
     }
 
-    // Obtener un almacen por su ID
+    /**
+     * Obtener un almacén por su ID como DTO
+     */
     @GetMapping("/{id}")
-    public ResponseEntity<Almacen> obtenerPorId(@PathVariable Integer id) {
+    public ResponseEntity<AlmacenDTO> obtenerPorId(@PathVariable Integer id) {
         Almacen almacen = almacenService.obtenerPorId(id);
         if (almacen != null) {
-            return ResponseEntity.ok(almacen); // Respuesta simplificada con 200 OK
+            return ResponseEntity.ok(new AlmacenDTO(almacen));
+        } else {
+            return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Respuesta con 404 Not Found
     }
 
-    // Crear un nuevo almacen
+    /**
+     * Crear un nuevo almacén
+     */
     @PostMapping
-    public ResponseEntity<Almacen> guardar(@RequestBody Almacen almacen) {
-        // Guardar el almacen usando el servicio
+    public ResponseEntity<AlmacenDTO> guardar(@RequestBody AlmacenDTO almacenDTO) {
+        Almacen almacen = almacenDTO.toEntity();
         Almacen nuevoAlmacen = almacenService.guardar(almacen);
 
-        // Crear la URI del recurso recién creado
-        URI location = ServletUriComponentsBuilder
-                .fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(nuevoAlmacen.getIdAlmacen()).toUri();
-
-        // Devolver la respuesta con la URI en la cabecera Location y el objeto creado en el cuerpo
-        return ResponseEntity.created(location).body(nuevoAlmacen);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .header("Location", "/api/almacenes/" + nuevoAlmacen.getIdAlmacen())
+                .body(new AlmacenDTO(nuevoAlmacen));
     }
 
-    // Actualizar un almacen existente (PUT)
+    /**
+     * Actualizar un almacén existente
+     */
     @PutMapping("/{id}")
-    public ResponseEntity<Almacen> actualizar(@PathVariable Integer id, @RequestBody Almacen almacen) {
-        // Obtener el almacen existente
+    public ResponseEntity<AlmacenDTO> actualizar(@PathVariable Integer id, @RequestBody AlmacenDTO almacenDTO) {
         Almacen almacenExistente = almacenService.obtenerPorId(id);
 
         if (almacenExistente != null) {
-            // Asegurarse de que el ID se mantenga y reemplazar el almacen
-            almacen.setIdAlmacen(id);
-
-            // Aquí reemplazas completamente el almacen con la información que viene en el cuerpo
-            Almacen almacenActualizado = almacenService.actualizar(almacen);
-
-            return ResponseEntity.ok(almacenActualizado); // Usamos el metodo estático "ok" para la respuesta exitosa
+            almacenDTO.setIdAlmacen(id);
+            almacenDTO.updateEntity(almacenExistente);
+            Almacen almacenActualizado = almacenService.actualizar(almacenExistente);
+            return ResponseEntity.ok(new AlmacenDTO(almacenActualizado));
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Usamos "status" para construir la respuesta 404
+            return ResponseEntity.notFound().build();
         }
     }
 
-    // Eliminar un almacen por su ID
+    /**
+     * Eliminar un almacén por su ID
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
         Almacen almacenExistente = almacenService.obtenerPorId(id);
         if (almacenExistente != null) {
             almacenService.eliminar(id);
-            return ResponseEntity.noContent().build(); // Respuesta sin contenido
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Si no se encuentra, 404
     }
-}
+
+    /**
+     * Buscar almacenes por tipo (principal o de sucursal) como DTOs
+     */
+    @GetMapping("/tipo/{esPrincipal}")
+    public ResponseEntity<List<AlmacenDTO>> buscarPorTipo(@PathVariable Boolean esPrincipal) {
+        List<Almacen> almacenes = almacenService.buscarPorTipo(esPrincipal);
+        List<AlmacenDTO> almacenesDTO = almacenes.stream()
+                .map(AlmacenDTO::new)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(almacenesDTO);
+    }
+
+    /**
+     * Buscar almacenes por estado como DTOs
+     */
+    @GetMapping("/estado/{estado}")
+    public ResponseEntity<List<AlmacenDTO>> buscarPorEstado(@PathVariable String estado) {
+        try {
+            Almacen.EstadoAlmacen estadoAlmacen = Almacen.EstadoAlmacen.valueOf(estado.toUpperCase());
+            List<Almacen> almacenes = almacenService.buscarPorEstado(estadoAlmacen);
+            List<AlmacenDTO> almacenesDTO = almacenes.stream()
+                    .map(AlmacenDTO::new)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(almacenesDTO);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    /**
+     * Buscar almacenes por sucursal como DTOs
+     */
+    @GetMapping("/sucursal/{idSucursal}")
+    public ResponseEntity<List<AlmacenDTO>> buscarPorSucursal(@PathVariable Integer idSucursal) {
+        List<Almacen> almacenes = almacenService.buscarPorSucursal(idSucursal);
+        List<AlmacenDTO> almacenesDTO = almacenes.stream()
+                .map(AlmacenDTO::new)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(almacenesDTO);
+    }
+
+    /**
+     * Buscar almacenes principales (esPrincipal = true) como DTOs
+     */
+    @GetMapping("/principales")
+    public ResponseEntity<List<AlmacenDTO>> buscarAlmacenesPrincipales() {
+        List<Almacen> almacenes = almacenService.buscarAlmacenesPrincipales();
+        List<AlmacenDTO> almacenesDTO = almacenes.stream()
+                .map(AlmacenDTO::new)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(almacenesDTO);
+    }
+
+    /**
+     * Buscar almacenes de sucursal (esPrincipal = false) como DTOs
+     */
+    @GetMapping("/sucursal")
+    public ResponseEntity<List<AlmacenDTO>> buscarAlmacenesSucursal() {
+        List<Almacen> almacenes = almacenService.buscarAlmacenesSucursal();
+        List<AlmacenDTO> almacenesDTO = almacenes.stream()
+                .map(AlmacenDTO::new)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(almacenesDTO);
+    }
+
+    /**
+     * Buscar almacenes por nombre como DTOs
+     */
+    @GetMapping("/buscar")
+    public ResponseEntity<List<AlmacenDTO>> buscarPorNombre(@RequestParam String nombre) {
+        List<Almacen> almacenes = almacenService.buscarPorNombre(nombre);
+        List<AlmacenDTO> almacenesDTO = almacenes.stream()
+                .map(AlmacenDTO::new)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(almacenesDTO);
+    }
+
+    /**
+     * Obtener el almacén principal de una sucursal específica como DTO
+     */
+    @GetMapping("/sucursal/{idSucursal}/principal")
+    public ResponseEntity<AlmacenDTO> obtenerAlmacenPrincipalDeSucursal(@PathVariable Integer idSucursal) {
+        Almacen almacenPrincipal = almacenService.obtenerAlmacenPrincipalDeSucursal(idSucursal);
+        if (almacenPrincipal != null) {
+            return ResponseEntity.ok(new AlmacenDTO(almacenPrincipal));
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    /**
+     * Verificar si una sucursal tiene almacén principal
+     */
+    @GetMapping("/sucursal/{idSucursal}/tiene-principal")
+    public ResponseEntity<Boolean> tieneAlmacenPrincipal(@PathVariable Integer idSucursal) {
+        boolean tienePrincipal = almacenService.tieneAlmacenPrincipal(idSucursal);
+        return ResponseEntity.ok(tienePrincipal);
+    }
+} 

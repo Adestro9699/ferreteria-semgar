@@ -45,8 +45,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         // Lista de rutas públicas (coincidencia exacta)
         if (relativePath.equals("/usuarios") ||
                 relativePath.equals("/usuarios/login") ||
-                relativePath.startsWith("/trabajadores")) {
-            System.out.println("Ruta pública detectada, omitiendo filtro JWT...");
+                (relativePath.equals("/trabajadores") && "POST".equals(request.getMethod()))) {
+            System.out.println("Ruta pública detectada: " + relativePath + " con método: " + request.getMethod() + ", omitiendo filtro JWT...");
             filterChain.doFilter(request, response);
             return;
         }

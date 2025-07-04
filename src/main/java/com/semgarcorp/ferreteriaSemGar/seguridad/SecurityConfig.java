@@ -66,7 +66,15 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // Rutas públicas accesibles para todos
-                        .requestMatchers("/usuarios", "/usuarios/login", "/trabajadores").permitAll()
+                        .requestMatchers("/usuarios", "/usuarios/login").permitAll()
+                        
+                        // POST /trabajadores es público (para registro)
+                        .requestMatchers(HttpMethod.POST, "/trabajadores").permitAll()
+                        
+                        // GET, PUT, DELETE /trabajadores/** solo para ADMIN
+                        .requestMatchers(HttpMethod.GET, "/trabajadores/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/trabajadores/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/trabajadores/**").hasAuthority("ADMIN")
 
                         // Rutas específicas para USER
                         .requestMatchers("/productos/**", "/categorias/**", "/subcategorias/**", "/proveedores/**", "/clientes/**", "/unidades-medida/**")

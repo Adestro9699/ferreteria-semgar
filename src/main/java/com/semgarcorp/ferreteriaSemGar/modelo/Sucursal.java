@@ -1,6 +1,5 @@
 package com.semgarcorp.ferreteriaSemGar.modelo;
 
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 
@@ -9,16 +8,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-public class Tienda {
+@Table(name = "sucursales")
+public class Sucursal {
 
-    public enum EstadoTienda {
+    public enum EstadoSucursal {
         ACTIVO,
         INACTIVO
     }
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Integer idTienda;
+    private Integer idSucursal;
 
     @NotNull
     @Column(length = 100)
@@ -31,38 +31,43 @@ public class Tienda {
     private String telefono;
 
     @Enumerated(EnumType.STRING)
-    @Column
-    private EstadoTienda estadoTienda;
+    @Column(length = 10)
+    private EstadoSucursal estadoSucursal;
 
     @NotNull
     private LocalDate fechaCreacion;
 
     private LocalDate fechaModificacion;
 
-    @ManyToMany(mappedBy = "tiendas") // Relación inversa
+    @Column(length = 500)
+    private String observaciones;
+
+    // Relación con Almacenes (una sucursal puede tener varios almacenes)
+    @OneToMany(mappedBy = "sucursal")
     private List<Almacen> almacenes = new ArrayList<>();
 
-    public Tienda() {
+    public Sucursal() {
     }
 
-    public Tienda(Integer idTienda, String nombre, String direccion, String telefono, EstadoTienda estadoTienda,
-                  LocalDate fechaCreacion, LocalDate fechaModificacion, List<Almacen> almacenes) {
-        this.idTienda = idTienda;
+    public Sucursal(Integer idSucursal, String nombre, String direccion, String telefono, 
+                   EstadoSucursal estadoSucursal, LocalDate fechaCreacion, 
+                   LocalDate fechaModificacion, String observaciones) {
+        this.idSucursal = idSucursal;
         this.nombre = nombre;
         this.direccion = direccion;
         this.telefono = telefono;
-        this.estadoTienda = estadoTienda;
+        this.estadoSucursal = estadoSucursal;
         this.fechaCreacion = fechaCreacion;
         this.fechaModificacion = fechaModificacion;
-        this.almacenes = almacenes;
+        this.observaciones = observaciones;
     }
 
-    public Integer getIdTienda() {
-        return idTienda;
+    public Integer getIdSucursal() {
+        return idSucursal;
     }
 
-    public void setIdTienda(Integer idTienda) {
-        this.idTienda = idTienda;
+    public void setIdSucursal(Integer idSucursal) {
+        this.idSucursal = idSucursal;
     }
 
     public String getNombre() {
@@ -89,12 +94,12 @@ public class Tienda {
         this.telefono = telefono;
     }
 
-    public EstadoTienda getEstadoTienda() {
-        return estadoTienda;
+    public EstadoSucursal getEstadoSucursal() {
+        return estadoSucursal;
     }
 
-    public void setEstadoTienda(EstadoTienda estadoTienda) {
-        this.estadoTienda = estadoTienda;
+    public void setEstadoSucursal(EstadoSucursal estadoSucursal) {
+        this.estadoSucursal = estadoSucursal;
     }
 
     public LocalDate getFechaCreacion() {
@@ -111,6 +116,14 @@ public class Tienda {
 
     public void setFechaModificacion(LocalDate fechaModificacion) {
         this.fechaModificacion = fechaModificacion;
+    }
+
+    public String getObservaciones() {
+        return observaciones;
+    }
+
+    public void setObservaciones(String observaciones) {
+        this.observaciones = observaciones;
     }
 
     public List<Almacen> getAlmacenes() {

@@ -1,6 +1,7 @@
 package com.semgarcorp.ferreteriaSemGar.controlador;
 
 import com.semgarcorp.ferreteriaSemGar.modelo.Trabajador;
+import com.semgarcorp.ferreteriaSemGar.dto.TrabajadorDTO;
 import com.semgarcorp.ferreteriaSemGar.servicio.TrabajadorService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +10,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/trabajadores")
@@ -22,51 +24,52 @@ public class TrabajadorController {
 
     // Obtener la lista de todos los trabajadores
     @GetMapping
-    public List<Trabajador> listar() {
-        return trabajadorService.listar();
+    public List<TrabajadorDTO> listar() {
+        List<Trabajador> trabajadores = trabajadorService.listar();
+        return trabajadores.stream()
+                .map(TrabajadorDTO::new)
+                .collect(Collectors.toList());
     }
 
     // Obtener un trabajador por su ID
     @GetMapping("/{id}")
-    public ResponseEntity<Trabajador> obtenerPorId(@PathVariable Integer id) {
+    public ResponseEntity<TrabajadorDTO> obtenerPorId(@PathVariable Integer id) {
         Trabajador trabajador = trabajadorService.obtenerPorId(id);
         if (trabajador != null) {
-            return ResponseEntity.ok(trabajador); // Simplificado con "ok()"
+            return ResponseEntity.ok(new TrabajadorDTO(trabajador));
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Respuesta más clara y consistente
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
     // Crear un nuevo trabajador
     @PostMapping
-    public ResponseEntity<?> guardar(@RequestBody Trabajador trabajador) {
-        // Guardar el trabajador usando el servicio
+    public ResponseEntity<TrabajadorDTO> guardar(@RequestBody TrabajadorDTO trabajadorDTO) {
         try {
+            Trabajador trabajador = trabajadorDTO.toEntity();
             Trabajador nuevoTrabajador = trabajadorService.guardar(trabajador);
 
-            // Crear la URI del recurso recién creado
             URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                     .path("/{id}")
                     .buildAndExpand(nuevoTrabajador.getIdTrabajador()).toUri();
 
-            // Devolver la respuesta con la URI en la cabecera Location y el objeto creado en el cuerpo
-            return ResponseEntity.created(location).body(nuevoTrabajador);
+            return ResponseEntity.created(location).body(new TrabajadorDTO(nuevoTrabajador));
 
-        }catch(Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error al guardar el trabajador: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     // Actualizar un trabajador existente (PUT)
     @PutMapping("/{id}")
-    public ResponseEntity<Trabajador> actualizar(@PathVariable Integer id, @RequestBody Trabajador trabajador) {
+    public ResponseEntity<TrabajadorDTO> actualizar(@PathVariable Integer id, @RequestBody TrabajadorDTO trabajadorDTO) {
         Trabajador trabajadorExistente = trabajadorService.obtenerPorId(id);
         if (trabajadorExistente != null) {
-            trabajador.setIdTrabajador(id); // Aseguramos que el ID se mantenga para la actualización
-            Trabajador trabajadorActualizado = trabajadorService.actualizar(trabajador);
-            return ResponseEntity.ok(trabajadorActualizado); // Usamos el metodo estático "ok"
+            trabajadorDTO.setIdTrabajador(id);
+            trabajadorDTO.updateEntity(trabajadorExistente);
+            Trabajador trabajadorActualizado = trabajadorService.actualizar(trabajadorExistente);
+            return ResponseEntity.ok(new TrabajadorDTO(trabajadorActualizado));
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Usamos el builder
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
     // Eliminar un trabajador por su ID
@@ -75,8 +78,8 @@ public class TrabajadorController {
         Trabajador trabajadorExistente = trabajadorService.obtenerPorId(id);
         if (trabajadorExistente != null) {
             trabajadorService.eliminar(id);
-            return ResponseEntity.noContent().build(); // Usamos el metodo estático "noContent" para devolver un 204
+            return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Usamos "status" para devolver un 404
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 }
